@@ -1,0 +1,693 @@
+{
+  "meta": {
+    "system": "D&D 5.5 (2024)",
+    "platform": "Nivel20.com",
+    "character_url": "https://nivel20.com/games/dnd-2024/characters/1964609-zepo-detonari",
+    "character_id": 1964609,
+    "owner": null,
+    "nivel20_keys": [
+      "basic_info.name",
+      "basic_info.species",
+      "basic_info.classes",
+      "basic_info.total_level",
+      "basic_info.background",
+      "basic_info.alignment",
+      "basic_info.campaign",
+      "basic_info.portrait_url",
+      "appearance.age",
+      "appearance.size",
+      "languages",
+      "ability_scores",
+      "proficiency_bonus",
+      "saving_throws",
+      "skills",
+      "combat.armor_class",
+      "combat.initiative",
+      "combat.speed.walking_feet",
+      "combat.speed.walking_meters",
+      "combat.hit_dice",
+      "attacks",
+      "proficiencies",
+      "features_and_traits",
+      "spellcasting.spell_save_dc",
+      "spellcasting.spell_attack_bonus",
+      "spellcasting.spell_attack_roll",
+      "spellcasting.spell_slots",
+      "spellcasting.spells",
+      "spellcasting.spellcasting_ability",
+      "inventory.items",
+      "inventory.currency",
+      "background_details.name",
+      "background_details.description",
+      "background_details.skill_proficiencies",
+      "resources",
+      "notes.backstory"
+    ],
+    "last_sync": "2026-03-13T18:05:08Z"
+  },
+  "basic_info": {
+    "name": "Zepo Detonari",
+    "species": "Gnomo de las rocas",
+    "classes": [
+      {
+        "name": "Artífice",
+        "level": 2,
+        "subclass": null
+      }
+    ],
+    "total_level": 2,
+    "background": "Ingeniero arcano",
+    "alignment": "Caótico neutral",
+    "experience_points": null,
+    "inspiration": false,
+    "campaign": "El silencio de los dioses",
+    "portrait_url": "https://nivel20.com/images/3039960/original-5f3e8c8d0b8e827d89e84c45a989b7b5af892fc6.jpg?1767863908"
+  },
+  "appearance": {
+    "age": 38,
+    "height": null,
+    "weight": null,
+    "eyes": null,
+    "skin": null,
+    "hair": null,
+    "gender": null,
+    "size": "Mediana"
+  },
+  "languages": [
+    "Común",
+    "Gnomo",
+    "Goblin."
+  ],
+  "ability_scores": {
+    "strength": {
+      "score": 8,
+      "modifier": -1
+    },
+    "dexterity": {
+      "score": 14,
+      "modifier": 2
+    },
+    "constitution": {
+      "score": 14,
+      "modifier": 2
+    },
+    "intelligence": {
+      "score": 17,
+      "modifier": 3
+    },
+    "wisdom": {
+      "score": 12,
+      "modifier": 1
+    },
+    "charisma": {
+      "score": 10,
+      "modifier": 0
+    }
+  },
+  "proficiency_bonus": 2,
+  "saving_throws": {
+    "strength": {
+      "total": -1,
+      "proficient": false,
+      "roll": "1d20-1"
+    },
+    "dexterity": {
+      "total": 2,
+      "proficient": false,
+      "roll": "1d20+2"
+    },
+    "constitution": {
+      "total": 4,
+      "proficient": true,
+      "roll": "1d20+4"
+    },
+    "intelligence": {
+      "total": 5,
+      "proficient": true,
+      "roll": "1d20+5"
+    },
+    "wisdom": {
+      "total": 1,
+      "proficient": false,
+      "roll": "1d20+1"
+    },
+    "charisma": {
+      "total": 0,
+      "proficient": false,
+      "roll": "1d20+0"
+    }
+  },
+  "skills": {
+    "acrobacias": {
+      "name": "Acrobacias",
+      "ability": "dexterity",
+      "total": 2,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+2"
+    },
+    "atletismo": {
+      "name": "Atletismo",
+      "ability": "strength",
+      "total": -1,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20-1"
+    },
+    "arcanos": {
+      "name": "Conocimiento arcano",
+      "ability": "intelligence",
+      "total": 5,
+      "proficient": true,
+      "expertise": false,
+      "roll": "1d20+5"
+    },
+    "enganar": {
+      "name": "Engaño",
+      "ability": "charisma",
+      "total": 0,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+0"
+    },
+    "historia": {
+      "name": "Historia",
+      "ability": "intelligence",
+      "total": 5,
+      "proficient": true,
+      "expertise": false,
+      "roll": "1d20+5"
+    },
+    "interpretacion": {
+      "name": "Interpretación",
+      "ability": "charisma",
+      "total": 0,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+0"
+    },
+    "intimidar": {
+      "name": "Intimidación",
+      "ability": "charisma",
+      "total": 0,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+0"
+    },
+    "investigacion": {
+      "name": "Investigación",
+      "ability": "intelligence",
+      "total": 5,
+      "proficient": true,
+      "expertise": false,
+      "roll": "1d20+5"
+    },
+    "juego_de_manos": {
+      "name": "Juego de Manos",
+      "ability": "dexterity",
+      "total": 2,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+2"
+    },
+    "medicina": {
+      "name": "Medicina",
+      "ability": "wisdom",
+      "total": 1,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+1"
+    },
+    "naturaleza": {
+      "name": "Naturaleza",
+      "ability": "intelligence",
+      "total": 3,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+3"
+    },
+    "percepcion": {
+      "name": "Percepción",
+      "ability": "wisdom",
+      "total": 3,
+      "proficient": true,
+      "expertise": false,
+      "roll": "1d20+3"
+    },
+    "perspicacia": {
+      "name": "Perspicacia",
+      "ability": "wisdom",
+      "total": 1,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+1"
+    },
+    "persuasion": {
+      "name": "Persuasión",
+      "ability": "charisma",
+      "total": 0,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+0"
+    },
+    "religion": {
+      "name": "Religión",
+      "ability": "intelligence",
+      "total": 3,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+3"
+    },
+    "sigilo": {
+      "name": "Sigilo",
+      "ability": "dexterity",
+      "total": 2,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+2"
+    },
+    "supervivencia": {
+      "name": "Supervivencia",
+      "ability": "wisdom",
+      "total": 1,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+1"
+    },
+    "trato_con_animales": {
+      "name": "Trato con Animales",
+      "ability": "wisdom",
+      "total": 1,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+1"
+    }
+  },
+  "combat": {
+    "armor_class": 14,
+    "initiative": 2,
+    "speed": {
+      "walking_feet": 30,
+      "walking_meters": 9,
+      "swim_meters": null,
+      "fly_meters": null,
+      "climb_meters": null
+    },
+    "hit_points": {
+      "maximum": 17,
+      "current": null,
+      "temporary": null
+    },
+    "hit_dice": {
+      "total": "2d8",
+      "remaining": 2,
+      "used": 0,
+      "die_type": "d8"
+    },
+    "death_saves": {
+      "successes": 0,
+      "failures": 0
+    }
+  },
+  "attacks": [
+    {
+      "name": "Daga",
+      "attack_bonus": 4,
+      "attack_roll": "1d20+4",
+      "damage": "1d4 +2",
+      "damage_type": "perforante",
+      "damage_display": "1d4 +2 perforante"
+    },
+    {
+      "name": "PANDORA",
+      "attack_bonus": 3,
+      "attack_roll": "1d20+3",
+      "damage": "Variable +3",
+      "damage_type": "Variable",
+      "damage_display": "Variable +3 Variable"
+    }
+  ],
+  "proficiencies": {
+    "armor": [
+      "Armadura intermedia",
+      "Armadura ligera",
+      "Escudo"
+    ],
+    "weapons": [
+      "Armas sencillas"
+    ],
+    "tools": [
+      "Herramientas de Herrero",
+      "Herramientas de Ladrón",
+      "Herramientas de Manitas"
+    ],
+    "raw": [
+      "Armadura intermedia, Armadura ligera, Armas sencillas y Escudo",
+      "Herramientas de Herrero, Herramientas de Ladrón y Herramientas de Manitas"
+    ]
+  },
+  "features_and_traits": {
+    "species": [
+      {
+        "name": "Visión en la oscuridad",
+        "source": "unknown",
+        "description": "Tienes visión en la oscuridad hasta 18 m."
+      },
+      {
+        "name": "Astucia de gnoma",
+        "source": "unknown",
+        "description": "Tienes ventaja en las tiradas de salvación de Inteligencia, Sabiduría y Carisma."
+      },
+      {
+        "name": "Gnomo de las rocas",
+        "source": "unknown",
+        "description": "Conoces los trucos prestidigitación y reparar. Además, puedes pasar 10 minutos lanzando prestidigitación para crear un dispositivo mecánico Diminuto (CA 5, 1 pg), como un juguete, un encendedor o una caja de música. Cuando crees el dispositivo, determinarás su función eligiendo un efecto de prestidigitación. El dispositivo producirá ese efecto cada vez que otra criatura o tú empleéis una acción adicional para activarlo con un toque. Si el efecto elegido tiene varias opciones, escoges una de ellas para el dispositivo cuando lo crees. Por ejemplo, si eliges el efecto de encender o apagar del conjuro, determinas si el dispositivo enciende o apaga los fuegos: el dispositivo no hace ambas cosas. Puedes tener tres de estos dispositivos activos al mismo tiempo y se desarman 8 horas después de crearlos o cuando los desmontes con un toque como acción de utilizar."
+      }
+    ],
+    "class_features": [
+      {
+        "name": "Arreglos mágicos",
+        "source": "Artífice",
+        "description": "Conoces el truco Reparar.\r\nPuedes crear objetos simples con tus herramientas, que duran hasta tu próximo descanso largo. \r\nPuedes usar este rasgo tantas veces como tu modificador de Inteligencia (mínimo 1), recuperados tras un Descanso Largo.",
+        "id": "135521"
+      },
+      {
+        "name": "Lanzamiento de Conjuros",
+        "source": "Artífice",
+        "description": "Lanzas conjuros usando herramientas como canalizador. Puedes cambiar tus conjuros preparados tras cada descanso largo. Tu aptitud mágica es Inteligencia.",
+        "id": "135517"
+      },
+      {
+        "name": "Replicar Objeto Mágico",
+        "source": "Artífice",
+        "description": "Aprendes planos para crear objetos mágicos y puedes sustituirlos al subir de nivel. Creas  estos objetos al finalizar un descanso largo.\r\nPuedes usar las varitas y armas creadas de esta forma como canalizadores mágicos.",
+        "details": {
+          "item_0": "4 planos conocidos, puedes replicar 2 objetos mágicos"
+        },
+        "id": "135751"
+      },
+      {
+        "name": "Replicar arma de tiro de repetición",
+        "source": "Artífice",
+        "description": "Esta arma mágica concede un bonificador de +1 a las tiradas de ataque y de daño. Si no cargas el arma, producirá suya propia munición mágica cuando realices un ataque a distancia con ella. La munición creada por el arma se desvanece en cuanto impacta.",
+        "id": "136322"
+      },
+      {
+        "name": "Replicar escudo +1",
+        "source": "Artífice",
+        "description": "Mientras lleves embarazado este escudo, tienes un bonificador de +1 a la clase de armadura, además del bonificador a la CA normal del escudo.",
+        "id": "136409"
+      },
+      {
+        "name": "Replicar herramienta multifuncional",
+        "source": "Artífice",
+        "description": "Esta herramienta adopta la forma de una llave inglesa, un destornillador u otra herramienta básica. Como acción mágica, puedes tocar el objeto y transformarlo en un tipo de herramientas de artesano de tu elección. Sea cual sea la forma que adopte, tienes competencia con ella cuando la usas.",
+        "id": "136321"
+      },
+      {
+        "name": "Replicar varita del mago de guerra +1",
+        "source": "Artífice",
+        "description": "Mientras sostengas esta varita, obtendrás un bonificador de +1 a las tiradas de ataque de conjuro. Además, ignorarás la cobertura media cuando realices una tirada de ataque de conjuro.",
+        "id": "136411"
+      }
+    ],
+    "feats": [
+      {
+        "name": "Iniciado en la magia",
+        "source": "Dotes",
+        "description": "Aprendes 2 trucos y 1 conjuro de nivel 1 de una lista (clérigo, druida o mago). Puedes lanzar el conjuro gratis 1 vez por descanso largo y cambiar los conjuros al subir de nivel.",
+        "id": "13000"
+      }
+    ]
+  },
+  "spellcasting": {
+    "spellcasting_ability": "Inteligencia",
+    "spell_save_dc": 13,
+    "spell_attack_bonus": 5,
+    "spell_attack_roll": "1d20+5",
+    "spell_slots": {
+      "level_1": {
+        "total": 2,
+        "used": 0
+      }
+    },
+    "spells": {
+      "cantrips": [
+        {
+          "name": "Descarga de fuego",
+          "spell_id": "14861",
+          "school": "Evocación",
+          "casting_time": "1 acción",
+          "duration": "Instantáneo",
+          "range": null,
+          "components": "V, S",
+          "description": "Haz un ataque de conjuro a distancia contra el objetivo. Si acierta, el objetivo recibe 1d10 de daño de fuego. Los objetos inflamables a los que acierte el conjuro empezarán a arder si nadie los lleva o viste. El daño aumenta en 1d10 en los niveles 5, 11 y 17."
+        },
+        {
+          "name": "Guía",
+          "spell_id": "14858",
+          "school": "Adivinación",
+          "casting_time": "1 acción",
+          "duration": "Concentración 1 minuto",
+          "range": null,
+          "components": "V, S",
+          "description": "Tocas a una criatura voluntaria y eliges una habilidad. Hasta que el conjuro termine, la criatura añade 1d4 a una prueba de característica con la habilidad elegida."
+        },
+        {
+          "name": "Mano de mago",
+          "spell_id": "14857",
+          "school": "Conjuración",
+          "casting_time": "1 acción",
+          "duration": "1 minuto",
+          "range": null,
+          "components": "V, S",
+          "description": "Una mano espectral aparece flotando. Puedes usar una acción de magia para controlarla, manipular un objeto, abrir una puerta. etc. Puedes moverla9 metroscada vez que la usas. No puede atacar, activar objetos mágicos ni transportar más de 5 kg."
+        },
+        {
+          "name": "Prestidigitación",
+          "spell_id": "14859",
+          "school": "Transmutación",
+          "casting_time": "1 acción",
+          "duration": "1 hora",
+          "range": null,
+          "components": "V, S",
+          "description": "Efectos mágicos menores: efecto sensorial (como chispas, viento, música suave, olor), encender/apagar fuego, limpiar/ensuciar objeto, enfriar/calentar o dar sabor a un material inerte, añadir color, una marca o símbolo a un objeto o crear baratija o ilusión menor."
+        },
+        {
+          "name": "Reparar",
+          "spell_id": "14862",
+          "school": "Transmutación",
+          "casting_time": "1 minuto",
+          "duration": "Instantáneo",
+          "range": null,
+          "components": "V, S, M",
+          "description": "Reparas una grieta o rotura de hasta 30 cm en un objeto que toques, dejando el daño como nuevo. Puede arreglar la parte física de un objeto mágico, pero no su magia."
+        },
+        {
+          "name": "Salpicadura ácida",
+          "spell_id": "14865",
+          "school": "Evocación",
+          "casting_time": "1 acción",
+          "duration": "Instantáneo",
+          "range": null,
+          "components": "V, S",
+          "description": "Lanzas un orbe ácido a una o dos criaturas a1.5 metroso menos entre sí y que puedas ver. Deben superar una TS de destreza o recibir 1d6 puntos de daño por ácido. El daño aumenta a nivel 5 (2d6), a nivel 11 (3d6) y a nivel 17 (4d6)."
+        }
+      ],
+      "level_1": [
+        {
+          "name": "Curar heridas",
+          "spell_id": "14876",
+          "school": "Abjuración",
+          "casting_time": "1 acción",
+          "duration": "Instantáneo",
+          "range": null,
+          "components": "V, S",
+          "description": "Una criatura a la que toques recupera una cantidad de puntos de golpe igual a 2d8 más tu modificador por aptitud mágica. La curación aumenta en 2d8 por cada nivel por encima de 1 que tenga el espacio."
+        },
+        {
+          "name": "Escudo",
+          "spell_id": "14886",
+          "school": "Abjuración",
+          "casting_time": "1 reacción",
+          "duration": "1 asalto",
+          "range": null,
+          "components": "V, S",
+          "description": "Una barrera imperceptible de fuerza mágica te protege. Hasta el principio de tu siguiente turno, tienes un bonificador de +5 a la CA, incluido contra el ataque al que reacciona, y no recibes ningún daño del conjuro proyectil mágico."
+        },
+        {
+          "name": "Fuego feérico",
+          "spell_id": "14890",
+          "school": "Evocación",
+          "casting_time": "1 acción",
+          "duration": "Concentración 1 minuto",
+          "range": null,
+          "components": "V",
+          "description": "Iluminas con luz azul, verde o violeta un cubo de6 metrosdentro del alcance. Las criaturas que fallen una salvación de Destreza y los objetos del área emiten luz tenue de3 metrosMientras dure el conjuro, no pueden ser invisibles y los ataques contra ellos tienen ventaja si son visibles."
+        }
+      ]
+    }
+  },
+  "inventory": {
+    "currency": {
+      "PP": 0,
+      "GP": 0,
+      "EP": 0,
+      "SP": 0,
+      "CP": 0
+    },
+    "other_possessions": "Máscara de alabastro (bagatela).\n63 piezas de oro.",
+    "items": [
+      {
+        "name": "Cuero tachonado",
+        "description": "Está fabricada de cuero duro pero flexible y reforzada con remaches o púas.",
+        "type": "Armaduras",
+        "category": "Armadura ligera",
+        "proficient": true,
+        "price": "45 po",
+        "weight_kg": 6.5,
+        "is_weapon": false,
+        "quantity": 1,
+        "location": "Equipado"
+      },
+      {
+        "name": "Daga",
+        "description": "La daga es un arma pequeña y fácil de ocultar, ideal para ataques rápidos y precisos. Muy utilizada como arma secundaria o en combates cercanos, es especialmente común entre pícaros, asesinos y lanzadores de conjuros.",
+        "type": "Armas",
+        "category": "Armas sencillas",
+        "proficient": true,
+        "price": "2 po",
+        "weight_kg": 0.5,
+        "is_weapon": true,
+        "attack_roll": "1d20+4",
+        "attack_bonus": 4,
+        "damage": "1d4 + 2",
+        "critical_damage": "2d4 + 2",
+        "damage_type": "perforante",
+        "range_normal": {
+          "feet": 20,
+          "meters": 6
+        },
+        "range_long": {
+          "feet": 60,
+          "meters": 18
+        },
+        "properties": [
+          "Alcance",
+          "Arrojadiza",
+          "Distancia",
+          "Ligera",
+          "Maestría: Mellar",
+          "Sutil"
+        ],
+        "quantity": 1,
+        "location": "Equipado"
+      },
+      {
+        "name": "PANDORA",
+        "description": "La pistola es un arma de fuego compacta, pensada para disparos rápidos a corta distancia. Su portabilidad la hace ideal como arma secundaria, aunque su precisión y potencia son limitadas.",
+        "type": "Armas",
+        "category": "Armas marciales",
+        "proficient": false,
+        "price": "Variable",
+        "weight_kg": null,
+        "is_weapon": true,
+        "attack_roll": "1d20+3",
+        "attack_bonus": 3,
+        "damage": "Variable + 3",
+        "critical_damage": "d10 + 3",
+        "damage_type": "Variable",
+        "properties": [
+          "Distancia",
+          "Infrecuente",
+          "Objeto mágico",
+          "Sintonizado"
+        ],
+        "quantity": 1,
+        "location": "Equipado"
+      },
+      {
+        "name": "Herramientas de Ladrón",
+        "description": "Característica:Destreza",
+        "type": "Equipo de aventuras",
+        "category": "Herramientas",
+        "proficient": true,
+        "price": "25 po",
+        "weight_kg": 0.5,
+        "is_weapon": false,
+        "properties": [
+          "Otras herramientas"
+        ],
+        "quantity": 1,
+        "location": "Otros"
+      },
+      {
+        "name": "Herramientas de Manitas",
+        "description": "Característica:Destreza",
+        "type": "Equipo de aventuras",
+        "category": "Herramientas",
+        "proficient": true,
+        "price": "50 po",
+        "weight_kg": 5.0,
+        "is_weapon": false,
+        "properties": [
+          "Herramientas de artesano"
+        ],
+        "quantity": 1,
+        "location": "Otros"
+      },
+      {
+        "name": "Paquete de explorador de mazmorras",
+        "description": "Un paquete de explorador de mazmorras contiene los siguientes objetos: \n                            abrojos, 10 antorchas, cantimplora, cuerda, 2 frascos de aceite, mochila, palanqueta, raciones para 10 días y yesquero.",
+        "type": "Equipo de aventuras",
+        "category": "Paquetes de equipo",
+        "proficient": false,
+        "price": "12 po",
+        "weight_kg": 27.5,
+        "is_weapon": false,
+        "quantity": 1,
+        "location": "Otros"
+      },
+      {
+        "name": "Balas de arma de fuego",
+        "description": "Las balas de arma de fuego se venden en bolsas de 10 unidades.",
+        "type": "Equipo de aventuras",
+        "category": "Munición",
+        "proficient": false,
+        "price": "3 po",
+        "weight_kg": 1.0,
+        "is_weapon": false,
+        "quantity": 1,
+        "location": "Otros"
+      }
+    ]
+  },
+  "background_details": {
+    "name": "Ingeniero arcano",
+    "description": "Pasaste tus años formativos viajando entre palacetes y monasterios, desempeñando diversos oficios y servicios para que te dejaran acceder a sus bibliotecas. Dedicaste muchas tardes a estudiar libros y pergaminos para adquirir conocimientos acerca del multiverso e incluso los rudimentos de la magia, y tu mente ansía más.",
+    "skill_proficiencies": [
+      "Conocimiento arcano",
+      "Historia"
+    ],
+    "personality_traits": [],
+    "ideals": [],
+    "bonds": [],
+    "flaws": []
+  },
+  "resources": {
+    "escudo_gratis": {
+      "name": "Escudo (conjuro gratuito - Iniciado en la magia)",
+      "max": 1,
+      "current": 1,
+      "recharge": "descanso largo"
+    }
+  },
+  "notes": {
+    "other_possessions": "Máscara de alabastro (bagatela).\n63 piezas de oro.",
+    "backstory": "Pasaste tus años formativos viajando entre palacetes y monasterios, desempeñando diversos oficios y servicios para que te dejaran acceder a sus bibliotecas. Dedicaste muchas tardes a estudiar libros y pergaminos para adquirir conocimientos acerca del multiverso e incluso los rudimentos de la magia, y tu mente ansía más.",
+    "organizations": "",
+    "allies": "",
+    "enemies": "",
+    "additional_notes": ""
+  }
+}

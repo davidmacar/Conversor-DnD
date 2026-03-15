@@ -1,0 +1,797 @@
+{
+  "ability_scores": {
+    "charisma": {
+      "modifier": -1,
+      "score": 8
+    },
+    "constitution": {
+      "modifier": 2,
+      "score": 14
+    },
+    "dexterity": {
+      "modifier": 3,
+      "score": 17
+    },
+    "intelligence": {
+      "modifier": 0,
+      "score": 10
+    },
+    "strength": {
+      "modifier": -1,
+      "score": 8
+    },
+    "wisdom": {
+      "modifier": 3,
+      "score": 16
+    }
+  },
+  "appearance": {
+    "age": 25,
+    "eyes": null,
+    "gender": null,
+    "hair": null,
+    "height": null,
+    "size": "Mediana",
+    "skin": null,
+    "weight": null
+  },
+  "attacks": [
+    {
+      "attack_bonus": 5,
+      "attack_roll": "1d20+5",
+      "damage": "1d6 +3",
+      "damage_display": "1d6 +3 perforante",
+      "damage_type": "perforante",
+      "name": "Daga",
+      "damage_dice_count": 1,
+      "damage_dice_type": "d6",
+      "damage_bonus": 3,
+      "custom_bonuses": []
+    },
+    {
+      "attack_bonus": 5,
+      "attack_roll": "1d20+5",
+      "damage": "1d6+3",
+      "damage_display": "1d6+3 contundente",
+      "damage_type": "contundente",
+      "name": "Ataque desarmado",
+      "properties": [
+        "finura",
+        "sin carga"
+      ],
+      "damage_dice_count": 1,
+      "damage_dice_type": "d6",
+      "damage_bonus": 3,
+      "custom_bonuses": []
+    },
+    {
+      "attack_bonus": 3,
+      "attack_roll": "1d20+3",
+      "damage": "1d6 +4",
+      "damage_display": "1d6 +4 Fuego",
+      "damage_type": "Fuego",
+      "name": "Antorcha",
+      "damage_dice_count": 1,
+      "damage_dice_type": "d6",
+      "damage_bonus": 4,
+      "custom_bonuses": []
+    }
+  ],
+  "background_details": {
+    "bonds": [],
+    "description": "Creciste en las calles junto a personas con expectativas tan aciagas con las tuyas, entre las que había algunas amistad y algunos rivales. Dormías donde podías y hacías encargos ocasionales a cambio de comida. A veces, cuando el hambre se volvía insoportable, recurrías al robo. Sin embargo, nunca renunciaste a tu orgullo ni perdiste la esperanza. El destino aún tiene algo reservado para ti.",
+    "flaws": [],
+    "ideals": [],
+    "name": "Vagabundo",
+    "personality_traits": [],
+    "skill_proficiencies": [
+      "Perspicacia",
+      "Sigilo"
+    ]
+  },
+  "basic_info": {
+    "alignment": "Caótico bueno",
+    "background": "Vagabundo",
+    "campaign": "El silencio de los dioses",
+    "classes": [
+      {
+        "level": 2,
+        "name": "Monje",
+        "subclass": null
+      }
+    ],
+    "experience_points": null,
+    "inspiration": true,
+    "name": "WebOns",
+    "portrait_url": "https://nivel20.com/images/4033884/original-331eaff72d8d19f4c6033e32fd83723261de75d8.png?1772629469",
+    "species": "Humano",
+    "total_level": 2
+  },
+  "combat": {
+    "armor_class": 16,
+    "death_saves": {
+      "failures": 0,
+      "successes": 0
+    },
+    "hit_dice": {
+      "die_type": "d8",
+      "remaining": 2,
+      "total": "2d8",
+      "used": 0
+    },
+    "hit_points": {
+      "current": null,
+      "maximum": 16,
+      "temporary": null
+    },
+    "initiative": 3,
+    "speed": {
+      "climb_meters": null,
+      "fly_meters": null,
+      "swim_meters": null,
+      "walking_feet": 40,
+      "walking_meters": 12
+    }
+  },
+  "features_and_traits": {
+    "class_features": [
+      {
+        "description": "Cuando usas arma de monje y no llevas armadura ni escudo: Puedes usar Des en lugar de Fue para ataque y daño. Puedes usar el dado de daño desarmado en lugar del daño del arma. Tras atacar desarmado o con arma de monje, puedes usar una acción adicional para realizar un ataque desarmado.",
+        "details": {
+          "Daño desarmado": "1d6"
+        },
+        "id": "99895",
+        "name": "Artes marciales",
+        "source": "Monje"
+      },
+      {
+        "description": "Tienes puntos de Concetración igual a tu nivel de monje. Ganas Defensa paciente (destrabarse como Acción Adicional, gasta 1 PC y también esquivas), Paso del viento (correr como Acción Adicional,  gasta 1 PC y también te destrabas) y Ráfaga de golpes (1, dos atacas sin arma como Acción adicional)",
+        "id": "99896",
+        "name": "Concentración de monje",
+        "source": "Monje"
+      },
+      {
+        "description": "Puedes llevar a cabo la acción de destrabarse como acción adicional. De manera alternativa, puedes gastar 1 punto de concentración para llevar a cabo tanto la acción de destrabarse como la de esquivar como acción adicional.",
+        "id": "99898",
+        "name": "Defensa paciente",
+        "source": "Monje"
+      },
+      {
+        "description": "Mientras no lleves armadura ni portes un escudo, tu clase de armadura base será igual a 10 más tus modificadores por Destreza y Sabiduría.",
+        "id": "99894",
+        "name": "Defensa sin armadura",
+        "source": "Monje"
+      },
+      {
+        "description": "Una vez por descanso largo, cuando tires iniciativa, recupera todos tus puntos de concentración gastados y lanza tu dado de Artes marciales. Recuperas PG igual al resultado más tu nivel de monje.",
+        "id": "131871",
+        "name": "Metabolismo asombroso",
+        "source": "Monje"
+      },
+      {
+        "description": "Tu velocidad aumenta en3 metrossi no llevas armadura ni portas un escudo. Esta bonificación aumenta cuando alcanzas ciertos niveles de monje.",
+        "details": {
+          "Movimiento sin armadura": "+3 m+10 Velocidad",
+          "item_1": "+10 Velocidad"
+        },
+        "id": "99900",
+        "name": "Movimiento sin armadura",
+        "source": "Monje"
+      },
+      {
+        "description": "Puedes llevar a cabo la acción de correr como acción adicional. De manera alternativa, puedes gastar 1 punto de concentración para llevar a cabo tanto la acción de destrabarse como la de correr como acción adicional, y tu distancia de salto se duplicará durante el turno.",
+        "id": "99899",
+        "name": "Paso del viento",
+        "source": "Monje"
+      },
+      {
+        "description": "Puedes gastar 1 punto de concentración para hacer dos ataques sin armas como acción adicional.",
+        "id": "99897",
+        "name": "Ráfaga de golpes",
+        "source": "Monje"
+      }
+    ],
+    "feats": [
+      {
+        "description": "Aprendes 2 trucos y 1 conjuro de nivel 1 de una lista (clérigo, druida o mago). Puedes lanzar el conjuro gratis 1 vez por descanso largo y cambiar los conjuros al subir de nivel.",
+        "id": "13000",
+        "name": "Iniciado en la magia",
+        "source": "Dotes"
+      },
+      {
+        "description": "Tienes una cantidad de puntos de suerte igual a tu bonificador por competencia y puedes gastarlos para darte Ventaja (1 punto) o dar Desventaja a una criatura que ataque contra ti (1 punto). Recuperas los puntos gastados tras un descanso largo.",
+        "id": "12986",
+        "name": "Afortunado",
+        "source": "Dotes"
+      }
+    ],
+    "species": [
+      {
+        "description": "Ganas competencia en una habilidad de tu elección.",
+        "name": "Diestro",
+        "source": "Humano"
+      },
+      {
+        "description": "Obtienes inspiración heroica tras finalizar un descanso largo.",
+        "name": "Ingenioso",
+        "source": "Humano"
+      },
+      {
+        "description": "Obtienes una dote de origen de tu elección (consulta el capítulo 5). Se recomienda Habilidoso.",
+        "name": "Versátil",
+        "source": "Humano"
+      }
+    ]
+  },
+  "inventory": {
+    "currency": {
+      "CP": 0,
+      "EP": 0,
+      "GP": 27,
+      "PP": 0,
+      "SP": 1
+    },
+    "items": [
+      {
+        "attack_bonus": 5,
+        "attack_roll": "1d20+5",
+        "category": "Armas sencillas",
+        "critical_damage": "2d6 + 3",
+        "damage": "1d6 + 3",
+        "damage_type": "perforante",
+        "description": "La daga es un arma pequeña y fácil de ocultar, ideal para ataques rápidos y precisos. Muy utilizada como arma secundaria o en combates cercanos, es especialmente común entre pícaros, asesinos y lanzadores de conjuros.",
+        "is_weapon": true,
+        "item_id": "5665771",
+        "name": "Daga",
+        "price": "2 po",
+        "proficient": true,
+        "properties": [
+          "Alcance",
+          "Arrojadiza",
+          "Distancia",
+          "Ligera",
+          "Maestría: Mellar",
+          "Sutil"
+        ],
+        "quantity": 5,
+        "range_long": {
+          "feet": 60,
+          "meters": 18
+        },
+        "range_normal": {
+          "feet": 20,
+          "meters": 6
+        },
+        "type": "Armas",
+        "weight_kg": 0.5
+      },
+      {
+        "category": "Herramientas",
+        "description": "Característica:Destreza",
+        "is_weapon": false,
+        "item_id": "5665775",
+        "name": "Herramientas de Calígrafo",
+        "price": "10 po",
+        "proficient": false,
+        "properties": [
+          "Herramientas de artesano"
+        ],
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": 2.5
+      },
+      {
+        "category": "Paquetes de equipo",
+        "description": "Un paquete de explorador contiene los siguientes objetos: \n                            10 antorchas, cantimplora, cuerda, 2 frascos de aceite, mochila, petate, raciones para 10 días y yesquero.",
+        "is_weapon": false,
+        "item_id": "5665776",
+        "name": "Paquete de explorador",
+        "price": "10 po",
+        "proficient": false,
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": 27.5
+      },
+      {
+        "category": "Herramientas",
+        "description": "Característica:Destreza",
+        "is_weapon": false,
+        "item_id": "5665777",
+        "name": "Herramientas de Ladrón",
+        "price": "25 po",
+        "proficient": false,
+        "properties": [
+          "Otras herramientas"
+        ],
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": 0.5
+      },
+      {
+        "category": "Otros",
+        "description": "Una bolsa soporta hasta 3 kg en un volumen de 6 L.",
+        "is_weapon": false,
+        "item_id": "5665778",
+        "name": "Bolsa",
+        "price": "5 pp",
+        "proficient": false,
+        "quantity": 2,
+        "type": "Equipo de aventuras",
+        "weight_kg": 0.5
+      },
+      {
+        "category": "Otros",
+        "description": "En un petate puede dormir una criatura Pequeña o Mediana. Mientras estés en un petate, superarás automáticamente las tiradas de salvación contra el frío extremo (consulta laGuía del Dungeon Master).",
+        "is_weapon": false,
+        "item_id": "5665781",
+        "name": "Petate",
+        "price": "1 po",
+        "proficient": false,
+        "quantity": 2,
+        "type": "Equipo de aventuras",
+        "weight_kg": 3.5
+      },
+      {
+        "category": "Otros",
+        "description": "Las ropas de viaje son prendas resistentes y diseñadas para viajar por diversos entornos.",
+        "is_weapon": false,
+        "item_id": "5665782",
+        "name": "Ropas de viaje",
+        "price": "2 po",
+        "proficient": false,
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": 2
+      },
+      {
+        "category": "Juegos",
+        "description": "Característica:Sabiduría",
+        "is_weapon": false,
+        "item_id": "5665783",
+        "name": "Naipes",
+        "price": "5 pp",
+        "proficient": false,
+        "properties": [
+          "Otras herramientas"
+        ],
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": null
+      },
+      {
+        "attack_bonus": 3,
+        "attack_roll": "1d20+3",
+        "category": "Consumibles",
+        "critical_damage": "2d6 + 4",
+        "damage": "1d6 + 4",
+        "damage_type": "Fuego",
+        "description": "Una antorcha arde durante 1 hora y emite luz brillante en un radio de 6 m y luz tenue 6 m más allá. Cuando llevas a cabo la acción de atacar, puedes hacerlo con la antorcha como si fuera un arma cuerpo a cuerpo sencilla. Si acierta, el objetivo sufre 1 de daño de fuego.",
+        "is_weapon": true,
+        "item_id": "5665801",
+        "name": "Antorcha",
+        "price": "1 pc",
+        "proficient": false,
+        "quantity": 10,
+        "range_normal": {
+          "feet": 5,
+          "meters": 2
+        },
+        "type": "Equipo de aventuras",
+        "weight_kg": 0.5
+      },
+      {
+        "category": "Otros",
+        "description": "Un yesquero es un pequeño recipiente que contiene un pedernal, un chispero y yescas (normalmente, tela seca untada en aceite) y se utiliza para encender un fuego. \n                            Se necesita una acción adicional para prender con él una antorcha, lámpara, linterna o vela (o cualquier otra cosa con combustible expuesto). Encender cualquier otro tipo de fuego lleva 1 minuto.",
+        "is_weapon": false,
+        "item_id": "5665822",
+        "name": "Yesquero",
+        "price": "5 pp",
+        "proficient": false,
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": 0.5
+      },
+      {
+        "category": "Otros",
+        "description": "Una mochila soporta hasta 15 kg en un volumen de 30 l. También puede servir de Alforja.",
+        "is_weapon": false,
+        "item_id": "5665824",
+        "name": "Mochila",
+        "price": "2 po",
+        "proficient": false,
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": 2.5
+      },
+      {
+        "category": "Otros",
+        "description": "En una cantimplora caben hasta 2 l de líquido. Si no bebes suficiente agua, te arriesgas a sufrir deshidratación (consulta el glosario de reglas).",
+        "is_weapon": false,
+        "item_id": "5665826",
+        "name": "Cantimplora",
+        "price": "2 pp",
+        "proficient": false,
+        "quantity": 1,
+        "type": "Equipo de aventuras",
+        "weight_kg": null
+      },
+      {
+        "category": "Otros",
+        "description": "Lleno con 0,5l de ACEITE",
+        "is_weapon": false,
+        "item_id": "5665828",
+        "name": "Frasco de Aceite",
+        "price": "2 pc",
+        "proficient": false,
+        "quantity": 2,
+        "type": "Equipo de aventuras",
+        "weight_kg": 0.5
+      }
+    ],
+    "other_possessions": "Camafeo de una persona muy fea"
+  },
+  "languages": [
+    "Común",
+    "Elfo",
+    "Mediano"
+  ],
+  "meta": {
+    "character_id": 1966429,
+    "character_url": "https://nivel20.com/games/dnd-2024/characters/1966429-webons",
+    "last_sync": "2026-03-13T16:50:53Z",
+    "nivel20_keys": [
+      "basic_info.name",
+      "basic_info.species",
+      "basic_info.classes",
+      "basic_info.total_level",
+      "basic_info.background",
+      "basic_info.alignment",
+      "basic_info.campaign",
+      "basic_info.portrait_url",
+      "appearance.age",
+      "appearance.size",
+      "languages",
+      "ability_scores",
+      "proficiency_bonus",
+      "saving_throws",
+      "skills",
+      "combat.armor_class",
+      "combat.initiative",
+      "combat.speed.walking_feet",
+      "combat.speed.walking_meters",
+      "combat.hit_dice",
+      "attacks",
+      "proficiencies",
+      "features_and_traits",
+      "spellcasting.spell_save_dc",
+      "spellcasting.spell_attack_bonus",
+      "spellcasting.spell_attack_roll",
+      "spellcasting.spell_slots",
+      "spellcasting.spells",
+      "spellcasting.spellcasting_ability",
+      "inventory.items",
+      "inventory.currency",
+      "background_details.name",
+      "background_details.description",
+      "background_details.skill_proficiencies",
+      "resources",
+      "notes.backstory"
+    ],
+    "owner": "Davidmacar",
+    "platform": "Nivel20.com",
+    "system": "D&D 5.5 (2024)"
+  },
+  "notes": {
+    "additional_notes": "",
+    "allies": "",
+    "backstory": "Creciste en las calles junto a personas con expectativas tan aciagas con las tuyas, entre las que había algunas amistad y algunos rivales. Dormías donde podías y hacías encargos ocasionales a cambio de comida. A veces, cuando el hambre se volvía insoportable, recurrías al robo. Sin embargo, nunca renunciaste a tu orgullo ni perdiste la esperanza. El destino aún tiene algo reservado para ti.",
+    "enemies": "",
+    "organizations": "",
+    "other_possessions": "Camafeo de una persona muy fea"
+  },
+  "proficiencies": {
+    "armor": [],
+    "raw": [
+      "Armas sencillas y Instrumentos musicales",
+      "Ballesta de mano, Cimitarra y Espada corta"
+    ],
+    "tools": [
+      "Instrumentos musicales"
+    ],
+    "weapons": [
+      "Armas sencillas",
+      "Ballesta de mano",
+      "Cimitarra",
+      "Espada corta"
+    ]
+  },
+  "proficiency_bonus": 2,
+  "resources": {
+    "concentration_points": {
+      "current": 2,
+      "max": 2,
+      "name": "Puntos de Concentración (Ki)",
+      "recharge": "descanso corto o largo",
+      "pip_states": [
+        true,
+        true
+      ],
+      "short_rest_note": "",
+      "long_rest_note": ""
+    },
+    "escudo_gratis": {
+      "name": "Escudo (conjuro gratuito - Iniciado en la magia)",
+      "recharge": "descanso largo",
+      "max": 1,
+      "current": 1,
+      "pip_states": [
+        true
+      ],
+      "short_rest_note": "",
+      "long_rest_note": ""
+    },
+    "inspiracion_heroica": {
+      "name": "Inspiración heroica (Ingenioso)",
+      "recharge": "descanso largo",
+      "max": 1,
+      "current": null,
+      "pip_states": [
+        true
+      ],
+      "short_rest_note": "",
+      "long_rest_note": ""
+    },
+    "luck_points": {
+      "current": 2,
+      "max": 2,
+      "name": "Puntos de Suerte (Afortunado)",
+      "recharge": "descanso largo",
+      "pip_states": [
+        true,
+        true
+      ],
+      "short_rest_note": "",
+      "long_rest_note": ""
+    },
+    "metabolismo_asombroso": {
+      "name": "Metabolismo asombroso",
+      "recharge": "descanso largo",
+      "trigger": "al tirar iniciativa",
+      "max": 1,
+      "current": 1,
+      "pip_states": [
+        true
+      ],
+      "short_rest_note": "",
+      "long_rest_note": ""
+    }
+  },
+  "saving_throws": {
+    "charisma": {
+      "proficient": false,
+      "roll": "1d20-1",
+      "total": -1
+    },
+    "constitution": {
+      "proficient": false,
+      "roll": "1d20+2",
+      "total": 2
+    },
+    "dexterity": {
+      "proficient": true,
+      "roll": "1d20+5",
+      "total": 5
+    },
+    "intelligence": {
+      "proficient": false,
+      "roll": "1d20+0",
+      "total": 0
+    },
+    "strength": {
+      "proficient": true,
+      "roll": "1d20+1",
+      "total": 1
+    },
+    "wisdom": {
+      "proficient": false,
+      "roll": "1d20+3",
+      "total": 3
+    }
+  },
+  "skills": {
+    "acrobacias": {
+      "ability": "dexterity",
+      "expertise": false,
+      "name": "Acrobacias",
+      "proficient": true,
+      "roll": "1d20+5",
+      "total": 5
+    },
+    "arcanos": {
+      "ability": "intelligence",
+      "expertise": false,
+      "name": "Conocimiento arcano",
+      "proficient": false,
+      "roll": "1d20+0",
+      "total": 0
+    },
+    "atletismo": {
+      "ability": "strength",
+      "expertise": false,
+      "name": "Atletismo",
+      "proficient": true,
+      "roll": "1d20+1",
+      "total": 1
+    },
+    "enganar": {
+      "ability": "charisma",
+      "expertise": false,
+      "name": "Engaño",
+      "proficient": false,
+      "roll": "1d20-1",
+      "total": -1
+    },
+    "historia": {
+      "ability": "intelligence",
+      "expertise": false,
+      "name": "Historia",
+      "proficient": false,
+      "roll": "1d20+0",
+      "total": 0
+    },
+    "interpretacion": {
+      "ability": "charisma",
+      "expertise": false,
+      "name": "Interpretación",
+      "proficient": false,
+      "roll": "1d20-1",
+      "total": -1
+    },
+    "intimidar": {
+      "ability": "charisma",
+      "expertise": false,
+      "name": "Intimidación",
+      "proficient": false,
+      "roll": "1d20-1",
+      "total": -1
+    },
+    "investigacion": {
+      "ability": "intelligence",
+      "expertise": false,
+      "name": "Investigación",
+      "proficient": true,
+      "roll": "1d20+2",
+      "total": 2
+    },
+    "juego_de_manos": {
+      "ability": "dexterity",
+      "expertise": false,
+      "name": "Juego de Manos",
+      "proficient": false,
+      "roll": "1d20+3",
+      "total": 3
+    },
+    "medicina": {
+      "ability": "wisdom",
+      "expertise": false,
+      "name": "Medicina",
+      "proficient": false,
+      "roll": "1d20+3",
+      "total": 3
+    },
+    "naturaleza": {
+      "ability": "intelligence",
+      "expertise": false,
+      "name": "Naturaleza",
+      "proficient": false,
+      "roll": "1d20+0",
+      "total": 0
+    },
+    "percepcion": {
+      "ability": "wisdom",
+      "expertise": false,
+      "name": "Percepción",
+      "proficient": false,
+      "roll": "1d20+3",
+      "total": 3
+    },
+    "perspicacia": {
+      "ability": "wisdom",
+      "expertise": false,
+      "name": "Perspicacia",
+      "proficient": true,
+      "roll": "1d20+5",
+      "total": 5
+    },
+    "persuasion": {
+      "ability": "charisma",
+      "expertise": false,
+      "name": "Persuasión",
+      "proficient": false,
+      "roll": "1d20-1",
+      "total": -1
+    },
+    "religion": {
+      "ability": "intelligence",
+      "expertise": false,
+      "name": "Religión",
+      "proficient": false,
+      "roll": "1d20+0",
+      "total": 0
+    },
+    "sigilo": {
+      "ability": "dexterity",
+      "expertise": false,
+      "name": "Sigilo",
+      "proficient": true,
+      "roll": "1d20+5",
+      "total": 5
+    },
+    "supervivencia": {
+      "ability": "wisdom",
+      "expertise": false,
+      "name": "Supervivencia",
+      "proficient": false,
+      "roll": "1d20+3",
+      "total": 3
+    },
+    "trato_con_animales": {
+      "ability": "wisdom",
+      "expertise": false,
+      "name": "Trato con Animales",
+      "proficient": false,
+      "roll": "1d20+3",
+      "total": 3
+    }
+  },
+  "spellcasting": {
+    "spell_attack_bonus": 2,
+    "spell_attack_roll": "1d20+2",
+    "spell_save_dc": 10,
+    "spell_slots": {
+      "level_1": {
+        "note": "1 lanzamiento gratuito por descanso largo",
+        "source": "Iniciado en la magia",
+        "total": 1,
+        "used": 0
+      }
+    },
+    "spellcasting_ability": "Sabiduría",
+    "spells": {
+      "cantrips": [
+        {
+          "casting_time": "1 acción",
+          "components": "S, M",
+          "description": "Creas un sonido o la imagen de un objeto dentro del alcance. Una criatura puede descubrir la ilusión con una prueba de Inteligencia (Investigación) contra tu CD de conjuros. El sonido puede variar en volumen o forma; la imagen ocupa hasta un cubo de1.5 metrosy no produce otros efectos sensoriales.",
+          "duration": "1 minuto",
+          "name": "Ilusión menor",
+          "range": null,
+          "school": "Ilusionismo",
+          "spell_id": "14852"
+        },
+        {
+          "casting_time": "1 acción",
+          "components": "V, S",
+          "description": "Una mano espectral aparece flotando. Puedes usar una acción de magia para controlarla, manipular un objeto, abrir una puerta. etc. Puedes moverla9 metroscada vez que la usas. No puede atacar, activar objetos mágicos ni transportar más de 5 kg.",
+          "duration": "1 minuto",
+          "name": "Mano de mago",
+          "range": null,
+          "school": "Conjuración",
+          "spell_id": "14857"
+        }
+      ],
+      "level_1": [
+        {
+          "casting_time": "1 reacción",
+          "components": "V, S",
+          "description": "Una barrera imperceptible de fuerza mágica te protege. Hasta el principio de tu siguiente turno, tienes un bonificador de +5 a la CA, incluido contra el ataque al que reacciona, y no recibes ningún daño del conjuro proyectil mágico.",
+          "duration": "1 asalto",
+          "name": "Escudo",
+          "range": null,
+          "school": "Abjuración",
+          "spell_id": "14886"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&D Character Maker</title>
+  <link rel="stylesheet" href="/static/css/style.css?v={{ v }}">
+</head>
+<body x-data="characterEditor()" x-init="init()">
+
+<!-- ═══════════════════════════════════════════════ NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <svg class="brand-icon" viewBox="0 0 48 48" width="32" height="32" aria-hidden="true">
+      <defs>
+        <linearGradient id="d20g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#c9922f" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="#4a2e08" stop-opacity="0.9"/>
+        </linearGradient>
+      </defs>
+      <polygon points="24,6 42,18 42,30 24,44" fill="#2a1a06" opacity="0.95"/>
+      <polygon points="24,6 6,18 6,30 24,44" fill="#3d2810" opacity="0.9"/>
+      <polygon points="6,30 42,30 24,44" fill="#1e1008" opacity="0.85"/>
+      <polygon points="24,6 42,18 42,30 24,38 6,30 6,18" fill="url(#d20g)" stroke="#c9922f" stroke-width="1.2"/>
+      <polygon points="24,6 42,18 24,20 6,18" fill="rgba(245,212,136,0.22)" stroke="none"/>
+      <text x="24" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#f5d488" font-family="serif" stroke="none">20</text>
+    </svg>
+    D&amp;D Character Maker
+  </div>
+
+  <!-- Selector multi-personaje -->
+  <div class="char-selector" x-show="characterList.length > 1">
+    <span>Personaje:</span>
+    <select @change="loadCharacter($event.target.value)">
+      <template x-for="c in characterList" :key="c.character_id">
+        <option :value="c.character_id"
+                :selected="c.character_id == character?.meta?.character_id"
+                x-text="`${c.name} (${(c.classes||[]).map(cl=>cl.name+' '+cl.level).join('/')})`">
+        </option>
+      </template>
+    </select>
+  </div>
+
+  <div class="navbar-sep"></div>
+
+  <button class="btn btn-ghost" @click="updateAll(); showToast('Recalculado','success')">
+    ↻ Recalcular
+  </button>
+  <button class="btn btn-gold" @click="importModal = true">
+    ⇩ Importar
+  </button>
+  <button class="btn btn-primary" :disabled="exportingPdf" @click="exportPdf()">
+    <span x-text="exportingPdf ? 'Generando…' : '⬇ Exportar PDF'"></span>
+  </button>
+  <button class="btn btn-ghost" :disabled="saving" @click="save()">
+    <span x-text="saving ? 'Guardando…' : '💾 Guardar'"></span>
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════════════ LOADING / ERROR -->
+<template x-if="loading">
+  <div class="loading-screen">
+    <div class="loading-spinner"></div>
+    <span>Cargando personaje…</span>
+  </div>
+</template>
+
+<template x-if="!loading && error">
+  <div class="error-screen">
+    <div style="font-size:40px">⚠</div>
+    <div x-text="error"></div>
+    <button class="btn btn-gold mt12" @click="importModal = true">Importar personaje</button>
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════ MAIN APP -->
+<template x-if="!loading && !error && character">
+<div class="app-layout">
+
+  <!-- ─── SIDEBAR ─────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-char">
+      <template x-if="character.basic_info?.portrait_url">
+        <img class="sidebar-portrait" :src="character.basic_info.portrait_url" :alt="character.basic_info.name">
+      </template>
+      <template x-if="!character.basic_info?.portrait_url">
+        <div class="sidebar-portrait-placeholder">🧙</div>
+      </template>
+      <div class="sidebar-name" x-text="character.basic_info?.name || 'Sin nombre'"></div>
+      <div class="sidebar-class" x-text="classesDisplay()"></div>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='personaje'}"
+                @click="scrollToSection('personaje')">
+          <span class="nav-icon">👤</span> Identidad
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='atributos'}"
+                @click="scrollToSection('atributos')">
+          <span class="nav-icon">💪</span> Atributos
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='estadisticas'}"
+                @click="scrollToSection('estadisticas')">
+          <span class="nav-icon">🎯</span> Habilidades
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='combate'}"
+                @click="scrollToSection('combate')">
+          <span class="nav-icon">⚔</span> Combate
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='inventario'}"
+                @click="scrollToSection('inventario')">
+          <span class="nav-icon">🎒</span> Inventario
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='conjuros'}"
+                @click="scrollToSection('conjuros')">
+          <span class="nav-icon">✨</span> Conjuros
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='trasfondo'}"
+                @click="scrollToSection('trasfondo')">
+          <span class="nav-icon">📜</span> Trasfondo
+        </button>
+      </li>
+      <li>
+        <button class="sidebar-nav-btn" :class="{active: activeSection==='recursos'}"
+                @click="scrollToSection('recursos')">
+          <span class="nav-icon">⚡</span> Recursos
+        </button>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ─── MAIN CONTENT ────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 1: PERSONAJE
+    ══════════════════════════════════════════════════ -->
+    <section id="personaje" class="section-block" data-section="personaje">
+      <div class="section-header">
+        <div class="section-title">✦ Identidad del Personaje ✦</div>
+      </div>
+
+      <!-- — Identidad principal — -->
+      <div class="dnd-card id-card">
+        <div class="id-hero-layout">
+
+          <!-- Retrato -->
+          <div class="id-portrait-col">
+            <div class="id-portrait"
+                 :class="{'portrait-zoomable': character.basic_info?.portrait_url}"
+                 @click="character.basic_info?.portrait_url && (portraitExpanded = true)"
+                 :title="character.basic_info?.portrait_url ? 'Clic para ampliar' : ''">
+              <template x-if="character.basic_info?.portrait_url">
+                <img :src="character.basic_info.portrait_url" :alt="character.basic_info.name">
+              </template>
+              <template x-if="!character.basic_info?.portrait_url">
+                <span>🧙</span>
+              </template>
+            </div>
+            <input type="text" x-model="character.basic_info.portrait_url"
+                   class="id-portrait-url" placeholder="URL imagen…">
+          </div>
+
+          <!-- Campos de identidad -->
+          <div class="id-fields-col">
+            <div class="char-field">
+              <label>Nombre del Personaje</label>
+              <input type="text" x-model="character.basic_info.name"
+                     placeholder="Nombre del héroe…" class="id-name-input">
+            </div>
+            <!-- Editor de clases — soporta multiclase -->
+            <template x-for="(cls, ci) in (character.basic_info.classes || [])" :key="ci">
+              <div class="id-class-row">
+                <div class="char-field">
+                  <label>Clase</label>
+                  <input type="text" x-model="cls.name">
+                </div>
+                <div class="char-field">
+                  <label>Nivel</label>
+                  <input type="number" x-model.number="cls.level" min="1" max="20"
+                         @change="updateAll()"
+                         @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+                </div>
+                <div class="char-field">
+                  <label>Subclase</label>
+                  <input type="text" x-model="cls.subclass" placeholder="—">
+                </div>
+              </div>
+            </template>
+            <div class="id-row-2">
+              <div class="char-field">
+                <label>Especie</label>
+                <input type="text" x-model="character.basic_info.species">
+              </div>
+              <div class="char-field">
+                <label>Trasfondo</label>
+                <input type="text" x-model="character.basic_info.background">
+              </div>
+            </div>
+            <div class="char-field">
+              <label>Alineamiento</label>
+              <input type="text" x-model="character.basic_info.alignment">
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra inferior: Campaña + Jugador + Visión + XP -->
+        <div class="id-bottom-bar">
+          <div class="char-field">
+            <label>Campaña / Aventura</label>
+            <input type="text" x-model="character.basic_info.campaign" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Nombre del Jugador</label>
+            <input type="text" x-model="character.basic_info.player_name" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Visión</label>
+            <input type="text" x-model="character.basic_info.vision" placeholder="Normal / Oscuridad 18m">
+          </div>
+          <div class="char-field" style="max-width:140px">
+            <label>Puntos de Experiencia</label>
+            <input type="number" x-model.number="character.basic_info.experience_points"
+                   placeholder="0" @keydown="['e','+'].includes($event.key) && $event.preventDefault()">
+          </div>
+        </div>
+      </div>
+
+      <!-- — Apariencia Física — -->
+      <div class="dnd-card" style="margin-top:14px">
+        <div class="dnd-card-header">Apariencia Física</div>
+        <div class="id-appearance-top">
+          <div class="char-field">
+            <label>Edad</label>
+            <input type="text" x-model="character.appearance.age" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Altura</label>
+            <input type="text" x-model="character.appearance.height" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Peso</label>
+            <input type="text" x-model="character.appearance.weight" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Género</label>
+            <input type="text" x-model="character.appearance.gender" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Tamaño</label>
+            <input type="text" x-model="character.appearance.size" placeholder="Mediana">
+          </div>
+        </div>
+        <div class="id-appearance-bottom">
+          <div class="char-field">
+            <label>Ojos</label>
+            <input type="text" x-model="character.appearance.eyes" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Piel</label>
+            <input type="text" x-model="character.appearance.skin" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Cabello</label>
+            <input type="text" x-model="character.appearance.hair" placeholder="—">
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 2: ATRIBUTOS
+    ══════════════════════════════════════════════════ -->
+    <section id="atributos" class="section-block" data-section="atributos">
+      <div class="section-header">
+        <div class="section-title">✦ Puntuaciones de Habilidad ✦</div>
+      </div>
+
+      <div class="dnd-card">
+        <!-- 6 Atributos -->
+        <div class="abilities-row">
+          <template x-for="[key, ab] in Object.entries(character.ability_scores)" :key="key">
+            <div class="ability-block">
+              <div class="ab-name" x-text="abilityLabel(key)"></div>
+              <div class="ab-score-wrap">
+                <input class="ab-score" type="number" min="1" max="30"
+                       :value="ab.score"
+                       @change="onAbilityInput(key, $event.target.value)">
+                <div class="ab-mod-bubble"
+                     :class="{pos: (ab.modifier||0)>=0, neg: (ab.modifier||0)<0}"
+                     x-text="formatMod(ab.modifier)">
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Bonificador de Competencia — movido al card de Estadísticas de Combate -->
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 3: ESTADÍSTICAS (Saves + Skills + Combat)
+    ══════════════════════════════════════════════════ -->
+    <section id="estadisticas" class="section-block" data-section="estadisticas">
+      <div class="section-header">
+        <div class="section-title">✦ Salvaciones, Habilidades y Combate ✦</div>
+      </div>
+
+      <div class="stats-two-col">
+        <!-- Columna izq: Salvaciones + Habilidades -->
+        <div>
+          <!-- Tiradas de salvación -->
+          <div class="dnd-card mb12">
+            <div class="dnd-card-header">Tiradas de Salvación</div>
+            <ul class="check-list">
+              <template x-for="[key, st] in Object.entries(character.saving_throws)" :key="key">
+                <li>
+                  <div class="prof-circle" :class="{prof: st.proficient}"
+                       @click="toggleSTProficiency(key)"></div>
+                  <span class="stat-name" x-text="abilityName(key)"></span>
+                  <span class="stat-modifier" :class="modColor(st.total)" x-text="formatMod(st.total)"></span>
+                </li>
+              </template>
+            </ul>
+          </div>
+
+          <!-- Habilidades -->
+          <div class="dnd-card">
+            <div class="dnd-card-header">Habilidades</div>
+            <ul class="check-list">
+              <template x-for="[key, skill] in Object.entries(character.skills)" :key="key">
+                <li>
+                  <div class="prof-circle"
+                       :class="{prof: skill.proficient && !skill.expertise, expert: skill.expertise}"
+                       @click="toggleSkillProficiency(key)"
+                       title="Competencia">
+                  </div>
+                  <button class="exp-circle"
+                          :class="{active: skill.expertise, disabled: !skill.proficient}"
+                          @click="toggleSkillExpertise(key)"
+                          :disabled="!skill.proficient"
+                          title="Pericia (doble bonificador de competencia)">E</button>
+                  <span class="ability-abbr" x-text="abilityLabel(skill.ability)"></span>
+                  <span class="stat-name" x-text="skill.name"></span>
+                  <span class="stat-modifier" :class="modColor(skill.total)" x-text="formatMod(skill.total)"></span>
+                </li>
+              </template>
+            </ul>
+            <div class="passive-row">
+              <span>Percepción Pasiva</span>
+              <span class="passive-val" x-text="getPassivePerception()"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna dcha: Combat stats + HP + Death saves -->
+        <div>
+          <!-- CA / Iniciativa / Velocidad / Bon.Competencia -->
+          <div class="dnd-card mb12">
+            <div class="dnd-card-header">Estadísticas de Combate</div>
+
+            <!-- Inspiración Heroica -->
+            <button class="inspiration-star-btn"
+                    :class="{active: character.basic_info?.inspiration}"
+                    @click="character.basic_info.inspiration = !character.basic_info.inspiration"
+                    :title="character.basic_info?.inspiration ? 'Inspiración activa — clic para retirar' : 'Sin Inspiración — clic para activar'">
+              <svg class="insp-star-svg" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="25,2 28,17 43,17 31,26 35,42 25,33 15,42 19,26 7,17 22,17"
+                         stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="25" cy="2"  r="2.2" class="insp-star-tip"/>
+                <circle cx="43" cy="17" r="2.2" class="insp-star-tip"/>
+                <circle cx="35" cy="42" r="2.2" class="insp-star-tip"/>
+                <circle cx="15" cy="42" r="2.2" class="insp-star-tip"/>
+                <circle cx="7"  cy="17" r="2.2" class="insp-star-tip"/>
+                <circle cx="25" cy="27" r="4.5" class="insp-star-center"/>
+              </svg>
+              <span x-text="character.basic_info?.inspiration ? 'Inspiración Heroica — Activa' : 'Sin Inspiración Heroica'"></span>
+            </button>
+
+            <div class="combat-stat-row">
+              <div class="cs-box">
+                <div class="cs-val">
+                  <input type="number" x-model.number="character.combat.armor_class"
+                         @keydown="['e','+'].includes($event.key) && $event.preventDefault()">
+                </div>
+                <div class="cs-label">Clase de Armadura</div>
+              </div>
+              <div class="cs-box">
+                <div class="cs-val">
+                  <input type="number" x-model.number="character.combat.initiative">
+                </div>
+                <div class="cs-label">Iniciativa</div>
+              </div>
+              <div class="cs-box">
+                <div class="cs-val">
+                  <input type="number" x-model.number="character.combat.speed.walking_meters"
+                         @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+                </div>
+                <div class="cs-label">Velocidad (m)</div>
+              </div>
+              <div class="cs-box">
+                <div class="cs-val">
+                  <input type="number" min="2" max="6"
+                         x-model.number="character.proficiency_bonus"
+                         @change="updateAll()"
+                         @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+                </div>
+                <div class="cs-label">Bon. Competencia</div>
+              </div>
+            </div>
+
+            <!-- Velocidades adicionales -->
+            <div class="speed-grid">
+              <div class="speed-box">
+                <label>Nadando (m)</label>
+                <input type="number" x-model.number="character.combat.speed.swim_meters" placeholder="—"
+                       @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+              </div>
+              <div class="speed-box">
+                <label>Volando (m)</label>
+                <input type="number" x-model.number="character.combat.speed.fly_meters" placeholder="—"
+                       @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+              </div>
+              <div class="speed-box">
+                <label>Trepando (m)</label>
+                <input type="number" x-model.number="character.combat.speed.climb_meters" placeholder="—"
+                       @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Puntos de Golpe -->
+          <div class="dnd-card mb12">
+            <div class="dnd-card-header">Puntos de Golpe</div>
+            <div class="hp-section">
+              <div class="hp-box">
+                <label>Máximo</label>
+                <input type="number" class="hp-static" x-model.number="character.combat.hit_points.maximum"
+                       placeholder="—"
+                       @keydown="['e','+'].includes($event.key) && $event.preventDefault()">
+              </div>
+              <div class="hp-box hp-current">
+                <label>Actuales</label>
+                <input type="number" x-model.number="character.combat.hit_points.current"
+                       placeholder="—">
+              </div>
+              <div class="hp-box">
+                <label>Temporales</label>
+                <input type="number" x-model.number="character.combat.hit_points.temporary"
+                       placeholder="0"
+                       @keydown="['e','+'].includes($event.key) && $event.preventDefault()">
+              </div>
+            </div>
+
+            <!-- Escudo + Agotamiento -->
+            <div class="hp-extras-row">
+              <label class="inline-check">
+                <input type="checkbox" x-model="character.combat.shield_equipped">
+                Escudo equipado
+              </label>
+              <div style="display:flex;align-items:center;gap:6px">
+                <label style="font-size:12px;white-space:nowrap;color:var(--text-dim)">Agotamiento:</label>
+                <input type="number" x-model.number="character.combat.exhaustion"
+                       min="0" max="10" class="tiny-num"
+                       title="0=ninguno, 10=muerte (D&D 2024)"
+                       @keydown="['e','+','-'].includes($event.key)&&$event.preventDefault()">
+                <span x-show="character.combat.exhaustion > 0" class="text-dim" style="font-size:12px">⚠</span>
+              </div>
+            </div>
+
+            <!-- Concentración -->
+            <div class="concentration-row">
+              <label class="inline-check">
+                <input type="checkbox" x-model="character.combat.concentration.active">
+                Concentrando
+              </label>
+              <input type="text" x-model="character.combat.concentration.spell"
+                     x-show="character.combat.concentration?.active"
+                     placeholder="En qué conjuro…" class="conc-spell-input">
+            </div>
+
+            <!-- Dados de golpe -->
+            <div class="hit-dice-row">
+              <label>Dados de Golpe</label>
+              <div class="hit-dice-selectors">
+                <input type="number" x-model.number="character.combat.hit_dice.count"
+                       min="1" max="20" class="hit-dice-count"
+                       @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+                <span class="dice-x">×</span>
+                <select x-model="character.combat.hit_dice.type" class="hit-dice-type">
+                  <template x-for="d in ['d4','d6','d8','d10','d12']" :key="d">
+                    <option :value="d" x-text="d"></option>
+                  </template>
+                </select>
+              </div>
+              <div class="hd-used-row">
+                <span>Usados hoy:</span>
+                <input type="number" x-model.number="character.combat.hit_dice.used"
+                       min="0" :max="character.combat.hit_dice.count ?? 20"
+                       class="tiny-num"
+                       @keydown="['e','+','-'].includes($event.key)&&$event.preventDefault()">
+                <span class="text-dim" x-text="`/ ${character.combat.hit_dice.count ?? 0}`"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tiradas de Muerte -->
+          <div class="dnd-card" style="text-align:center">
+            <div class="dnd-card-header" style="justify-content:center">Tiradas de Muerte</div>
+            <div class="death-saves-row">
+              <div>
+                <div class="ds-label">Éxitos</div>
+                <div class="death-save-circles">
+                  <template x-for="n in [1,2,3]" :key="'s'+n">
+                    <div class="ds-circle"
+                         :class="{success: (character.combat.death_saves?.successes||0) >= n}"
+                         @click="character.combat.death_saves.successes = ((character.combat.death_saves.successes||0) >= n ? n-1 : n)">
+                    </div>
+                  </template>
+                </div>
+              </div>
+              <div>
+                <div class="ds-label">Fallos</div>
+                <div class="death-save-circles">
+                  <template x-for="n in [1,2,3]" :key="'f'+n">
+                    <div class="ds-circle"
+                         :class="{fail: (character.combat.death_saves?.failures||0) >= n}"
+                         @click="character.combat.death_saves.failures = ((character.combat.death_saves.failures||0) >= n ? n-1 : n)">
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 4: COMBATE — ATAQUES
+    ══════════════════════════════════════════════════ -->
+    <section id="combate" class="section-block" data-section="combate">
+      <div class="section-header">
+        <div class="section-title">✦ Ataques y Armas ✦</div>
+      </div>
+
+      <div class="dnd-card">
+        <template x-for="(atk, i) in character.attacks" :key="i">
+          <div class="atk-card">
+
+            <!-- Nombre + eliminar -->
+            <div class="atk-card-header">
+              <input type="text" x-model="atk.name" placeholder="Nombre del ataque" class="atk-name-input">
+              <button class="row-del" @click="removeAttack(i)" title="Eliminar ataque">✕</button>
+            </div>
+
+            <!-- Resumen calculado — al inicio de la tarjeta -->
+            <div class="atk-summary">
+              <div class="atk-summary-item">
+                <span class="atk-summary-label">Tirada</span>
+                <span class="atk-roll-tag" x-text="atk.attack_roll || '1d20+0'"></span>
+              </div>
+              <div class="atk-summary-item">
+                <span class="atk-summary-label">Daño</span>
+                <span class="atk-dmg-tag" x-text="atk.damage_display || '—'"></span>
+              </div>
+              <div class="atk-summary-item">
+                <span class="atk-summary-label">Bon. Ataque</span>
+                <span class="atk-roll-tag" x-text="(atk.attack_bonus >= 0 ? '+' : '') + (atk.attack_bonus || 0)"></span>
+              </div>
+              <div class="atk-summary-item">
+                <span class="atk-summary-label">Dados</span>
+                <span class="atk-dmg-tag" x-text="(atk.damage_dice_count || 1) + (atk.damage_dice_type || 'd6') + (atk.damage_bonus ? (atk.damage_bonus >= 0 ? '+' : '') + atk.damage_bonus : '')"></span>
+              </div>
+            </div>
+
+            <!-- Bono ataque | Dados daño | Tipo daño -->
+            <div class="atk-main-row">
+              <div class="atk-field">
+                <span class="atk-field-label">Bono Atq.</span>
+                <input type="number" x-model.number="atk.attack_bonus" @input="syncDamageDisplay(atk)"
+                       class="atk-bonus-input" placeholder="0">
+              </div>
+              <div class="atk-field atk-field-sep">
+                <span class="atk-field-label">Dados de daño</span>
+                <div class="dice-row">
+                  <select x-model.number="atk.damage_dice_count" @change="syncDamageDisplay(atk)" class="dice-select">
+                    <template x-for="n in [1,2,3,4,5,6,7,8,9,10]" :key="n">
+                      <option :value="n" x-text="n"></option>
+                    </template>
+                  </select>
+                  <span class="dice-x">×</span>
+                  <select x-model="atk.damage_dice_type" @change="syncDamageDisplay(atk)" class="dice-select">
+                    <template x-for="d in DICE_TYPES" :key="d">
+                      <option :value="d" x-text="d"></option>
+                    </template>
+                  </select>
+                  <span class="dice-x">+</span>
+                  <input type="number" x-model.number="atk.damage_bonus" @input="syncDamageDisplay(atk)"
+                         class="dice-bonus-input" placeholder="0">
+                </div>
+              </div>
+              <div class="atk-field atk-field-sep">
+                <span class="atk-field-label">Tipo de daño</span>
+                <select x-model="atk.damage_type" @change="syncDamageDisplay(atk)" class="dice-select">
+                  <option value="">— ninguno —</option>
+                  <template x-for="t in DAMAGE_TYPES" :key="t">
+                    <option :value="t" x-text="t"></option>
+                  </template>
+                </select>
+              </div>
+            </div>
+
+            <!-- Bonos personalizados -->
+            <div class="atk-bonuses">
+              <div class="atk-bonuses-header">
+                <span class="atk-field-label" style="margin:0">Bonos adicionales</span>
+                <button class="atk-add-bonus-btn" @click="addAtkBonus(i)">+ Bono</button>
+              </div>
+              <template x-if="atk.custom_bonuses && atk.custom_bonuses.length">
+                <div class="atk-bonus-list">
+                  <template x-for="(b, j) in atk.custom_bonuses" :key="j">
+                    <div class="atk-bonus-row">
+                      <input type="text" x-model="b.name" placeholder="Nombre (ej. Bendición)">
+                      <input type="text" x-model="b.value" @input="syncDamageDisplay(atk)"
+                             class="atk-bonus-val-input" placeholder="+1d4">
+                      <button class="row-del" @click="removeAtkBonus(i, j)" title="Eliminar bono">✕</button>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+
+          </div>
+        </template>
+        <button class="add-row-btn" @click="addAttack()">+ Añadir ataque</button>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 5: INVENTARIO
+    ══════════════════════════════════════════════════ -->
+    <section id="inventario" class="section-block" data-section="inventario">
+      <div class="section-header">
+        <div class="section-title">✦ Inventario y Riqueza ✦</div>
+      </div>
+
+      <!-- Monedas -->
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header">Monedas</div>
+        <div class="currency-row">
+          <div class="currency-coin pp">
+            <label>Platino</label>
+            <input type="number" x-model.number="character.inventory.currency.PP" placeholder="0">
+          </div>
+          <div class="currency-coin gp">
+            <label>Oro</label>
+            <input type="number" x-model.number="character.inventory.currency.GP" placeholder="0">
+          </div>
+          <div class="currency-coin ep">
+            <label>Electro</label>
+            <input type="number" x-model.number="character.inventory.currency.EP" placeholder="0">
+          </div>
+          <div class="currency-coin sp">
+            <label>Plata</label>
+            <input type="number" x-model.number="character.inventory.currency.SP" placeholder="0">
+          </div>
+          <div class="currency-coin cp">
+            <label>Cobre</label>
+            <input type="number" x-model.number="character.inventory.currency.CP" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header flex-between">
+          <span>Equipamiento</span>
+          <span class="text-dim small" x-text="`Peso total: ${totalWeight()} kg`"></span>
+        </div>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Objeto</th>
+              <th style="width:50px">Cant.</th>
+              <th style="width:60px">Peso (kg)</th>
+              <th style="width:80px">Ubicación</th>
+              <th style="width:30px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(item, i) in character.inventory.items" :key="i">
+              <tr>
+                <td><input type="text" x-model="item.name" placeholder="Nombre del objeto"></td>
+                <td><input type="number" x-model.number="item.quantity" min="1" style="width:40px;text-align:center"></td>
+                <td><input type="number" x-model.number="item.weight_kg" step="0.5" placeholder="—" style="width:50px;text-align:center"></td>
+                <td>
+                  <select x-model="item.location" style="font-size:11px;padding:2px 4px">
+                    <option value="">—</option>
+                    <option value="Equipado">Equipado</option>
+                    <option value="Transportado">Mochila</option>
+                    <option value="Otros">Otros</option>
+                  </select>
+                </td>
+                <td><button class="row-del" @click="removeItem(i)">✕</button></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <button class="add-row-btn" @click="addItem()">+ Añadir objeto</button>
+      </div>
+
+      <!-- Competencias / Idiomas -->
+      <div class="bg-two-col">
+        <div class="dnd-card">
+          <div class="dnd-card-header">Idiomas</div>
+          <ul class="check-list" style="margin-bottom:6px">
+            <template x-for="(lang, i) in character.languages" :key="i">
+              <li>
+                <input type="text" x-model="character.languages[i]" style="flex:1;font-size:12px">
+                <button class="row-del" @click="removeLanguage(i)">✕</button>
+              </li>
+            </template>
+          </ul>
+          <button class="add-row-btn" @click="addLanguage()">+ Añadir idioma</button>
+        </div>
+        <div class="dnd-card">
+          <div class="dnd-card-header">Competencias</div>
+          <div class="trait-group">
+            <label>Armas</label>
+            <textarea class="full-textarea"
+                      :value="(character.proficiencies.weapons || []).join(', ')"
+                      @input="character.proficiencies.weapons = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)"
+                      placeholder="Armas simples, marciales…" style="min-height:50px"></textarea>
+          </div>
+          <div class="trait-group mt8">
+            <label>Competencia con Armadura</label>
+            <div class="armor-flags-row">
+              <template x-for="[key, lbl] in [['light','Ligera'],['medium','Media'],['heavy','Pesada'],['shield','Escudo']]" :key="key">
+                <label class="armor-flag-check">
+                  <input type="checkbox"
+                         :checked="character.proficiencies.armor_flags?.[key]"
+                         @change="character.proficiencies.armor_flags[key] = $event.target.checked">
+                  <span x-text="lbl"></span>
+                </label>
+              </template>
+            </div>
+          </div>
+          <div class="trait-group mt8">
+            <label>Armaduras (notas)</label>
+            <textarea class="full-textarea"
+                      :value="(character.proficiencies.armor || []).join(', ')"
+                      @input="character.proficiencies.armor = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)"
+                      placeholder="Armaduras ligeras…" style="min-height:50px"></textarea>
+          </div>
+          <div class="trait-group mt8">
+            <label>Herramientas</label>
+            <textarea class="full-textarea"
+                      :value="(character.proficiencies.tools || []).join(', ')"
+                      @input="character.proficiencies.tools = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)"
+                      placeholder="Herramientas de artesano…" style="min-height:50px"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 6: CONJUROS
+    ══════════════════════════════════════════════════ -->
+    <section id="conjuros" class="section-block" data-section="conjuros">
+      <div class="section-header">
+        <div class="section-title">✦ Magia y Conjuros ✦</div>
+      </div>
+
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header">Estadísticas de Conjuración</div>
+        <div class="spell-stats-row">
+          <div class="cs-box">
+            <div class="cs-label">Habilidad de Conjuración</div>
+            <input type="text" x-model="character.spellcasting.spellcasting_ability"
+                   placeholder="Inteligencia…" style="text-align:center;font-size:13px;width:100%;margin-top:4px">
+          </div>
+          <div class="cs-box">
+            <div class="cs-label">CD de Salvación</div>
+            <input type="number" x-model.number="character.spellcasting.spell_save_dc"
+                   style="text-align:center;font-size:18px;font-weight:700;width:100%;color:var(--gold3)">
+          </div>
+          <div class="cs-box">
+            <div class="cs-label">Bono de Ataque</div>
+            <input type="number" x-model.number="character.spellcasting.spell_attack_bonus"
+                   style="text-align:center;font-size:18px;font-weight:700;width:100%;color:var(--gold3)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Espacios de conjuro -->
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header">Espacios de Conjuro</div>
+        <div class="spell-slots-grid">
+          <template x-for="lvl in [1,2,3,4,5,6,7,8,9]" :key="lvl">
+            <div class="slot-box">
+              <label x-text="`Nivel ${lvl}`"></label>
+              <div class="slot-inner">
+                <input type="number" min="0"
+                       :value="getSpellSlot(lvl)?.used ?? 0"
+                       @change="setSpellSlot(lvl, 'used', $event.target.value)">
+                <span>/</span>
+                <input type="number" min="0"
+                       :value="getSpellSlot(lvl)?.total ?? 0"
+                       @change="setSpellSlot(lvl, 'total', $event.target.value)">
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Conjuros por nivel -->
+      <div class="dnd-card">
+        <div class="dnd-card-header">Lista de Conjuros</div>
+
+        <!-- Trucos -->
+        <div class="spell-level-group">
+          <div class="spell-level-bar">Trucos (Nivel 0)</div>
+          <ul class="spells-list">
+            <template x-for="(spell, i) in getSpells(0)" :key="i">
+              <li class="spell-row-item">
+                <input type="text" x-model="spell.name" placeholder="Nombre del truco">
+                <button class="row-del" @click="removeSpell(0, i)">✕</button>
+              </li>
+            </template>
+          </ul>
+          <button class="add-row-btn" @click="addSpell(0)">+ Truco</button>
+        </div>
+
+        <!-- Niveles 1–9 -->
+        <template x-for="lvl in [1,2,3,4,5,6,7,8,9]" :key="lvl">
+          <div class="spell-level-group">
+            <div class="spell-level-bar">
+              <span x-text="`Nivel ${lvl}`"></span>
+              <span class="text-dim small" x-show="getSpellSlot(lvl)"
+                    x-text="`— ${getSpellSlot(lvl)?.total||0} espacios`"></span>
+            </div>
+            <ul class="spells-list">
+              <template x-for="(spell, i) in getSpells(lvl)" :key="i">
+                <li class="spell-row-item">
+                  <div class="spell-prep-circle"
+                       :class="{prepared: spell.prepared}"
+                       @click="spell.prepared = !spell.prepared"
+                       title="Preparado"></div>
+                  <input type="text" x-model="spell.name" placeholder="Nombre del conjuro">
+                  <input type="text" x-model="spell.casting_time" placeholder="Tiempo de lanc."
+                         style="width:120px;flex-shrink:0">
+                  <button class="row-del" @click="removeSpell(lvl, i)">✕</button>
+                </li>
+              </template>
+            </ul>
+            <button class="add-row-btn" @click="addSpell(lvl)"
+                    x-text="`+ Conjuro nv.${lvl}`"></button>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 7: TRASFONDO / PERSONALIDAD / RASGOS
+    ══════════════════════════════════════════════════ -->
+    <section id="trasfondo" class="section-block" data-section="trasfondo">
+      <div class="section-header">
+        <div class="section-title">✦ Trasfondo y Personalidad ✦</div>
+      </div>
+
+      <!-- Personalidad -->
+      <div class="bg-two-col mb12">
+        <div class="dnd-card">
+          <div class="dnd-card-header">Rasgos de Personalidad</div>
+          <div class="trait-group">
+            <template x-for="(trait, i) in character.background_details.personality_traits" :key="'pt'+i">
+              <div class="trait-item">
+                <input type="text" x-model="character.background_details.personality_traits[i]"
+                       placeholder="Rasgo de personalidad…">
+                <button class="row-del" @click="character.background_details.personality_traits.splice(i,1)">✕</button>
+              </div>
+            </template>
+            <button class="add-row-btn"
+                    @click="character.background_details.personality_traits.push('')">+ Añadir rasgo</button>
+          </div>
+
+          <div class="dnd-card-header mt8">Ideales</div>
+          <div class="trait-group">
+            <template x-for="(item, i) in character.background_details.ideals" :key="'id'+i">
+              <div class="trait-item">
+                <input type="text" x-model="character.background_details.ideals[i]" placeholder="Ideal…">
+                <button class="row-del" @click="character.background_details.ideals.splice(i,1)">✕</button>
+              </div>
+            </template>
+            <button class="add-row-btn"
+                    @click="character.background_details.ideals.push('')">+ Añadir ideal</button>
+          </div>
+        </div>
+
+        <div class="dnd-card">
+          <div class="dnd-card-header">Vínculos</div>
+          <div class="trait-group">
+            <template x-for="(item, i) in character.background_details.bonds" :key="'bd'+i">
+              <div class="trait-item">
+                <input type="text" x-model="character.background_details.bonds[i]" placeholder="Vínculo…">
+                <button class="row-del" @click="character.background_details.bonds.splice(i,1)">✕</button>
+              </div>
+            </template>
+            <button class="add-row-btn"
+                    @click="character.background_details.bonds.push('')">+ Añadir vínculo</button>
+          </div>
+
+          <div class="dnd-card-header mt8">Defectos</div>
+          <div class="trait-group">
+            <template x-for="(item, i) in character.background_details.flaws" :key="'fl'+i">
+              <div class="trait-item">
+                <input type="text" x-model="character.background_details.flaws[i]" placeholder="Defecto…">
+                <button class="row-del" @click="character.background_details.flaws.splice(i,1)">✕</button>
+              </div>
+            </template>
+            <button class="add-row-btn"
+                    @click="character.background_details.flaws.push('')">+ Añadir defecto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historia y Notas -->
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header">Historia y Notas</div>
+          <div class="trait-group">
+            <label>Historia del personaje</label>
+            <textarea class="full-textarea" x-model="character.notes.backstory"
+                      placeholder="Historia del personaje…" style="min-height:90px"></textarea>
+          </div>
+          <div class="trait-group mt8">
+            <label>Aliados y organizaciones</label>
+            <textarea class="full-textarea" x-model="character.notes.allies"
+                      placeholder="Aliados, organizaciones…" style="min-height:52px"></textarea>
+          </div>
+          <div class="trait-group mt8">
+            <label>Enemigos</label>
+            <textarea class="full-textarea" x-model="character.notes.enemies"
+                      placeholder="Enemigos, rivales…" style="min-height:52px"></textarea>
+          </div>
+      </div>
+
+      <!-- Deidad, Fe y Apariencia -->
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header">Deidad, Fe y Apariencia</div>
+        <div class="bg-deity-row">
+          <div class="char-field">
+            <label>Deidad / Dominio</label>
+            <input type="text" x-model="character.background_details.deity" placeholder="—">
+          </div>
+          <div class="char-field">
+            <label>Descripción de la deidad</label>
+            <input type="text" x-model="character.background_details.deity_description" placeholder="—">
+          </div>
+        </div>
+        <div class="char-field" style="margin-top:12px">
+          <label>Descripción Física del Personaje</label>
+          <textarea class="full-textarea" x-model="character.notes.physical_description"
+                    placeholder="Descripción detallada: rasgos particulares, cicatrices, vestimenta habitual…"
+                    style="min-height:70px"></textarea>
+        </div>
+        <div class="char-field" style="margin-top:10px">
+          <label>Notas Adicionales de Trasfondo</label>
+          <textarea class="full-textarea" x-model="character.notes.other_notes"
+                    placeholder="Detalles adicionales del pasado, organizaciones, conexiones, secretos…"
+                    style="min-height:70px"></textarea>
+        </div>
+      </div>
+
+      <!-- Rasgos de especie, clase, dotes -->
+      <div class="bg-two-col mb12">
+        <div class="dnd-card">
+          <div class="dnd-card-header">Rasgos de Clase</div>
+          <template x-for="(feat, i) in character.features_and_traits.class_features" :key="i">
+            <div class="feature-edit-card">
+              <div class="feature-edit-row">
+                <input type="text" x-model="feat.name" placeholder="Nombre del rasgo…" class="w100">
+                <input type="text" x-model="feat.source" placeholder="Fuente…" class="w100">
+                <button class="row-del" @click="removeFeature('class_features', i)">✕</button>
+              </div>
+              <textarea class="feature-desc-area" x-model="feat.description"
+                        placeholder="Descripción…"></textarea>
+            </div>
+          </template>
+          <div x-show="!character.features_and_traits.class_features.length" class="text-dim small">Sin rasgos de clase.</div>
+          <button class="add-row-btn" @click="addFeature('class_features')">+ Añadir Rasgo de Clase</button>
+        </div>
+
+        <div class="dnd-card">
+          <div class="dnd-card-header">Dotes</div>
+          <template x-for="(feat, i) in character.features_and_traits.feats" :key="i">
+            <div class="feature-edit-card">
+              <div class="feature-edit-row">
+                <input type="text" x-model="feat.name" placeholder="Nombre de la dote…" class="w100">
+                <input type="text" x-model="feat.source" placeholder="Fuente…" class="w100">
+                <button class="row-del" @click="removeFeature('feats', i)">✕</button>
+              </div>
+              <textarea class="feature-desc-area" x-model="feat.description"
+                        placeholder="Descripción…"></textarea>
+            </div>
+          </template>
+          <div x-show="!character.features_and_traits.feats.length" class="text-dim small">Sin dotes.</div>
+          <button class="add-row-btn" @click="addFeature('feats')">+ Añadir Dote</button>
+        </div>
+      </div>
+
+      <!-- Rasgos de Especie -->
+      <div class="dnd-card mb12">
+        <div class="dnd-card-header">Rasgos de Especie</div>
+        <div class="bg-two-col" style="gap:10px">
+          <template x-for="(feat, i) in character.features_and_traits.species" :key="i">
+            <div class="feature-edit-card">
+              <div class="feature-edit-row">
+                <input type="text" x-model="feat.name" placeholder="Nombre…" class="w100">
+                <input type="text" x-model="feat.source" placeholder="Especie…" class="w100">
+                <button class="row-del" @click="removeFeature('species', i)">✕</button>
+              </div>
+              <textarea class="feature-desc-area" x-model="feat.description"
+                        placeholder="Descripción…"></textarea>
+            </div>
+          </template>
+        </div>
+        <div x-show="!character.features_and_traits.species.length" class="text-dim small">Sin rasgos de especie.</div>
+        <button class="add-row-btn" @click="addFeature('species')">+ Añadir Rasgo de Especie</button>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         SECCIÓN 8: RECURSOS DE CLASE
+    ══════════════════════════════════════════════════ -->
+    <section id="recursos" class="section-block" data-section="recursos">
+      <div class="section-header">
+        <div class="section-title">✦ Recursos de Clase ✦</div>
+      </div>
+
+      <div class="dnd-card">
+        <div class="res-rest-actions">
+          <button class="btn btn-ghost res-rest-btn" @click="doRest('short')">☀ Descanso Corto</button>
+          <button class="btn btn-ghost res-rest-btn" @click="doRest('long')">🌙 Descanso Largo</button>
+        </div>
+        <div class="resource-grid" x-show="Object.keys(character.resources || {}).length">
+          <template x-for="[key, res] in Object.entries(character.resources || {})" :key="key">
+            <div class="resource-box">
+              <div class="flex-between mb8">
+                <input class="res-name-input" type="text" x-model="res.name" placeholder="Nombre…">
+                <button class="row-del" @click="removeResource(key)" title="Eliminar recurso">✕</button>
+              </div>
+              <!-- Pips independientes al estilo D&D tracker -->
+              <div class="res-pips">
+                <template x-for="i in resRange(key)" :key="i">
+                  <div class="res-pip"
+                       :class="res.pip_states && res.pip_states[i] ? 'active' : 'spent'"
+                       @click="toggleResPip(key, i)"
+                       :title="`Punto ${i+1}: ${res.pip_states && res.pip_states[i] ? 'disponible' : 'gastado'}`">
+                  </div>
+                </template>
+              </div>
+              <div class="res-pip-controls">
+                <span>Máx:</span>
+                <input type="number" x-model.number="res.max" min="0" max="30"
+                       @input="onResMaxChange(key)"
+                       @keydown="['e','+','-'].includes($event.key) && $event.preventDefault()">
+                <span class="text-dim">· Disponibles: <strong x-text="res.current"></strong></span>
+              </div>
+              <!-- Notas de descanso -->
+              <div class="res-recharge-row">
+                <span class="res-rest-label">Recarga</span>
+                <select x-model="res.recharge" class="res-recharge-select">
+                  <option value="">— manual —</option>
+                  <option value="descanso corto">Descanso Corto</option>
+                  <option value="descanso largo">Descanso Largo</option>
+                  <option value="descanso corto o largo">Corto o Largo</option>
+                </select>
+              </div>
+              <div class="res-rest-row" x-show="res.trigger !== undefined">
+                <span class="res-rest-label">Activación</span>
+                <input type="text" x-model="res.trigger" placeholder="ej: al tirar iniciativa…">
+              </div>
+              <div class="res-rest-notes">
+                <div class="res-rest-row">
+                  <span class="res-rest-label">Desc. Corto</span>
+                  <input type="text" x-model="res.short_rest_note" placeholder="ej: recupera todos los puntos…">
+                </div>
+                <div class="res-rest-row">
+                  <span class="res-rest-label">Desc. Largo</span>
+                  <input type="text" x-model="res.long_rest_note" placeholder="ej: recupera todos los puntos…">
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div x-show="!Object.keys(character.resources || {}).length" class="empty-state">
+          <div>Sin recursos de clase registrados.</div>
+          <div class="text-dim small">Usa "Añadir Recurso" o importa desde Nivel20.</div>
+        </div>
+        <button class="add-row-btn" @click="addResource()">+ Añadir Recurso</button>
+      </div>
+    </section>
+
+  </main><!-- /.main-content -->
+
+  <!-- ─── LIGHTBOX RETRATO ─────────────────────────────── -->
+  <div class="portrait-lightbox"
+       x-show="portraitExpanded"
+       x-transition:enter="lb-in"
+       x-transition:enter-start="lb-in-start"
+       x-transition:enter-end="lb-in-end"
+       x-transition:leave="lb-in"
+       x-transition:leave-start="lb-in-end"
+       x-transition:leave-end="lb-in-start"
+       @click.self="portraitExpanded = false"
+       @keydown.escape.window="portraitExpanded = false">
+    <img :src="character.basic_info?.portrait_url" class="portrait-lb-img">
+    <button class="portrait-lb-close" @click="portraitExpanded = false" title="Cerrar">✕</button>
+  </div>
+</div><!-- /.app-layout -->
+</template>
+
+<!-- ═══════════════════════════════════════════ MODAL IMPORTAR -->
+<div class="modal-overlay" x-show="importModal" x-cloak @click.self="importModal = false">
+  <div class="modal-box" @click.stop>
+    <div class="modal-title">⇩ Importar desde Nivel20</div>
+    <label class="field-label">URL del personaje</label>
+    <input type="url" x-model="importUrl"
+           placeholder="https://nivel20.com/games/dnd-2024/characters/…"
+           @keydown.enter="importCharacter()">
+    <div class="modal-error" x-show="importError" x-text="importError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" @click="importModal = false">Cancelar</button>
+      <button class="btn btn-primary" :disabled="importing" @click="importCharacter()">
+        <span x-text="importing ? 'Importando…' : 'Importar'"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ TOAST -->
+<div class="toast-container">
+  <template x-if="toast">
+    <div class="toast" :class="toast.type" x-text="toast.msg"></div>
+  </template>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
+<script src="/static/js/editor.js?v={{ v }}"></script>
+</body>
+</html>
