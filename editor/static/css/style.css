@@ -120,6 +120,12 @@ textarea { resize: vertical; line-height: 1.5; }
   gap: 10px;
 }
 .navbar-brand .brand-icon { font-size: 25px; color: var(--crimson2); vertical-align: middle; }
+.navbar-brand .brand-logo {
+  width: 40px; height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.7));
+  flex-shrink: 0;
+}
 .navbar-sep { flex: 1; }
 
 .char-selector {

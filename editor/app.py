@@ -27,7 +27,7 @@ OUTPUT_PDF   = os.path.join(ROOT_DIR, 'output', 'personaje_export.pdf')
 # Legacy: single active JSON (used as fallback when no character_id)
 JSON_PATH    = str(DATA_DIR / 'personaje.json')
 
-# ── Import scripts (parse_character + fill_pdf) ──────────────────────────────
+# ── Import scripts (parse_character + generate_pdf) ──────────────────────────
 _SCRIPTS_DIR = os.path.join(ROOT_DIR, 'scripts')
 if _SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _SCRIPTS_DIR)
@@ -40,7 +40,7 @@ except Exception as _e:
     _PARSE_ERR = str(_e)
 
 try:
-    from fill_pdf import fill_pdf as _fill_pdf
+    from generate_pdf import generate as _fill_pdf
     FILL_OK = True
 except Exception as _e:
     FILL_OK = False
@@ -228,7 +228,7 @@ def import_character():
 def export_pdf():
     """Guarda el JSON actual y genera el PDF relleno para descargar."""
     if not FILL_OK:
-        return jsonify({'status': 'error', 'message': f'fill_pdf no disponible: {_FILL_ERR}'}), 500
+        return jsonify({'status': 'error', 'message': f'generate_pdf no disponible: {_FILL_ERR}'}), 500
     if not os.path.exists(TEMPLATE_PDF):
         return jsonify({'status': 'error', 'message': f'Plantilla no encontrada: {TEMPLATE_PDF}'}), 500
 
@@ -271,7 +271,7 @@ if __name__ == '__main__':
     print("=" * 52)
     print("  Editor de Hoja D&D 2024")
     print(f"  parse_character: {'OK' if PARSE_OK else 'NO DISPONIBLE'}")
-    print(f"  fill_pdf:        {'OK' if FILL_OK else 'NO DISPONIBLE'}")
+    print(f"  generate_pdf:    {'OK' if FILL_OK else 'NO DISPONIBLE'}")
     print("  http://localhost:5000")
     print("=" * 52)
     app.run(debug=True, port=5000)
