@@ -33,56 +33,62 @@
     "height": null,
     "size": "Mediana",
     "skin": null,
+    "summary": "",
     "weight": null
   },
   "attacks": [
     {
       "attack_bonus": 5,
       "attack_roll": "1d20+5",
+      "custom_bonuses": [],
       "damage": "1d6 +3",
-      "damage_display": "1d6 +3 perforante",
-      "damage_type": "perforante",
-      "name": "Daga",
+      "damage_bonus": 3,
       "damage_dice_count": 1,
       "damage_dice_type": "d6",
-      "damage_bonus": 3,
-      "custom_bonuses": []
+      "damage_display": "1d6 +3 perforante",
+      "damage_type": "perforante",
+      "name": "Daga"
     },
     {
       "attack_bonus": 5,
       "attack_roll": "1d20+5",
+      "custom_bonuses": [],
       "damage": "1d6+3",
+      "damage_bonus": 3,
+      "damage_dice_count": 1,
+      "damage_dice_type": "d6",
       "damage_display": "1d6+3 contundente",
       "damage_type": "contundente",
       "name": "Ataque desarmado",
       "properties": [
         "finura",
         "sin carga"
-      ],
-      "damage_dice_count": 1,
-      "damage_dice_type": "d6",
-      "damage_bonus": 3,
-      "custom_bonuses": []
+      ]
     },
     {
       "attack_bonus": 3,
       "attack_roll": "1d20+3",
+      "custom_bonuses": [],
       "damage": "1d6 +4",
-      "damage_display": "1d6 +4 Fuego",
-      "damage_type": "Fuego",
-      "name": "Antorcha",
+      "damage_bonus": 4,
       "damage_dice_count": 1,
       "damage_dice_type": "d6",
-      "damage_bonus": 4,
-      "custom_bonuses": []
+      "damage_display": "1d6 +4 Fuego",
+      "damage_type": "Fuego",
+      "name": "Antorcha"
     }
   ],
   "background_details": {
+    "birth_date": "",
+    "birth_place": "",
     "bonds": [],
+    "deity": "",
+    "deity_description": "",
     "description": "Creciste en las calles junto a personas con expectativas tan aciagas con las tuyas, entre las que había algunas amistad y algunos rivales. Dormías donde podías y hacías encargos ocasionales a cambio de comida. A veces, cuando el hambre se volvía insoportable, recurrías al robo. Sin embargo, nunca renunciaste a tu orgullo ni perdiste la esperanza. El destino aún tiene algo reservado para ti.",
     "flaws": [],
     "ideals": [],
     "name": "Vagabundo",
+    "page_ref": "",
     "personality_traits": [],
     "skill_proficiencies": [
       "Perspicacia",
@@ -100,24 +106,37 @@
         "subclass": null
       }
     ],
+    "creation_date": "",
     "experience_points": null,
     "inspiration": true,
     "name": "WebOns",
+    "next_level_xp": 0,
+    "player_name": "",
     "portrait_url": "https://nivel20.com/images/4033884/original-331eaff72d8d19f4c6033e32fd83723261de75d8.png?1772629469",
     "species": "Humano",
-    "total_level": 2
+    "total_level": 2,
+    "vision": ""
   },
   "combat": {
+    "advantages_resistances": [],
+    "ammunition": [],
     "armor_class": 16,
-    "death_saves": {
-      "failures": 0,
-      "successes": 0
+    "concentration": {
+      "active": false,
+      "spell": ""
     },
+    "death_saves": {
+      "failures": 3,
+      "successes": 1
+    },
+    "exhaustion": 0,
     "hit_dice": {
+      "count": 2,
       "die_type": "d8",
       "remaining": 2,
       "total": "2d8",
-      "used": 0
+      "type": "d8",
+      "used": 2
     },
     "hit_points": {
       "current": null,
@@ -125,10 +144,23 @@
       "temporary": null
     },
     "initiative": 3,
+    "protections": [
+      {
+        "ac_bonus": 0,
+        "equipped": false,
+        "name": "",
+        "type": "",
+        "weight_kg": null
+      }
+    ],
+    "shield_equipped": false,
     "speed": {
-      "climb_meters": null,
-      "fly_meters": null,
-      "swim_meters": null,
+      "climb_meters": 0,
+      "fly_meters": 0,
+      "jump_high": 0,
+      "jump_long": 0,
+      "special_senses": "",
+      "swim_meters": 0,
       "walking_feet": 40,
       "walking_meters": 12
     }
@@ -229,8 +261,10 @@
       "EP": 0,
       "GP": 27,
       "PP": 0,
-      "SP": 1
+      "SP": 1,
+      "other_notes": ""
     },
+    "gems": [],
     "items": [
       {
         "attack_bonus": 5,
@@ -428,6 +462,8 @@
         "weight_kg": 0.5
       }
     ],
+    "loaned": [],
+    "mounts": [],
     "other_possessions": "Camafeo de una persona muy fea"
   },
   "languages": [
@@ -486,15 +522,26 @@
     "allies": "",
     "backstory": "Creciste en las calles junto a personas con expectativas tan aciagas con las tuyas, entre las que había algunas amistad y algunos rivales. Dormías donde podías y hacías encargos ocasionales a cambio de comida. A veces, cuando el hambre se volvía insoportable, recurrías al robo. Sin embargo, nunca renunciaste a tu orgullo ni perdiste la esperanza. El destino aún tiene algo reservado para ti.",
     "enemies": "",
+    "general": "",
     "organizations": "",
-    "other_possessions": "Camafeo de una persona muy fea"
+    "other_notes": "",
+    "other_possessions": "Camafeo de una persona muy fea",
+    "physical_description": ""
   },
   "proficiencies": {
     "armor": [],
+    "armor_flags": {
+      "heavy": false,
+      "light": false,
+      "medium": false,
+      "shield": false
+    },
+    "martial_weapons": false,
     "raw": [
       "Armas sencillas y Instrumentos musicales",
       "Ballesta de mano, Cimitarra y Espada corta"
     ],
+    "simple_weapons": false,
     "tools": [
       "Instrumentos musicales"
     ],
@@ -511,59 +558,66 @@
       "current": 2,
       "max": 2,
       "name": "Puntos de Concentración (Ki)",
-      "recharge": "descanso corto o largo",
       "pip_states": [
         true,
         true
       ],
-      "short_rest_note": "",
-      "long_rest_note": ""
+      "recharge": "descanso corto o largo",
+      "note": ""
     },
     "escudo_gratis": {
-      "name": "Escudo (conjuro gratuito - Iniciado en la magia)",
-      "recharge": "descanso largo",
-      "max": 1,
       "current": 1,
+      "max": 1,
+      "name": "Escudo (conjuro gratuito - Iniciado en la magia)",
       "pip_states": [
         true
       ],
-      "short_rest_note": "",
-      "long_rest_note": ""
+      "recharge": "descanso largo",
+      "note": ""
     },
     "inspiracion_heroica": {
-      "name": "Inspiración heroica (Ingenioso)",
-      "recharge": "descanso largo",
+      "current": 1,
       "max": 1,
-      "current": null,
+      "name": "Inspiración heroica (Ingenioso)",
       "pip_states": [
         true
       ],
-      "short_rest_note": "",
-      "long_rest_note": ""
+      "recharge": "descanso largo",
+      "note": ""
     },
     "luck_points": {
       "current": 2,
       "max": 2,
       "name": "Puntos de Suerte (Afortunado)",
-      "recharge": "descanso largo",
       "pip_states": [
         true,
         true
       ],
-      "short_rest_note": "",
-      "long_rest_note": ""
+      "recharge": "descanso largo",
+      "note": ""
     },
     "metabolismo_asombroso": {
-      "name": "Metabolismo asombroso",
-      "recharge": "descanso largo",
-      "trigger": "al tirar iniciativa",
-      "max": 1,
       "current": 1,
+      "max": 1,
+      "name": "Metabolismo asombroso",
       "pip_states": [
         true
       ],
-      "short_rest_note": "",
-      "long_rest_note": ""
+      "recharge": "descanso largo",
+      "trigger": "al tirar iniciativa",
+      "note": ""
+    },
+    "resource_1773771119449": {
+      "current": 3,
+      "max": 3,
+      "name": "Nuevo recurso",
+      "pip_states": [
+        true,
+        true,
+        true
+      ],
+      "recharge": "descanso largo",
+      "note": ""
     }
   },
   "saving_throws": {
@@ -745,12 +799,18 @@
     }
   },
   "spellcasting": {
+    "sorcery_pips": [],
+    "sorcery_points_max": 0,
+    "sorcery_points_used": 0,
     "spell_attack_bonus": 2,
     "spell_attack_roll": "1d20+2",
     "spell_save_dc": 10,
     "spell_slots": {
       "level_1": {
         "note": "1 lanzamiento gratuito por descanso largo",
+        "pip_states": [
+          true
+        ],
         "source": "Iniciado en la magia",
         "total": 1,
         "used": 0

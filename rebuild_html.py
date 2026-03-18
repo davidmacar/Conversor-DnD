@@ -1,202 +1,25 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D&D Character Maker</title>
-  <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16.png">
-  <link rel="stylesheet" href="/static/css/style.css?v={{ v }}">
-</head>
-<body x-data="characterEditor()" x-init="init()">
+#!/usr/bin/env python3
+"""Rebuild index.html sections"""
+import os
 
-<!-- ═══════════════════════════════════════════════ NAVBAR -->
-<nav class="navbar">
-  <div class="navbar-brand">
-    <img src="/static/img/logo.png"
-         srcset="/static/img/logo@2x.png 2x"
-         width="40" height="40"
-         alt="D20 logo"
-         class="brand-logo">
-    D&amp;D Character Maker
-  </div>
+filepath = r'c:\Users\david\Desktop\DnD\Conversor DnD\editor\templates\index.html'
+with open(filepath, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-  <!-- Selector multi-personaje -->
-  <div class="char-selector" x-show="characterList.length > 1">
-    <span>Personaje:</span>
-    <select @change="loadCharacter($event.target.value)">
-      <template x-for="c in characterList" :key="c.character_id">
-        <option :value="c.character_id"
-                :selected="c.character_id == character?.meta?.character_id"
-                x-text="`${c.name} (${(c.classes||[]).map(cl=>cl.name+' '+cl.level).join('/')})`">
-        </option>
-      </template>
-    </select>
-  </div>
+# Use partial marker to avoid encoding issues
+MAIN_START_PARTIAL = 'MAIN CONTENT'
+MAIN_END   = '  </main><!-- /.main-content -->'
 
-  <div class="navbar-sep"></div>
+# Find full line containing MAIN CONTENT marker
+import re
+m = re.search(r'  <!-- [^\n]+ MAIN CONTENT [^\n]+ -->\n  <main class="main-content">', content)
+if not m:
+    raise ValueError("Could not find MAIN CONTENT marker")
+idx_start = m.start()
+idx_end   = content.index(MAIN_END) + len(MAIN_END)
+print(f"Start: {idx_start}, End: {idx_end}, file len: {len(content)}")
 
-  <button class="btn btn-ghost" @click="updateAll(); showToast('Recalculado','success')">
-    ↻ Recalcular
-  </button>
-  <button class="btn btn-gold" @click="importModal = true">
-    ⇩ Importar
-  </button>
-  <button class="btn btn-primary" :disabled="exportingPdf" @click="exportPdf()">
-    <span x-text="exportingPdf ? 'Generando…' : '⬇ Exportar PDF'"></span>
-  </button>
-  <button class="btn btn-ghost" :disabled="saving" @click="save()">
-    <span x-text="saving ? 'Guardando…' : '💾 Guardar'"></span>
-  </button>
-</nav>
-
-<!-- ═══════════════════════════════════════════ LOADING / ERROR -->
-<template x-if="loading">
-  <div class="loading-screen">
-    <div class="loading-spinner"></div>
-    <span>Cargando personaje…</span>
-  </div>
-</template>
-
-<template x-if="!loading && error">
-  <div class="error-screen">
-    <div style="font-size: calc(40px * var(--font-scale))">⚠</div>
-    <div x-text="error"></div>
-    <button class="btn btn-gold mt12" @click="importModal = true">Importar personaje</button>
-  </div>
-</template>
-
-<!-- ═══════════════════════════════════════════ MAIN APP -->
-<template x-if="!loading && !error && character">
-<div class="app-layout">
-
-  <!-- ─── SIDEBAR ─────────────────────────────────────── -->
-  <aside class="sidebar">
-    <div class="sidebar-char">
-      <template x-if="character.basic_info?.portrait_url">
-        <img class="sidebar-portrait" :src="character.basic_info.portrait_url" :alt="character.basic_info.name">
-      </template>
-      <template x-if="!character.basic_info?.portrait_url">
-        <div class="sidebar-portrait-placeholder">🧙</div>
-      </template>
-      <div class="sidebar-name" x-text="character.basic_info?.name || 'Sin nombre'"></div>
-      <div class="sidebar-class" x-text="classesDisplay()"></div>
-    </div>
-
-    <ul class="sidebar-nav">
-      <li>
-        <button class="sidebar-nav-btn" :class="{active: activeSection==='identidad'}"
-                @click="scrollToSection('identidad')">
-          <span class="sidebar-nav-main">
-            <span class="nav-icon">👤</span>
-            <span>Identidad</span>
-          </span>
-          <span class="sidebar-toggle-arrow"
-                :class="{open: isSectionExpanded('identidad')}"
-                @click.stop="toggleSectionSubnav('identidad')">▾</span>
-        </button>
-        <div class="sidebar-subnav" :class="{collapsed: !isSectionExpanded('identidad')}">
-          <template x-for="sub in subsectionNav.identidad" :key="sub.id">
-            <button class="sidebar-subnav-btn" :class="{active: activeSubsection===sub.id}"
-                    @click="scrollToSection(sub.id)" x-text="sub.label"></button>
-          </template>
-        </div>
-      </li>
-      <li>
-        <button class="sidebar-nav-btn" :class="{active: activeSection==='atributos'}"
-                @click="scrollToSection('atributos')">
-          <span class="sidebar-nav-main">
-            <span class="nav-icon">💪</span>
-            <span>Atributos</span>
-          </span>
-          <span class="sidebar-toggle-arrow"
-                :class="{open: isSectionExpanded('atributos')}"
-                @click.stop="toggleSectionSubnav('atributos')">▾</span>
-        </button>
-        <div class="sidebar-subnav" :class="{collapsed: !isSectionExpanded('atributos')}">
-          <template x-for="sub in subsectionNav.atributos" :key="sub.id">
-            <button class="sidebar-subnav-btn" :class="{active: activeSubsection===sub.id}"
-                    @click="scrollToSection(sub.id)" x-text="sub.label"></button>
-          </template>
-        </div>
-      </li>
-      <li>
-        <button class="sidebar-nav-btn" :class="{active: activeSection==='combate'}"
-                @click="scrollToSection('combate')">
-          <span class="sidebar-nav-main">
-            <span class="nav-icon">⚔</span>
-            <span>Combate</span>
-          </span>
-          <span class="sidebar-toggle-arrow"
-                :class="{open: isSectionExpanded('combate')}"
-                @click.stop="toggleSectionSubnav('combate')">▾</span>
-        </button>
-        <div class="sidebar-subnav" :class="{collapsed: !isSectionExpanded('combate')}">
-          <template x-for="sub in subsectionNav.combate" :key="sub.id">
-            <button class="sidebar-subnav-btn" :class="{active: activeSubsection===sub.id}"
-                    @click="scrollToSection(sub.id)" x-text="sub.label"></button>
-          </template>
-        </div>
-      </li>
-      <li>
-        <button class="sidebar-nav-btn" :class="{active: activeSection==='habilidades'}"
-                @click="scrollToSection('habilidades')">
-          <span class="sidebar-nav-main">
-            <span class="nav-icon">✨</span>
-            <span>Otras Habilidades</span>
-          </span>
-          <span class="sidebar-toggle-arrow"
-                :class="{open: isSectionExpanded('habilidades')}"
-                @click.stop="toggleSectionSubnav('habilidades')">▾</span>
-        </button>
-        <div class="sidebar-subnav" :class="{collapsed: !isSectionExpanded('habilidades')}">
-          <template x-for="sub in subsectionNav.habilidades" :key="sub.id">
-            <button class="sidebar-subnav-btn" :class="{active: activeSubsection===sub.id}"
-                    @click="scrollToSection(sub.id)" x-text="sub.label"></button>
-          </template>
-        </div>
-      </li>
-      <li>
-        <button class="sidebar-nav-btn" :class="{active: activeSection==='conjuros'}"
-                @click="scrollToSection('conjuros')">
-          <span class="sidebar-nav-main">
-            <span class="nav-icon">🔮</span>
-            <span>Conjuros</span>
-          </span>
-          <span class="sidebar-toggle-arrow"
-                :class="{open: isSectionExpanded('conjuros')}"
-                @click.stop="toggleSectionSubnav('conjuros')">▾</span>
-        </button>
-        <div class="sidebar-subnav" :class="{collapsed: !isSectionExpanded('conjuros')}">
-          <template x-for="sub in subsectionNav.conjuros" :key="sub.id">
-            <button class="sidebar-subnav-btn" :class="{active: activeSubsection===sub.id}"
-                    @click="scrollToSection(sub.id)" x-text="sub.label"></button>
-          </template>
-        </div>
-      </li>
-      <li>
-        <button class="sidebar-nav-btn" :class="{active: activeSection==='inventario'}"
-                @click="scrollToSection('inventario')">
-          <span class="sidebar-nav-main">
-            <span class="nav-icon">🎒</span>
-            <span>Inventario</span>
-          </span>
-          <span class="sidebar-toggle-arrow"
-                :class="{open: isSectionExpanded('inventario')}"
-                @click.stop="toggleSectionSubnav('inventario')">▾</span>
-        </button>
-        <div class="sidebar-subnav" :class="{collapsed: !isSectionExpanded('inventario')}">
-          <template x-for="sub in subsectionNav.inventario" :key="sub.id">
-            <button class="sidebar-subnav-btn" :class="{active: activeSubsection===sub.id}"
-                    @click="scrollToSection(sub.id)" x-text="sub.label"></button>
-          </template>
-        </div>
-      </li>
-    </ul>
-  </aside>
-
-  <!-- ─── MAIN CONTENT ────────────────────────────────── -->
+NEW_MAIN = r"""  <!-- ─── MAIN CONTENT ────────────────────────────────── -->
   <main class="main-content">
 
     <!-- ══════════════════════════════════════════════════
@@ -583,7 +406,7 @@
         <div class="hp-extras-row mt12">
           <span class="field-label" style="min-width:fit-content">Agotamiento:</span>
           <div class="counter-pips counter-pips--exhaustion">
-            <template x-for="n in [0,1,2,3,4,5]" :key="n">
+            <template x-for="n in [0,1,2,3,4,5,6,7,8,9,10]" :key="n">
               <div class="death-circle counter-pip counter-pip--exhaustion"
                    :class="{filled: character.combat.exhaustion >= n && n > 0}"
                    @click="character.combat.exhaustion = (character.combat.exhaustion === n ? n-1 : n)"
@@ -616,13 +439,12 @@
                    class="hp-input">
           </div>
         </div>
-        <div class="hp-meta-row mt12">
-          <div class="hp-meta-block">
-            <div class="death-label">Dados de Golpe</div>
+        <div class="field-row-2 mt12">
+          <div class="field-group">
+            <label class="field-label">Dados de Golpe</label>
             <div class="dice-row">
               <input type="number" x-model.number="character.combat.hit_dice.count"
-                     min="1" style="width:54px" class="text-center"
-                     @change="onHitDiceCountChange()">
+                     min="1" style="width:54px" class="text-center">
               <span style="font-size: calc(16px * var(--font-scale));color:var(--text-dim)">×</span>
               <select x-model="character.combat.hit_dice.type">
                 <template x-for="d in DICE_TYPES" :key="d">
@@ -631,9 +453,8 @@
               </select>
             </div>
           </div>
-
-          <div class="hp-meta-block">
-            <div class="death-label">Dados Gastados Hoy</div>
+          <div class="field-group">
+            <label class="field-label">Dados Gastados Hoy</label>
             <div class="hit-dice-used-pips counter-pips">
               <template x-for="i in hitDiceRange()" :key="i">
                 <div class="counter-pip counter-pip--resource"
@@ -642,33 +463,28 @@
               </template>
             </div>
           </div>
-
-          <div class="hp-meta-block hp-meta-block--death">
-            <div class="death-label">Tiradas de Muerte</div>
-            <div class="death-inline-groups">
-              <div class="death-inline-group">
-                <span class="death-inline-label">Éxitos</span>
-                <div class="death-circles counter-pips">
-                  <template x-for="n in [1,2,3]" :key="n">
-                    <div class="death-circle success counter-pip counter-pip--death-success"
-                         :class="{filled: character.combat.death_saves.successes >= n}"
-                         @click="character.combat.death_saves.successes = (character.combat.death_saves.successes === n ? n-1 : n)">
-                    </div>
-                  </template>
+        </div>
+        <div class="death-saves-row mt12">
+          <div class="death-group">
+            <div class="death-label">Tiradas de Muerte — Éxitos</div>
+            <div class="death-circles counter-pips">
+              <template x-for="n in [1,2,3]" :key="n">
+                <div class="death-circle success counter-pip counter-pip--death-success"
+                     :class="{filled: character.combat.death_saves.successes >= n}"
+                     @click="character.combat.death_saves.successes = (character.combat.death_saves.successes === n ? n-1 : n)">
                 </div>
-              </div>
-
-              <div class="death-inline-group">
-                <span class="death-inline-label">Fracasos</span>
-                <div class="death-circles counter-pips">
-                  <template x-for="n in [1,2,3]" :key="n">
-                    <div class="death-circle failure counter-pip counter-pip--death-failure"
-                         :class="{filled: character.combat.death_saves.failures >= n}"
-                         @click="character.combat.death_saves.failures = (character.combat.death_saves.failures === n ? n-1 : n)">
-                    </div>
-                  </template>
+              </template>
+            </div>
+          </div>
+          <div class="death-group">
+            <div class="death-label">Fracasos</div>
+            <div class="death-circles counter-pips">
+              <template x-for="n in [1,2,3]" :key="n">
+                <div class="death-circle failure counter-pip counter-pip--death-failure"
+                     :class="{filled: character.combat.death_saves.failures >= n}"
+                     @click="character.combat.death_saves.failures = (character.combat.death_saves.failures === n ? n-1 : n)">
                 </div>
-              </div>
+              </template>
             </div>
           </div>
         </div>
@@ -1068,24 +884,22 @@
 
       <div class="dnd-card">
         <div class="dnd-card-header">Espacios de Conjuros</div>
-        <div class="spell-slots-compact-grid">
-          <template x-for="level in [1,2,3,4,5,6,7,8,9]" :key="level">
-            <div class="slot-row slot-row--compact">
-              <span class="slot-level-label" x-text="`Nv ${level}`"></span>
-              <input type="number" class="slot-total-input"
-                     :value="character.spellcasting.spell_slots?.[`level_${level}`]?.total || 0"
-                     min="0" max="9"
-                     @change="setSpellSlot(level, 'total', $event.target.value); onSlotTotalChange(level)">
-              <div class="slot-pips counter-pips">
-                <template x-for="j in slotRange(level)" :key="j">
-                  <div class="slot-pip counter-pip counter-pip--slot"
-                       :class="{used: !character.spellcasting.spell_slots?.[`level_${level}`]?.pip_states?.[j]}"
-                       @click="toggleSlotPip(level, j)"></div>
-                </template>
-              </div>
+        <template x-for="level in [1,2,3,4,5,6,7,8,9]" :key="level">
+          <div class="slot-row">
+            <span class="slot-level-label" x-text="`Nv ${level}`"></span>
+            <input type="number" class="slot-total-input"
+                   :value="character.spellcasting.spell_slots?.[`level_${level}`]?.total || 0"
+                   min="0" max="9"
+                   @change="setSpellSlot(level, 'total', $event.target.value); onSlotTotalChange(level)">
+            <div class="slot-pips counter-pips">
+              <template x-for="j in slotRange(level)" :key="j">
+                <div class="slot-pip counter-pip counter-pip--slot"
+                     :class="{used: !character.spellcasting.spell_slots?.[`level_${level}`]?.pip_states?.[j]}"
+                     @click="toggleSlotPip(level, j)"></div>
+              </template>
             </div>
-          </template>
-        </div>
+          </div>
+        </template>
       </div>
 
       <div class="dnd-card">
@@ -1255,51 +1069,12 @@
       </div>
     </section>
 
-  </main><!-- /.main-content -->
+  </main><!-- /.main-content -->"""
 
-  <!-- ─── LIGHTBOX RETRATO ─────────────────────────────── -->
-  <div class="portrait-lightbox"
-       x-show="portraitExpanded"
-       x-transition:enter="lb-in"
-       x-transition:enter-start="lb-in-start"
-       x-transition:enter-end="lb-in-end"
-       x-transition:leave="lb-in"
-       x-transition:leave-start="lb-in-end"
-       x-transition:leave-end="lb-in-start"
-       @click.self="portraitExpanded = false"
-       @keydown.escape.window="portraitExpanded = false">
-    <img :src="character.basic_info?.portrait_url" class="portrait-lb-img">
-    <button class="portrait-lb-close" @click="portraitExpanded = false" title="Cerrar">✕</button>
-  </div>
-</div><!-- /.app-layout -->
-</template>
+new_content = content[:idx_start] + NEW_MAIN + content[idx_end:]
 
-<!-- ═══════════════════════════════════════════ MODAL IMPORTAR -->
-<div class="modal-overlay" x-show="importModal" x-cloak @click.self="importModal = false">
-  <div class="modal-box" @click.stop>
-    <div class="modal-title">⇩ Importar desde Nivel20</div>
-    <label class="field-label">URL del personaje</label>
-    <input type="url" x-model="importUrl"
-           placeholder="https://nivel20.com/games/dnd-2024/characters/…"
-           @keydown.enter="importCharacter()">
-    <div class="modal-error" x-show="importError" x-text="importError"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" @click="importModal = false">Cancelar</button>
-      <button class="btn btn-primary" :disabled="importing" @click="importCharacter()">
-        <span x-text="importing ? 'Importando…' : 'Importar'"></span>
-      </button>
-    </div>
-  </div>
-</div>
+with open(filepath, 'w', encoding='utf-8') as f:
+    f.write(new_content)
 
-<!-- ═══════════════════════════════════════════ TOAST -->
-<div class="toast-container">
-  <template x-if="toast">
-    <div class="toast" :class="toast.type" x-text="toast.msg"></div>
-  </template>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js" defer></script>
-<script src="/static/js/editor.js?v={{ v }}"></script>
-</body>
-</html>
+print(f"Written {len(new_content)} chars (was {len(content)})")
+print("Done!")
