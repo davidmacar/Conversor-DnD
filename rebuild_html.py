@@ -634,7 +634,7 @@ NEW_MAIN = r"""  <!-- ─── MAIN CONTENT ───────────�
         <div class="empty-state" x-show="!character.attacks?.length">Sin ataques</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:8px">
-          <span style="font-size: calc(13px * var(--font-scale));font-weight:700;color:var(--gold2)">Munición</span>
+          <span class="ammo-section-title">Munición</span>
           <button class="btn-add-small" @click="addAmmo()">+ Munición</button>
         </div>
         <template x-for="(ammo, i) in character.combat.ammunition" :key="i">
