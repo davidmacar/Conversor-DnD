@@ -27,6 +27,7 @@ Requiere:
 from __future__ import annotations
 
 import json
+import re
 import sys
 import urllib.request
 from dataclasses import dataclass
@@ -247,6 +248,110 @@ def _split_lines(text: str | None) -> list[str]:
     return [l.strip() for l in (text or "").split("\n") if l.strip()]
 
 
+def _to_int(value: object, default: int = 0) -> int:
+    try:
+        if isinstance(value, bool):
+            return int(value)
+        if value is None:
+            return default
+        if isinstance(value, (int, float)):
+            return int(value)
+        text = str(value).strip()
+        if not text:
+            return default
+        return int(float(text))
+    except Exception:
+        return default
+
+
+def _to_float(value: object, default: float = 0.0) -> float:
+    try:
+        if value is None:
+            return default
+        if isinstance(value, (int, float)):
+            return float(value)
+        text = str(value).strip().replace(",", ".")
+        if not text:
+            return default
+        return float(text)
+    except Exception:
+        return default
+
+
+def _fmt_1(value: float) -> str:
+    return f"{value:.1f}"
+
+
+def _norm_name(name: str) -> str:
+    return (name or "").strip().lower()
+
+
+def _join_non_empty(parts: list[str], sep: str = " | ") -> str:
+    return sep.join([p for p in parts if p])
+
+
+def _fill_line_fields(m: dict[str, str | bool], prefix: str, lines: list[str], max_lines: int) -> None:
+    for i in range(1, max_lines + 1):
+        m[f"{prefix}.{i}"] = lines[i - 1] if i - 1 < len(lines) else ""
+
+
+def _feature_lines(traits: list[dict]) -> list[str]:
+    lines: list[str] = []
+    for t in traits:
+        name = str((t or {}).get("name") or "").strip()
+        desc = str((t or {}).get("description") or "").strip()
+        details = (t or {}).get("details") or {}
+        details_text = ""
+        if isinstance(details, dict):
+            details_vals = [str(v).strip() for v in details.values() if str(v).strip()]
+            details_text = ", ".join(details_vals)
+        line = _join_non_empty([name, desc, details_text], " - ")
+        if line:
+            lines.append(line)
+    return lines
+
+
+def _item_for_attack(atk_obj: dict, attack_index: int, inventory_items: list[dict]) -> dict:
+    atk_name = _norm_name(str(atk_obj.get("name") or ""))
+    for item in inventory_items:
+        if _norm_name(str(item.get("name") or "")) == atk_name:
+            return item
+    weapon_items = [it for it in inventory_items if bool(it.get("is_weapon"))]
+    if attack_index < len(weapon_items):
+        return weapon_items[attack_index]
+    return {}
+
+
+def _format_attack_range(atk_obj: dict, item_obj: dict) -> str:
+    attack_range = str(atk_obj.get("range") or "").strip()
+    if attack_range:
+        return attack_range
+
+    normal_m = _to_int(((item_obj.get("range_normal") or {}).get("meters")), 0)
+    long_m = _to_int(((item_obj.get("range_long") or {}).get("meters")), 0)
+    if normal_m and long_m and long_m != normal_m:
+        return f"{normal_m} m / {long_m} m"
+    if normal_m:
+        return f"{normal_m} m"
+
+    props = item_obj.get("properties") or atk_obj.get("properties") or []
+    for p in props:
+        ptxt = str(p).strip()
+        if ptxt.lower().startswith("alcance"):
+            return ptxt
+    return ""
+
+
+def _canonical_bool_pips(raw_pips: object, max_count: int, filled_count: int) -> list[bool]:
+    if isinstance(raw_pips, list):
+        vals = [bool(x) for x in raw_pips[:max_count]]
+        if len(vals) < max_count:
+            vals += [False] * (max_count - len(vals))
+        return vals
+    safe_count = max(0, min(max_count, filled_count))
+    return [i < safe_count for i in range(max_count)]
+
+
 # ---------------------------------------------------------------------------
 # Construcción del mapa de campos
 # ---------------------------------------------------------------------------
@@ -272,31 +377,59 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     m: dict[str, str | bool] = {}
 
     classes     = bi.get("classes", [])
-    classes_str = " / ".join(f"{c['name']} {c['level']}" for c in classes)
+    classes_str = " / ".join(
+        f"{str(c.get('name') or '').strip()} {_to_int(c.get('level'), 1)}".strip()
+        for c in classes if isinstance(c, dict)
+    )
 
     # ── Info básica ──────────────────────────────────────────────────────────
     m["Nombre-Personaje"] = bi.get("name") or ""
     m["Clase-Y-Nivel"]    = classes_str
-    m["Trasfondo"]        = bi.get("background") or ""
+    m["Trasfondo"]        = bi.get("background") or bg.get("name") or ""
     m["Especie"]          = bi.get("species") or ""
     m["PX-Personaje"]     = str(bi.get("experience_points") or "")
+    m["PX-Proximo-Nivel"] = str(bi.get("next_level_xp") or "")
     m["Alineamiento"]     = bi.get("alignment") or ""
-    m["Tamano"]           = SPECIES_SIZE.get(
+    m["Tamano"]           = str(app.get("size") or "").strip() or SPECIES_SIZE.get(
         (bi.get("species") or "").lower().strip(), "Mediana")
     m["Nombre-Jugador"]   = bi.get("player_name") or ""
     m["Vision"]           = bi.get("vision") or ""
-    m["Deidad-Dominio"]   = bg.get("deity") or ""
-    m["Descripcion-Deidad"] = bg.get("deity_description") or ""
+    m["Dato-Personaje-Fecha-Creacion"] = str(bi.get("creation_date") or "")
+    birth_place = str(bg.get("birth_place") or "").strip()
+    birth_date = str(bg.get("birth_date") or "").strip()
+    m["Dato-Personaje-Lugar-Fecha-Nacimiento"] = _join_non_empty([birth_place, birth_date])
 
     # ── Combate ──────────────────────────────────────────────────────────────
     speed        = cb.get("speed", {})
-    walking_m    = speed.get("walking_meters", 0)
+    walking_m    = _to_float(speed.get("walking_meters"), 0.0)
+    swim_m       = _to_float(speed.get("swim_meters"), 0.0)
+    fly_m        = _to_float(speed.get("fly_meters"), 0.0)
+    climb_m      = _to_float(speed.get("climb_meters"), 0.0)
     perc_total   = sk.get("percepcion", {}).get("total", 0)
     passive_perc = 10 + perc_total
+    speed_h = walking_m * 600.0 / 1000.0
+    speed_d = speed_h * 8.0
 
     m["Clase-Armadura"]    = str(cb.get("armor_class") or "")
     m["Iniciativa"]        = fmt_mod(cb.get("initiative") or 0)
-    m["Velocidad"]         = f"{walking_m} m"
+    m["Velocidad"]         = f"{_fmt_1(walking_m)} m"
+    m["Velocidad-Hora"]    = str(speed.get("hour_text") or "").strip() or f"{_fmt_1(speed_h)} km/h"
+    m["Velocidad-Jornada"] = str(speed.get("day_text") or "").strip() or f"{_fmt_1(speed_d)} km/dia"
+    special_parts = []
+    special_text = str(speed.get("special_senses") or "").strip()
+    if special_text:
+        special_parts.append(special_text)
+    if swim_m:
+        special_parts.append(f"Nado {_fmt_1(swim_m)} m")
+    if fly_m:
+        special_parts.append(f"Vuelo {_fmt_1(fly_m)} m")
+    if climb_m:
+        special_parts.append(f"Trepar {_fmt_1(climb_m)} m")
+    m["Velocidad-Especial"] = " | ".join(special_parts)
+    jump_long = speed.get("jump_long")
+    jump_high = speed.get("jump_high")
+    m["Salto-Horizontal"]  = f"{jump_long} m" if jump_long not in (None, "") else ""
+    m["Salto-Altura"]      = f"{jump_high} m" if jump_high not in (None, "") else ""
     m["Percepcion-Pasiva"] = str(passive_perc)
     m["Check-Escudo"]      = bool(cb.get("shield_equipped", False))
     m["Check-Inspiracion-Heroica"] = bool(bi.get("inspiration", False))
@@ -307,10 +440,25 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     hp_max     = hp.get("maximum")
     m["Puntos-Golpe-Actuales"]   = str(hp_current if hp_current is not None else (hp_max or ""))
     m["Puntos-Golpe-Maximo"]     = str(hp_max or "")
-    m["Puntos-Golpe-Temporales"] = "0"
-    m["Dados-Golpe-Maximos"]     = cb.get("hit_dice", {}).get("total") or ""
-    m["Dados-Golpe-Gastados"]    = "0"
+    m["Puntos-Golpe-Temporales"] = str(hp.get("temporary") or "")
+    hit_dice = cb.get("hit_dice", {})
+    hd_total = str(hit_dice.get("total") or "").strip()
+    if not hd_total:
+        hd_count = _to_int(hit_dice.get("count"), 0)
+        hd_type = str(hit_dice.get("type") or hit_dice.get("die_type") or "").strip()
+        hd_total = f"{hd_count}{hd_type}" if hd_count and hd_type else ""
+    m["Dados-Golpe-Maximos"]     = hd_total
     m["Bonificador-Competencia"] = fmt_mod(pb)
+
+    str_score = _to_int((ab.get("strength") or {}).get("score"), 10)
+    carry_normal = str_score * 7.5
+    carry_over = str_score * 15.0
+    carry_max = str_score * 22.5
+    carry_push = str_score * 30.0
+    m["Capacidad-Carga-Cargado"] = _fmt_1(carry_normal)
+    m["Capacidad-Carga-Muy-Cargado"] = _fmt_1(carry_over)
+    m["Capacidad-Carga-Maxima"] = _fmt_1(carry_max)
+    m["Capacidad-Carga-Empujar"] = _fmt_1(carry_push)
 
     # Death saves — leer del JSON
     ds        = cb.get("death_saves", {})
@@ -320,10 +468,14 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
         m[f"Check-Salvacion-Muerte.Exito.{n}"] = (n <= successes)
         m[f"Check-Salvacion-Muerte.Fallo.{n}"] = (n <= failures)
 
-    # Hit dice checkboxes — marcados = disponibles
-    hd_remaining = int((cb.get("hit_dice") or {}).get("remaining") or 0)
+    # Hit dice checkboxes — marcados = gastados
+    hd_used = _to_int((cb.get("hit_dice") or {}).get("used"), -1)
+    if hd_used < 0:
+        hd_remaining = _to_int((cb.get("hit_dice") or {}).get("remaining"), 0)
+        hd_count = _to_int((cb.get("hit_dice") or {}).get("count"), 0)
+        hd_used = max(0, hd_count - hd_remaining) if hd_count else 0
     for i in range(1, 21):
-        m[f"Check-Dado-Golpe.{i}"] = (i <= hd_remaining)
+        m[f"Check-Dado-Golpe.{i}"] = (i <= hd_used)
 
     # ── Puntuaciones de habilidad ────────────────────────────────────────────
     for eng, esp in ABILITY_NAMES.items():
@@ -346,38 +498,142 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
             m[f"Check-Pericia-{suffix}"]     = bool(skill.get("expertise"))
 
     # ── Ataques (máximo 5) ───────────────────────────────────────────────────
+    inv_items = inv.get("items", [])
     for i, a in enumerate(atk[:5], 1):
-        bonus    = a.get("attack_bonus") or 0
-        damage   = a.get("damage") or ""
-        dmg_type = a.get("damage_type") or ""
-        dmg_str  = f"{damage} {dmg_type}".strip() if dmg_type else damage
-        props    = a.get("properties") or []
-        m[f"Arma-{i}-Nombre"]             = a.get("name") or ""
-        m[f"Arma-{i}-Bonificador-Ataque"] = fmt_mod(bonus)
-        m[f"Arma-{i}-Dano-Tipo"]          = dmg_str
-        m[f"Arma-{i}-Notas"]              = ", ".join(props) if props else ""
+        item = _item_for_attack(a, i - 1, inv_items)
+        bonus = _to_int(a.get("attack_bonus"), 0)
+        damage = str(a.get("damage") or item.get("damage") or "").strip()
+        dmg_type = str(a.get("damage_type") or item.get("damage_type") or "").strip()
+        weight = _to_float(a.get("weight", item.get("weight_kg")), 0.0)
+        notes_parts = [str(p).strip() for p in (a.get("properties") or item.get("properties") or []) if str(p).strip()]
+        attack_roll = str(a.get("attack_roll") or "").strip()
+        if bonus:
+            notes_parts.append(f"Ataque {fmt_mod(bonus)}")
+        if attack_roll:
+            notes_parts.append(attack_roll)
+
+        m[f"Arma-{i}-Nombre"] = str(a.get("name") or item.get("name") or "")
+        m[f"Arma-{i}-Dano"] = damage
+        m[f"Arma-{i}-Tipo"] = dmg_type
+        m[f"Arma-{i}-Alcance"] = _format_attack_range(a, item)
+        m[f"Arma-{i}-Peso"] = _fmt_1(weight) if weight else ""
+        m[f"Arma-{i}-Notas"] = ", ".join(notes_parts)
+
+    # Protecciones
+    prot_slots = [1, 2, 4, 5]
+    protections = cb.get("protections", [])
+    for idx, slot in enumerate(prot_slots):
+        if idx < len(protections):
+            p = protections[idx] or {}
+            p_name = str(p.get("name") or "").strip()
+            p_type = str(p.get("type") or "").strip()
+            p_ac = _to_int(p.get("ac_bonus"), 0)
+            p_eq = "equipada" if bool(p.get("equipped")) else "no equipada"
+            p_w = _to_float(p.get("weight_kg"), 0.0)
+            m[f"Armadura-Escudo-Protecciones.{slot}"] = _join_non_empty([
+                p_name,
+                p_type,
+                f"+{p_ac} CA" if p_ac else "",
+                f"{_fmt_1(p_w)} kg" if p_w else "",
+                p_eq,
+            ])
+        else:
+            m[f"Armadura-Escudo-Protecciones.{slot}"] = ""
+
+    adv_lines: list[str] = []
+    for adv in cb.get("advantages_resistances", [])[:8]:
+        if isinstance(adv, dict):
+            adv_lines.append(_join_non_empty([str(adv.get("category") or ""), str(adv.get("description") or "")], ": "))
+        else:
+            adv_lines.append(str(adv or ""))
+    for i in range(1, 9):
+        m[f"Ventaja-Resistencia-Inmunidad.{i}"] = adv_lines[i - 1] if i - 1 < len(adv_lines) else ""
+
+    # Municion
+    ammunition = cb.get("ammunition", [])
+    for ammo_idx in range(1, 4):
+        if ammo_idx - 1 < len(ammunition):
+            ammo = ammunition[ammo_idx - 1] or {}
+            name = str(ammo.get("name") or "").strip()
+            max_v = _to_int(ammo.get("max"), 0)
+            note = str(ammo.get("note") or "").strip()
+            m[f"Municion-{ammo_idx - 1}-Nombre"] = _join_non_empty([
+                name,
+                f"max {max_v}" if max_v else "",
+                note,
+            ], " - ")
+            pips = _canonical_bool_pips(ammo.get("pip_states"), 20, max_v)
+            for pip_idx in range(1, 21):
+                m[f"Check-Contador-Municion.{ammo_idx}.{pip_idx}"] = bool(pips[pip_idx - 1])
+        else:
+            m[f"Municion-{ammo_idx - 1}-Nombre"] = ""
+            for pip_idx in range(1, 21):
+                m[f"Check-Contador-Municion.{ammo_idx}.{pip_idx}"] = False
+
+    # Habilidades/beneficios de combate (resources)
+    resources_list = [v for v in resources_d.values() if isinstance(v, dict)]
+    for ridx in range(1, 10):
+        if ridx - 1 < len(resources_list):
+            res = resources_list[ridx - 1]
+            name = str(res.get("name") or "").strip()
+            note = str(res.get("note") or "").strip()
+            recharge = str(res.get("recharge") or "").strip()
+            m[f"Habilidades-Combate.{ridx}"] = _join_non_empty([name, note], " - ")
+            m[f"Check-Refresco-Habilidades-Combate.{ridx}"] = bool(recharge)
+
+            max_pips = min(5, max(_to_int(res.get("max"), 0), 0))
+            current_pips = _to_int(res.get("current"), 0)
+            pips = _canonical_bool_pips(res.get("pip_states"), 5, current_pips if max_pips else 0)
+            for j in range(1, 6):
+                m[f"Check-Contador-Habilidades-Combate.{ridx}.{j}"] = bool(pips[j - 1])
+        else:
+            m[f"Habilidades-Combate.{ridx}"] = ""
+            m[f"Check-Refresco-Habilidades-Combate.{ridx}"] = False
+            for j in range(1, 6):
+                m[f"Check-Contador-Habilidades-Combate.{ridx}.{j}"] = False
 
     # ── Competencias ─────────────────────────────────────────────────────────
     armor_list  = pr.get("armor") or []
     armor_flags = pr.get("armor_flags") or {}
     if isinstance(armor_list, str):
         armor_list = [x.strip() for x in armor_list.split(",")]
-    m["Check-Competencia-Armadura-Ligera"] = armor_flags.get("light", False) or any("ligera"  in a.lower() for a in armor_list)
-    m["Check-Competencia-Armadura-Media"]  = armor_flags.get("medium", False) or any("media"   in a.lower() for a in armor_list)
-    m["Check-Competencia-Armadura-Pesada"] = armor_flags.get("heavy",  False) or any("pesada"  in a.lower() for a in armor_list)
-    m["Check-Competencia-Escudo"]          = armor_flags.get("shield", False) or any("escudo"  in a.lower() for a in armor_list)
-    m["Competencia-Armas"]        = ", ".join(pr.get("weapons") or [])
-    m["Competencia-Herramientas"] = ", ".join(pr.get("tools") or [])
+    m["Check-Competencia-Armadura-Ligera"] = armor_flags.get("light", False) or any("ligera"  in str(a).lower() for a in armor_list)
+    m["Check-Competencia-Armadura-Media"]  = armor_flags.get("medium", False) or any("media"   in str(a).lower() for a in armor_list)
+    m["Check-Competencia-Armadura-Pesada"] = armor_flags.get("heavy",  False) or any("pesada"  in str(a).lower() for a in armor_list)
+    m["Check-Competencia-Escudo"]          = armor_flags.get("shield", False) or any("escudo"  in str(a).lower() for a in armor_list)
+    m["Check-Competencia-Armas-Simples"]   = bool(pr.get("simple_weapons", False))
+    m["Check-Competencia-Armas-Marciales"] = bool(pr.get("martial_weapons", False))
+
+    comp_lines: list[str] = []
+    if bool(pr.get("simple_weapons", False)):
+        comp_lines.append("Armas simples")
+    if bool(pr.get("martial_weapons", False)):
+        comp_lines.append("Armas marciales")
+    for seq in (pr.get("armor") or [], pr.get("weapons") or [], pr.get("tools") or [], pr.get("raw") or []):
+        for raw in seq:
+            txt = str(raw or "").strip()
+            if txt:
+                comp_lines.append(txt)
+
+    seen_comp: set[str] = set()
+    ordered_comp: list[str] = []
+    for c in comp_lines:
+        key = c.lower()
+        if key in seen_comp:
+            continue
+        seen_comp.add(key)
+        ordered_comp.append(c)
+    for i in range(1, 8):
+        m[f"Competencia.{i}"] = ordered_comp[i - 1] if i - 1 < len(ordered_comp) else ""
 
     # ── Rasgos y características ─────────────────────────────────────────────
     species_traits = ft.get("species", [])
     feat_traits    = ft.get("feats", [])
     class_features = ft.get("class_features", [])
-    m["Atributos-Especie"] = fmt_traits(species_traits)
-    m["Dotes"]             = fmt_traits(feat_traits)
-    half = (len(class_features) + 1) // 2
-    m["Rasgos-Clase-1"] = fmt_traits(class_features[:half])
-    m["Rasgos-Clase-2"] = fmt_traits(class_features[half:])
+    feat_lines = _feature_lines(feat_traits)
+    trait_lines = _feature_lines(species_traits) + _feature_lines(class_features)
+    _fill_line_fields(m, "Dotes", feat_lines, 16)
+    _fill_line_fields(m, "Rasgo", trait_lines, 20)
 
     # ── Monedas (jerárquico Piezas.Oro etc.) ────────────────────────────────
     currency = inv.get("currency", {})
@@ -386,20 +642,43 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     m["Piezas.Electro"] = str(currency.get("EP") or 0)
     m["Piezas.Oro"]     = str(currency.get("GP") or 0)
     m["Piezas.Platino"] = str(currency.get("PP") or 0)
+    other_currency_lines = _split_lines(str(currency.get("other_notes") or ""))
+    m["Piezas.Otros.1"] = other_currency_lines[0] if len(other_currency_lines) > 0 else ""
+    m["Piezas.Otros.2"] = other_currency_lines[1] if len(other_currency_lines) > 1 else ""
 
     # ── Inventario — por filas ───────────────────────────────────────────────
-    for i, item in enumerate(inv.get("items", [])[:47], 1):
-        name_val = item.get("name", "")
-        qty_val  = str(item.get("quantity", 1))
-        loc      = item.get("location", "") or ""
-        m[f"Objeto-Nombre.{i}"]   = name_val
-        m[f"Objeto-Cantidad.{i}"] = qty_val
-        m[f"Objeto-Puesto.{i}"]   = (loc == "Equipado")
-        m[f"Objeto-Mochila.{i}"]  = ("Transportado" in loc)
-        m[f"Objeto-Bolsa.{i}"]    = (loc == "Otros")
+    qty_total = 0
+    qty_by_loc = {"Equipado": 0, "Transportado": 0, "Otros": 0}
+    weight_by_loc = {"Equipado": 0.0, "Transportado": 0.0, "Otros": 0.0}
+    for i, item in enumerate(inv_items[:47], 1):
+        name_val = str(item.get("name") or "")
+        qty_i = max(0, _to_int(item.get("quantity"), 0))
+        loc = str(item.get("location") or "").strip()
+        w_i = _to_float(item.get("weight_kg"), 0.0)
+        total_weight_i = w_i * qty_i
+
+        qty_total += qty_i
+        if loc in qty_by_loc:
+            qty_by_loc[loc] += qty_i
+            weight_by_loc[loc] += total_weight_i
+
+        name_with_weight = f"{name_val} ({_fmt_1(w_i)} kg)" if w_i else name_val
+        m[f"Objeto-Nombre.{i}"]   = name_with_weight
+        m[f"Objeto-Cantidad.{i}"] = str(qty_i)
+        m[f"Objeto-Puesto.{i}"]   = str(qty_i) if loc == "Equipado" else ""
+        m[f"Objeto-Mochila.{i}"]  = str(qty_i) if loc == "Transportado" else ""
+        m[f"Objeto-Bolsa.{i}"]    = str(qty_i) if loc == "Otros" else ""
+
+    m["Total-Cantidad"] = str(qty_total)
+    m["Total-Puesto"] = str(qty_by_loc["Equipado"])
+    m["Total-Mochila"] = str(qty_by_loc["Transportado"])
+    m["Total-Bolsa"] = str(qty_by_loc["Otros"])
+    m["Total-Pesos-Puesto"] = _fmt_1(weight_by_loc["Equipado"])
+    m["Total-Pesos-Equipados"] = _fmt_1(weight_by_loc["Equipado"])
+    m["Total-Pesos-Mochila"] = _fmt_1(weight_by_loc["Transportado"])
+    m["Total-Pesos-Bolsa"] = _fmt_1(weight_by_loc["Otros"])
 
     # ── Idiomas — campo único + campos individuales por fila ─────────────────
-    m["Idiomas"] = ", ".join(langs)
     for i, lang in enumerate(langs[:4], 1):
         m[f"Idioma.{i}"] = lang
 
@@ -414,8 +693,7 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     m["Dato-Personaje.Piel"]   = str(app.get("skin")   or "")
     m["Dato-Personaje.Pelo"]   = str(app.get("hair")   or "")
     m["Dato-Personaje.Genero"] = str(app.get("gender") or "")
-    m["Dato-Personaje.Tamano"] = SPECIES_SIZE.get(
-        (bi.get("species") or "").lower().strip(), "Mediana")
+    m["Dato-Personaje.Tamano"] = m["Tamano"]
 
     # ── Personalidad (vacíos si no están en el JSON) ─────────────────────────
     pers_keys = [
@@ -436,19 +714,74 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
 
     allies_lines  = _split_lines(notes_d.get("allies"))
     enemies_lines = _split_lines(notes_d.get("enemies"))
-    phys_lines    = _split_lines(notes_d.get("physical_description"))
+    phys_lines = _split_lines(notes_d.get("physical_description"))
+    phys_lines += _split_lines(str(app.get("summary") or ""))
     for i in range(1, 4):
         m[f"Dato-Personaje.Amigo-Aliado-{i}"] = allies_lines[i-1]  if i-1 < len(allies_lines)  else ""
         m[f"Dato-Personaje.Enemigo-{i}"]      = enemies_lines[i-1] if i-1 < len(enemies_lines) else ""
         m[f"Dato-Personaje.Apariencia-{i}"]   = phys_lines[i-1]    if i-1 < len(phys_lines)    else ""
 
-    m["Dato-Personaje.Deidad-Dominio"]    = bg.get("deity") or ""
+    m["Dato-Personaje.Deidad-Dominio"]     = bg.get("deity") or ""
     m["Dato-Personaje.Descripcion-Deidad"] = bg.get("deity_description") or ""
 
     other_lines = _split_lines(notes_d.get("other_notes"))
     m["Dato-Personaje.Trasfondo-Otros-1"] = bg.get("description", "")
     for i in range(2, 8):
         m[f"Dato-Personaje.Trasfondo-Otros-{i}"] = other_lines[i-2] if i-2 < len(other_lines) else ""
+
+    # Notas de texto libres
+    note_lines: list[str] = []
+    note_lines += _split_lines(str(notes_d.get("general") or ""))
+    note_lines += _split_lines(str(notes_d.get("additional_notes") or ""))
+    note_lines += _split_lines(str(notes_d.get("organizations") or ""))
+    note_lines += _split_lines(str(notes_d.get("backstory") or ""))
+    _fill_line_fields(m, "Nota", note_lines, 16)
+
+    # Otros
+    m["Titulo-Otro"] = "Otras posesiones"
+    m["Otro-1"] = str(inv.get("other_possessions") or notes_d.get("other_possessions") or "")
+
+    # Monturas
+    mount_lines: list[str] = []
+    for mt in inv.get("mounts", [])[:19]:
+        mount_lines.append(_join_non_empty([
+            str(mt.get("name") or "").strip(),
+            str(mt.get("species") or "").strip(),
+            f"x{_to_int(mt.get('quantity'), 0)}" if _to_int(mt.get("quantity"), 0) else "",
+            f"{_to_int(mt.get('speed_m'), 0)} m" if _to_int(mt.get("speed_m"), 0) else "",
+            str(mt.get("notes") or "").strip(),
+        ], " - "))
+    _fill_line_fields(m, "Montura", mount_lines, 19)
+
+    # Gemas
+    gem_lines: list[str] = []
+    for gm in inv.get("gems", [])[:7]:
+        gem_lines.append(_join_non_empty([
+            str(gm.get("name") or "").strip(),
+            f"x{_to_int(gm.get('quantity'), 0)}" if _to_int(gm.get("quantity"), 0) else "",
+            f"{_to_int(gm.get('value_gp'), 0)} po" if _to_int(gm.get("value_gp"), 0) else "",
+            str(gm.get("note") or "").strip(),
+        ], " - "))
+    _fill_line_fields(m, "Gema", gem_lines, 7)
+
+    # Prestados / depositados / recibidos
+    loaned = inv.get("loaned", [])
+    for i in range(1, 7):
+        if i - 1 < len(loaned):
+            ln = loaned[i - 1] or {}
+            m[f"Prestad-Depositado-Recibido-Lugar.{i}"] = _join_non_empty([
+                str(ln.get("to") or "").strip(),
+                str(ln.get("name") or "").strip(),
+            ])
+            m[f"Prestad-Depositado-Recibido-Cantidad.{i}"] = str(_to_int(ln.get("quantity"), 0))
+            m[f"Prestad-Depositado-Recibido-Momento.{i}"] = _join_non_empty([
+                str(ln.get("due") or "").strip(),
+                str(ln.get("notes") or "").strip(),
+            ])
+        else:
+            m[f"Prestad-Depositado-Recibido-Lugar.{i}"] = ""
+            m[f"Prestad-Depositado-Recibido-Cantidad.{i}"] = ""
+            m[f"Prestad-Depositado-Recibido-Momento.{i}"] = ""
 
     # ── Conjuros ─────────────────────────────────────────────────────────────
     spell_ab_raw = sp.get("spellcasting_ability") or ""
@@ -458,9 +791,7 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     spell_atk = sp.get("spell_attack_bonus")
     # "Aptitud-Magica" es el campo bajo la etiqueta "BONO ATAQUE CONJ." en el template
     m["Aptitud-Magica"]              = fmt_mod(spell_atk) if spell_atk is not None else ""
-    m["Modificador-Aptitud-Magica"]  = fmt_mod(spell_ab_mod)  # campo fantasma (no existe en template)
     m["CD-Salvacion-Conjuros"]       = str(sp.get("spell_save_dc") or "")
-    m["Bonificador-Ataque-Conjuros"] = m["Aptitud-Magica"]  # alias (campo no existe en template)
 
     m["Clase-Lanzador-Conjuros"] = (
         classes[0].get("name", "") if spell_ab_raw and classes else ""
@@ -472,16 +803,29 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
                 for kw in ("ki", "concentraci", "hechiceria", "sorcery"))),
         {}
     )
-    magic_max     = int(magic_res.get("max")     or 0)
-    magic_current = int(magic_res.get("current") or 0)
+    magic_max     = _to_int(magic_res.get("max"), 0)
+    magic_current = _to_int(magic_res.get("current"), 0)
+    if magic_max <= 0:
+        magic_max = _to_int(sp.get("sorcery_points_max"), 0)
+        magic_used = _to_int(sp.get("sorcery_points_used"), 0)
+        magic_current = max(0, magic_max - magic_used)
     m["Puntos-Hechiceria-Max"]      = str(magic_max)               if magic_max > 0 else ""
     m["Puntos-Hechiceria-Gastados"] = str(magic_max - magic_current) if magic_max > 0 else ""
 
     # Espacios de conjuro (punto como separador: Total-Espacios-Conjuro.N)
     slots = sp.get("spell_slots") or {}
     for lvl in range(1, 10):
-        slot_val = (slots.get(f"level_{lvl}") or {}).get("total", 0)
+        slot_val = _to_int((slots.get(f"level_{lvl}") or {}).get("total"), 0)
         m[f"Total-Espacios-Conjuro.{lvl}"] = str(slot_val) if slot_val else ""
+
+    slot_checks = {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1}
+    for lvl in range(1, 10):
+        max_checks = slot_checks[lvl]
+        slot_data = slots.get(f"level_{lvl}") or {}
+        used_count = _to_int(slot_data.get("used"), 0)
+        pips = _canonical_bool_pips(slot_data.get("pip_states"), max_checks, used_count)
+        for i in range(1, max_checks + 1):
+            m[f"Check-Espacio-Conjuro-Gastado-{lvl}.{i}"] = bool(pips[i - 1])
 
     # Conjuros por nivel
     spells_data = sp.get("spells") or {}
@@ -490,17 +834,23 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
 
     cantrips = spells_data.get("cantrips", [])
     total_spells += len(cantrips)
-    for i, s in enumerate(cantrips[:MAX_SPELLS_PER_LEVEL[0]], 1):
-        m[f"Nombre-Conjuro-Nivel-0.{i}"] = s.get("name") or ""
+    for i in range(1, MAX_SPELLS_PER_LEVEL[0] + 1):
+        s = cantrips[i - 1] if i - 1 < len(cantrips) else {}
+        m[f"Nombre-Conjuro-Nivel-0.{i}"] = str(s.get("name") or "") if isinstance(s, dict) else ""
 
     for lvl in range(1, 10):
         spell_list = spells_data.get(f"level_{lvl}", [])
         total_spells  += len(spell_list)
         prepared_count += sum(1 for s in spell_list if s.get("prepared"))
         max_s = MAX_SPELLS_PER_LEVEL[lvl]
-        for i, s in enumerate(spell_list[:max_s], 1):
-            m[f"Nombre-Conjuro-Nivel-{lvl}.{i}"]          = s.get("name") or ""
-            m[f"Check-Preparado-Conjuro-Nivel-{lvl}.{i}"] = bool(s.get("prepared"))
+        for i in range(1, max_s + 1):
+            s = spell_list[i - 1] if i - 1 < len(spell_list) else {}
+            if isinstance(s, dict):
+                m[f"Nombre-Conjuro-Nivel-{lvl}.{i}"]          = str(s.get("name") or "")
+                m[f"Check-Preparado-Conjuro-Nivel-{lvl}.{i}"] = bool(s.get("prepared"))
+            else:
+                m[f"Nombre-Conjuro-Nivel-{lvl}.{i}"]          = ""
+                m[f"Check-Preparado-Conjuro-Nivel-{lvl}.{i}"] = False
 
     m["Conjuros-Concidos"]   = str(total_spells)   if total_spells   else ""  # sic: typo in PDF
     m["Conjuros-Preparados"] = str(prepared_count) if prepared_count > 0 else ""
@@ -804,6 +1154,14 @@ def _get_field_name(annot: object) -> str:
     return ".".join(parts) if parts else ""
 
 
+def _canonical_name(name: str) -> str:
+    """Normaliza nombres PDF removiendo sufijos de repeticion como [123], 10b o 11.1."""
+    s = (name or "").strip()
+    s = re.sub(r"\[\d+\]$", "", s)
+    s = re.sub(r"(\.\d+)?[a-zA-Z]$", "", s)
+    return s
+
+
 # ---------------------------------------------------------------------------
 # Relleno del PDF
 # ---------------------------------------------------------------------------
@@ -840,6 +1198,10 @@ def fill_pdf(
     filled:  int       = 0
     skipped: list[str] = []
 
+    canonical_map: dict[str, str | bool] = {}
+    for k, v in field_map.items():
+        canonical_map[_canonical_name(k)] = v
+
     for page in pdf.pages:
         annots = page.get("/Annots")
         if annots is None:
@@ -853,11 +1215,14 @@ def fill_pdf(
             if not field_name:
                 continue
 
-            if field_name not in field_map:
+            if field_name in field_map:
+                val = field_map[field_name]
+            else:
+                val = canonical_map.get(_canonical_name(field_name))
+
+            if val is None:
                 skipped.append(field_name)
                 continue
-
-            val = field_map[field_name]
 
             # Geometría del widget
             rect = annot["/Rect"]

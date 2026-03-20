@@ -129,6 +129,8 @@ function characterEditor() {
       this.character.combat.speed.swim_meters  ??= 0;
       this.character.combat.speed.fly_meters   ??= 0;
       this.character.combat.speed.climb_meters ??= 0;
+      this.character.combat.speed.hour_text ??= '';
+      this.character.combat.speed.day_text ??= '';
       this.character.combat.shield_equipped    ??= false;
       this.character.combat.concentration      ??= { active: false, spell: '' };
       this.character.combat.exhaustion         ??= 0;
@@ -136,6 +138,22 @@ function characterEditor() {
       this.character.appearance                ??= {};
       this.character.proficiencies             ??= {};
       this.character.basic_info                ??= {};
+      if (!Array.isArray(this.character.basic_info.classes)) {
+        this.character.basic_info.classes = [];
+      }
+      this.character.basic_info.classes = this.character.basic_info.classes
+        .map((cls) => {
+          const source = cls && typeof cls === 'object' ? cls : {};
+          const parsedLevel = parseInt(source.level, 10);
+          return {
+            name: String(source.name ?? ''),
+            subclass: String(source.subclass ?? ''),
+            level: Math.max(1, Math.min(20, Number.isFinite(parsedLevel) ? parsedLevel : 1)),
+          };
+        });
+      if (!this.character.basic_info.classes.length) {
+        this.character.basic_info.classes.push({ name: '', subclass: '', level: 1 });
+      }
       this.character.basic_info.player_name    ??= '';
       this.character.basic_info.vision         ??= '';
       this.character.notes.allies              ??= '';
@@ -187,10 +205,12 @@ function characterEditor() {
         if (res.uses_current !== undefined && res.current === undefined) {
           res.current = res.uses_current; delete res.uses_current;
         }
-        // Migrar a pips independientes
-        if (!Array.isArray(res.pip_states)) {
-          res.pip_states = this.buildPips(res.max || 0, (res.current ?? res.max ?? 0), 'filled');
-        }
+        res.max = Math.max(0, parseInt(res.max, 10) || 0);
+        const current = res.current ?? res.max;
+        res.current = Math.max(0, Math.min(res.max, parseInt(current, 10) || 0));
+        // Canonicalizar para evitar patrones no contiguos (ej: true,false,true,...).
+        res.pip_states = this.canonicalizePips(res.pip_states, res.max, 'filled', res.current);
+        res.current = this.countFilledPips(res.pip_states);
         const shortNote = String(res.short_rest_note ?? '').trim();
         const longNote  = String(res.long_rest_note ?? '').trim();
         if (!res.note) {
@@ -231,20 +251,32 @@ function characterEditor() {
 
       // Migrar spell slot pip_states
       for (const slot of Object.values(this.character.spellcasting.spell_slots || {})) {
-        if (!Array.isArray(slot.pip_states)) {
-          slot.pip_states = this.buildPips(slot.total || 0, slot.used || 0, 'used');
-        }
+        slot.total = Math.max(0, parseInt(slot.total, 10) || 0);
+        const used = slot.used ?? this.countUsedPips(slot.pip_states);
+        slot.used = Math.max(0, Math.min(slot.total, parseInt(used, 10) || 0));
+        slot.pip_states = this.canonicalizePips(slot.pip_states, slot.total, 'used', slot.used);
+        slot.used = this.countUsedPips(slot.pip_states);
       }
       // Migrar ammunition pip_states
       for (const ammo of this.character.combat.ammunition) {
-        ammo.pip_states ??= this.buildPips(ammo.max || 0, ammo.max || 0, 'filled');
+        ammo.max = Math.max(0, parseInt(ammo.max, 10) || 0);
+        const filled = Array.isArray(ammo.pip_states)
+          ? this.countFilledPips(ammo.pip_states)
+          : ammo.max;
+        ammo.pip_states = this.canonicalizePips(ammo.pip_states, ammo.max, 'filled', filled);
       }
       // Migrar sorcery pips
-      if (this.character.spellcasting.sorcery_pips.length !== this.character.spellcasting.sorcery_points_max) {
-        const used = this.character.spellcasting.sorcery_points_used || 0;
-        const max  = this.character.spellcasting.sorcery_points_max || 0;
-        this.character.spellcasting.sorcery_pips = this.buildPips(max, used, 'used');
-      }
+      const max = Math.max(0, parseInt(this.character.spellcasting.sorcery_points_max, 10) || 0);
+      const used = this.character.spellcasting.sorcery_points_used ?? this.countUsedPips(this.character.spellcasting.sorcery_pips);
+      this.character.spellcasting.sorcery_points_max = max;
+      this.character.spellcasting.sorcery_points_used = Math.max(0, Math.min(max, parseInt(used, 10) || 0));
+      this.character.spellcasting.sorcery_pips = this.canonicalizePips(
+        this.character.spellcasting.sorcery_pips,
+        max,
+        'used',
+        this.character.spellcasting.sorcery_points_used,
+      );
+      this.character.spellcasting.sorcery_points_used = this.countUsedPips(this.character.spellcasting.sorcery_pips);
 
       this.updateAll();
     },
@@ -358,12 +390,19 @@ function characterEditor() {
       return Array.isArray(pipStates) ? pipStates.filter(p => !p).length : 0;
     },
 
-    ensurePips(pipStates, max, mode, count) {
+    canonicalizePips(pipStates, max, mode = 'filled', preferredCount = null) {
       const safeMax = Math.max(0, parseInt(max, 10) || 0);
-      if (!Array.isArray(pipStates) || pipStates.length !== safeMax) {
-        return this.buildPips(safeMax, count, mode);
+      let count = preferredCount;
+      if (count === null || count === undefined || count === '') {
+        count = mode === 'used'
+          ? this.countUsedPips(pipStates)
+          : this.countFilledPips(pipStates);
       }
-      return pipStates;
+      return this.buildPips(safeMax, count, mode);
+    },
+
+    ensurePips(pipStates, max, mode, count = null) {
+      return this.canonicalizePips(pipStates, max, mode, count);
     },
 
     setPipCascade(pipStates, index, mode = 'filled') {
@@ -421,6 +460,14 @@ function characterEditor() {
         hd.count = Math.max(1, parseInt(hd.count, 10) || 1);
         hd.used = Math.max(0, Math.min(hd.count, parseInt(hd.used, 10) || 0));
         this.character.combat.hit_dice = hd;
+
+        const speed = this.character.combat.speed || {};
+        const walking = Number(speed.walking_meters) || 0;
+        const kmPerHour = walking * 0.6;
+        const kmPerDay = kmPerHour * 8;
+        speed.hour_text = `${kmPerHour.toFixed(1)} km/h`;
+        speed.day_text = `${kmPerDay.toFixed(1)} km/dia`;
+        this.character.combat.speed = speed;
       }
     },
 
@@ -516,6 +563,29 @@ function characterEditor() {
         .toFixed(1);
     },
 
+    // ── Class helpers ───────────────────────────────────────────────────────
+
+    addClass() {
+      if (!this.character?.basic_info) return;
+      if (!Array.isArray(this.character.basic_info.classes)) this.character.basic_info.classes = [];
+      this.character.basic_info.classes.push({ name: '', subclass: '', level: 1 });
+      this.updateAll();
+    },
+
+    removeClass(i) {
+      if (!this.character?.basic_info) return;
+      if (!Array.isArray(this.character.basic_info.classes)) {
+        this.character.basic_info.classes = [{ name: '', subclass: '', level: 1 }];
+        this.updateAll();
+        return;
+      }
+      this.character.basic_info.classes.splice(i, 1);
+      if (!this.character.basic_info.classes.length) {
+        this.character.basic_info.classes.push({ name: '', subclass: '', level: 1 });
+      }
+      this.updateAll();
+    },
+
     // ── Language helpers ─────────────────────────────────────────────────────
 
     addLanguage() { this.character.languages.push(''); },
@@ -532,7 +602,7 @@ function characterEditor() {
       this.character.resources[k] = {
         name: 'Nuevo recurso', max: 3, current: 3,
         recharge: 'descanso largo',
-        pip_states: [true, true, true],
+        pip_states: this.buildPips(3, 3, 'filled'),
         note: ''
       };
       this.character.resources = { ...this.character.resources };
@@ -577,8 +647,9 @@ function characterEditor() {
 
     onResMaxChange(key) {
       const res = this.character.resources[key];
-      const newLen = res.max || 0;
-      res.pip_states = this.resizePips(res.pip_states, newLen, true);
+      res.max = Math.max(0, parseInt(res.max, 10) || 0);
+      res.current = Math.max(0, Math.min(res.max, parseInt(res.current, 10) || 0));
+      res.pip_states = this.canonicalizePips(res.pip_states, res.max, 'filled', res.current);
       res.current = this.countFilledPips(res.pip_states);
     },
 
@@ -798,7 +869,7 @@ function characterEditor() {
 
     addAmmo() {
       this.character.combat.ammunition.push({
-        name: '', max: 6, pip_states: Array.from({length: 6}, () => true)
+        name: '', max: 6, pip_states: this.buildPips(6, 6, 'filled')
       });
     },
     removeAmmo(i) { this.character.combat.ammunition.splice(i, 1); },
@@ -807,18 +878,20 @@ function characterEditor() {
     },
     toggleAmmoPip(i, j) {
       const ammo = this.character.combat.ammunition[i];
+      const filled = this.countFilledPips(ammo.pip_states);
       ammo.pip_states = this.ensurePips(
         ammo.pip_states,
         ammo.max || 0,
         'filled',
-        ammo.max || 0
+        filled
       );
       ammo.pip_states = this.setPipCascade(ammo.pip_states, j, 'filled');
     },
     onAmmoMaxChange(i) {
       const ammo = this.character.combat.ammunition[i];
-      const newLen = ammo.max || 0;
-      ammo.pip_states = this.resizePips(ammo.pip_states, newLen, true);
+      ammo.max = Math.max(0, parseInt(ammo.max, 10) || 0);
+      const filled = this.countFilledPips(ammo.pip_states);
+      ammo.pip_states = this.canonicalizePips(ammo.pip_states, ammo.max, 'filled', filled);
     },
 
     // ── Spell slot pip helpers ────────────────────────────────────────────────
@@ -841,8 +914,9 @@ function characterEditor() {
         this.character.spellcasting.spell_slots[k] = { total: 0, used: 0, pip_states: [] };
       }
       const slot = this.character.spellcasting.spell_slots[k];
-      const newLen = slot.total || 0;
-      slot.pip_states = this.resizePips(slot.pip_states, newLen, true);
+      slot.total = Math.max(0, parseInt(slot.total, 10) || 0);
+      slot.used = Math.max(0, Math.min(slot.total, parseInt(slot.used, 10) || 0));
+      slot.pip_states = this.canonicalizePips(slot.pip_states, slot.total, 'used', slot.used);
       slot.used = this.countUsedPips(slot.pip_states);
     },
 
@@ -864,8 +938,10 @@ function characterEditor() {
     },
     onSorceryMaxChange() {
       const sp = this.character.spellcasting;
-      const max = sp.sorcery_points_max || 0;
-      sp.sorcery_pips = this.resizePips(sp.sorcery_pips, max, true);
+      const max = Math.max(0, parseInt(sp.sorcery_points_max, 10) || 0);
+      sp.sorcery_points_max = max;
+      sp.sorcery_points_used = Math.max(0, Math.min(max, parseInt(sp.sorcery_points_used, 10) || 0));
+      sp.sorcery_pips = this.canonicalizePips(sp.sorcery_pips, max, 'used', sp.sorcery_points_used);
       sp.sorcery_points_used = this.countUsedPips(sp.sorcery_pips);
     },
 

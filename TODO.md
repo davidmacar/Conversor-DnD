@@ -1,0 +1,1291 @@
+# TODO - Auditoria de mapeos Web <-> PDF
+
+## Objetivo
+Este documento sirve como base de desarrollo para corregir errores de mapeo entre la web y el PDF.
+Alcance aplicado segun solicitud:
+- Fuente funcional de incidencias: secciones.md
+- Correlacion tecnica directa: template PDF real vs mapeos web->PDF
+- Inclusion exhaustiva: TODOS los campos sin correlacion en ambos sentidos
+
+## Resumen tecnico canonicamente recalculado
+- Campos totales del template PDF: 908
+- Campos PDF con correlacion desde web: 283
+- Campos del template PDF sin correlacion desde web: 625
+- Rutas web totales analizadas: 895
+- Rutas web sin correlacion hacia PDF: 528
+- Destinos PDF definidos en mapeo que no existen como widget en template: 25
+
+## Criterios usados
+1. Campo del template sin correlacion: widget fisico en template PDF que no aparece como destino en ningun mapeo web->PDF.
+2. Campo web sin correlacion: ruta web cuyo estado en la trazabilidad es sin_destino_pdf.
+3. Mapeado sin widget template: destino PDF devuelto por mapeo que no existe en la plantilla.
+
+## Bloque A - Incidencias funcionales detectadas en secciones.md
+
+### A.1 Identidad
+- Fecha de creacion de personaje: sin mapeo.
+- Experiencia siguiente nivel: sin mapeo.
+- Retrato personaje: mapeo a revisar (posible mapeo incorrecto).
+- Lugar de nacimiento: sin mapeo.
+- Fecha de nacimiento: sin mapeo.
+- Historia de personaje: sin mapeo (pendiente mover a Trasfondo/Otros).
+- Lista de idiomas: estructura pendiente de adaptar a nuevos campos.
+
+### A.2 Atributos - Movimiento
+- Salto longitud: sin mapeo.
+- Salto altura: sin mapeo.
+- Velocidad hora: solo PDF (falta en web).
+- Velocidad dia: solo PDF (falta en web).
+- Nadando: solo web, sin necesidad de PDF.
+- Volando: solo web, sin necesidad de PDF.
+- Trepando: solo web, sin necesidad de PDF.
+- Sentidos y movimiento especiales: sin mapeo claro.
+- Niveles de agotamiento: solo web (sin salida a PDF).
+
+### A.3 Atributos - Puntos de golpe
+- Puntos de golpe temporales: sin mapeo.
+- Dados de golpe gastados (checkboxes): mapeo incorrecto (se marcan restantes y no gastados).
+
+### A.4 Atributos - Capacidad de carga
+- Cargado: sin mapeo.
+- Muy cargado: sin mapeo.
+- Carga maxima: sin mapeo.
+- Empujar/arrastrar/levantar: sin mapeo.
+
+### A.5 Atributos - Otros
+- Inspiracion: sin mapeo.
+
+### A.6 Combate
+- Lista de escudos/armaduras/protecciones: sin mapeo (falta tipo y bono).
+- Estado equipada/no equipada: sin mapeo.
+- Situaciones activas temporales: sin mapeo.
+- Lista de armas: sin mapeo completo (dano, tipo, alcance, peso).
+- Municion: sin mapeo completo.
+- Recarga en descanso corto/largo: sin mapeo.
+- Habilidad o beneficio de combate: sin mapeo.
+- Contador de usos: sin mapeo.
+
+### A.7 Competencias
+- Armas simples (checkbox): sin mapeo.
+- Armas marciales (checkbox): sin mapeo.
+- Otros (herramientas, instrumentos, etc.): sin mapeo.
+- Nota global: revisar mapeo completo de competencias.
+
+### A.8 Otras habilidades
+- Lista de dotes: sin mapeo.
+- Beneficios de raza: sin mapeo.
+- Beneficios de clase: sin mapeo.
+
+### A.9 Conjuros
+- Conjuros preparados: mapeo incorrecto.
+- Conjuros conocidos: mapeo incorrecto.
+- Espacios maximos por nivel: mapeo incompleto (falta nivel 0).
+- Espacios gastados por nivel (checkboxes): sin mapeo a PDF.
+- Tiempo de conjuro (accion/reaccion/etc.): sin mapeo.
+
+### A.10 Inventario
+- Equipo nombre+peso: formato pendiente (anadir peso junto al nombre).
+- Puesto: cambiar a cantidad puesta.
+- Mochila: cambiar a cantidad mochila.
+- Bolsa cinturon: cambiar a cantidad bolsa.
+- Cantidad: migrar a cantidad total.
+- Peso total por lugar: sin mapeo.
+- Peso total general: sin mapeo.
+- Dinero otros: sin mapeo.
+- Lista de monturas: sin mapeo.
+- Lista de gemas y tesoros: sin mapeo.
+- Bienes prestados/depositados/recibidos: falta columna/tipo en web y representacion en PDF.
+
+## Bloque B - Mapeos web->PDF que apuntan a campos inexistentes del template (25)
+Estos destinos estan definidos por mapeo, pero no existen fisicamente como widgets en la plantilla PDF.
+- Arma-1-Bonificador-Ataque
+- Arma-1-Dano-Tipo
+- Arma-2-Bonificador-Ataque
+- Arma-2-Dano-Tipo
+- Arma-3-Bonificador-Ataque
+- Arma-3-Dano-Tipo
+- Arma-4-Bonificador-Ataque
+- Arma-4-Dano-Tipo
+- Arma-5-Bonificador-Ataque
+- Arma-5-Dano-Tipo
+- Atributos-Especie
+- Bonificador-Ataque-Conjuros
+- Check-Escudo
+- Check-Inspiracion-Heroica
+- Competencia-Armas
+- Competencia-Herramientas
+- Deidad-Dominio
+- Descripcion-Deidad
+- Dotes
+- Idiomas
+- Modificador-Juego-De-Manos
+- Rasgos-Clase-1
+- Rasgos-Clase-2
+- Tamano
+- Total-Espacios-Conjuro.4
+
+## Bloque C - TODOS los campos del template PDF sin correlacion desde web (625)
+
+- Arma-1-Alcance
+- Arma-1-Dano
+- Arma-1-Peso
+- Arma-1-Tipo
+- Arma-2-Alcance
+- Arma-2-Dano
+- Arma-2-Peso
+- Arma-2-Tipo
+- Arma-3-Alcance
+- Arma-3-Dano
+- Arma-3-Peso
+- Arma-3-Tipo
+- Arma-4-Alcance
+- Arma-4-Dano
+- Arma-4-Peso
+- Arma-4-Tipo
+- Arma-5-Alcance
+- Arma-5-Dano
+- Arma-5-Peso
+- Arma-5-Tipo
+- Armadura-Escudo-Protecciones.1
+- Armadura-Escudo-Protecciones.2
+- Armadura-Escudo-Protecciones.4
+- Armadura-Escudo-Protecciones.5
+- Capacidad-Carga-Cargado
+- Capacidad-Carga-Empujar
+- Capacidad-Carga-Maxima
+- Capacidad-Carga-Muy-Cargado
+- Check-Competencia-Armas-Marciales
+- Check-Competencia-Armas-Simples
+- Check-Contador-Habilidades-Combate.1 [1223].1
+- Check-Contador-Habilidades-Combate.1 [1223].2
+- Check-Contador-Habilidades-Combate.1 [1223].3
+- Check-Contador-Habilidades-Combate.1 [1223].4
+- Check-Contador-Habilidades-Combate.1 [1223].5
+- Check-Contador-Habilidades-Combate.2 [1224].1
+- Check-Contador-Habilidades-Combate.2 [1224].2
+- Check-Contador-Habilidades-Combate.2 [1224].3
+- Check-Contador-Habilidades-Combate.2 [1224].4
+- Check-Contador-Habilidades-Combate.2 [1224].5
+- Check-Contador-Habilidades-Combate.3.1
+- Check-Contador-Habilidades-Combate.3.2
+- Check-Contador-Habilidades-Combate.3.3
+- Check-Contador-Habilidades-Combate.3.4
+- Check-Contador-Habilidades-Combate.3.5
+- Check-Contador-Habilidades-Combate.4.1
+- Check-Contador-Habilidades-Combate.4.2
+- Check-Contador-Habilidades-Combate.4.3
+- Check-Contador-Habilidades-Combate.4.4
+- Check-Contador-Habilidades-Combate.4.5 [1227]
+- Check-Contador-Habilidades-Combate.5.1
+- Check-Contador-Habilidades-Combate.5.2
+- Check-Contador-Habilidades-Combate.5.3
+- Check-Contador-Habilidades-Combate.5.4
+- Check-Contador-Habilidades-Combate.5.5
+- Check-Contador-Habilidades-Combate.6 [1229].1
+- Check-Contador-Habilidades-Combate.6 [1229].2
+- Check-Contador-Habilidades-Combate.6 [1229].3
+- Check-Contador-Habilidades-Combate.6 [1229].4
+- Check-Contador-Habilidades-Combate.6 [1229].5
+- Check-Contador-Habilidades-Combate.7 [1230].1
+- Check-Contador-Habilidades-Combate.7 [1230].2
+- Check-Contador-Habilidades-Combate.7 [1230].3
+- Check-Contador-Habilidades-Combate.7 [1230].4
+- Check-Contador-Habilidades-Combate.7 [1230].5
+- Check-Contador-Habilidades-Combate.8 [1231].1
+- Check-Contador-Habilidades-Combate.8 [1231].2
+- Check-Contador-Habilidades-Combate.8 [1231].3
+- Check-Contador-Habilidades-Combate.8 [1231].4
+- Check-Contador-Habilidades-Combate.8 [1231].5
+- Check-Contador-Habilidades-Combate.9.1
+- Check-Contador-Habilidades-Combate.9.2
+- Check-Contador-Habilidades-Combate.9.3
+- Check-Contador-Habilidades-Combate.9.4
+- Check-Contador-Habilidades-Combate.9.5
+- Check-Contador-Municion.1.1
+- Check-Contador-Municion.1.10
+- Check-Contador-Municion.1.11
+- Check-Contador-Municion.1.12
+- Check-Contador-Municion.1.13
+- Check-Contador-Municion.1.14
+- Check-Contador-Municion.1.15
+- Check-Contador-Municion.1.16
+- Check-Contador-Municion.1.17
+- Check-Contador-Municion.1.18
+- Check-Contador-Municion.1.19
+- Check-Contador-Municion.1.2
+- Check-Contador-Municion.1.20
+- Check-Contador-Municion.1.3
+- Check-Contador-Municion.1.4
+- Check-Contador-Municion.1.5
+- Check-Contador-Municion.1.6
+- Check-Contador-Municion.1.7
+- Check-Contador-Municion.1.8
+- Check-Contador-Municion.1.9
+- Check-Contador-Municion.2.1
+- Check-Contador-Municion.2.10
+- Check-Contador-Municion.2.11
+- Check-Contador-Municion.2.12
+- Check-Contador-Municion.2.13
+- Check-Contador-Municion.2.14
+- Check-Contador-Municion.2.15
+- Check-Contador-Municion.2.16
+- Check-Contador-Municion.2.17
+- Check-Contador-Municion.2.18
+- Check-Contador-Municion.2.19
+- Check-Contador-Municion.2.2
+- Check-Contador-Municion.2.20
+- Check-Contador-Municion.2.3
+- Check-Contador-Municion.2.4
+- Check-Contador-Municion.2.5
+- Check-Contador-Municion.2.6
+- Check-Contador-Municion.2.7
+- Check-Contador-Municion.2.8
+- Check-Contador-Municion.2.9
+- Check-Contador-Municion.3.1
+- Check-Contador-Municion.3.10
+- Check-Contador-Municion.3.11
+- Check-Contador-Municion.3.12
+- Check-Contador-Municion.3.13
+- Check-Contador-Municion.3.14
+- Check-Contador-Municion.3.15
+- Check-Contador-Municion.3.16
+- Check-Contador-Municion.3.17
+- Check-Contador-Municion.3.18
+- Check-Contador-Municion.3.19
+- Check-Contador-Municion.3.2
+- Check-Contador-Municion.3.20
+- Check-Contador-Municion.3.3 [981]
+- Check-Contador-Municion.3.4
+- Check-Contador-Municion.3.5
+- Check-Contador-Municion.3.6
+- Check-Contador-Municion.3.7
+- Check-Contador-Municion.3.8
+- Check-Contador-Municion.3.9
+- Check-Espacio-Conjuro-Gastado-1.1
+- Check-Espacio-Conjuro-Gastado-1.2
+- Check-Espacio-Conjuro-Gastado-1.3
+- Check-Espacio-Conjuro-Gastado-1.4
+- Check-Espacio-Conjuro-Gastado-2.1
+- Check-Espacio-Conjuro-Gastado-2.2
+- Check-Espacio-Conjuro-Gastado-2.3
+- Check-Espacio-Conjuro-Gastado-3.1
+- Check-Espacio-Conjuro-Gastado-3.2
+- Check-Espacio-Conjuro-Gastado-3.3
+- Check-Espacio-Conjuro-Gastado-4.1
+- Check-Espacio-Conjuro-Gastado-4.2
+- Check-Espacio-Conjuro-Gastado-4.3
+- Check-Espacio-Conjuro-Gastado-5.1
+- Check-Espacio-Conjuro-Gastado-5.2
+- Check-Espacio-Conjuro-Gastado-5.3
+- Check-Espacio-Conjuro-Gastado-6.1
+- Check-Espacio-Conjuro-Gastado-6.2
+- Check-Espacio-Conjuro-Gastado-7.1
+- Check-Espacio-Conjuro-Gastado-7.2
+- Check-Espacio-Conjuro-Gastado-8.1
+- Check-Espacio-Conjuro-Gastado-9.1
+- Check-Preparado-Conjuro-Nivel-1.10
+- Check-Preparado-Conjuro-Nivel-1.11
+- Check-Preparado-Conjuro-Nivel-1.5
+- Check-Preparado-Conjuro-Nivel-1.6
+- Check-Preparado-Conjuro-Nivel-1.7
+- Check-Preparado-Conjuro-Nivel-1.8
+- Check-Preparado-Conjuro-Nivel-1.9
+- Check-Preparado-Conjuro-Nivel-2.10
+- Check-Preparado-Conjuro-Nivel-2.11
+- Check-Preparado-Conjuro-Nivel-2.5
+- Check-Preparado-Conjuro-Nivel-2.6
+- Check-Preparado-Conjuro-Nivel-2.7
+- Check-Preparado-Conjuro-Nivel-2.8
+- Check-Preparado-Conjuro-Nivel-2.9
+- Check-Preparado-Conjuro-Nivel-3.4
+- Check-Preparado-Conjuro-Nivel-3.5
+- Check-Preparado-Conjuro-Nivel-3.6
+- Check-Preparado-Conjuro-Nivel-3.7
+- Check-Preparado-Conjuro-Nivel-3.8
+- Check-Preparado-Conjuro-Nivel-3.9
+- Check-Preparado-Conjuro-Nivel-4.3
+- Check-Preparado-Conjuro-Nivel-4.4
+- Check-Preparado-Conjuro-Nivel-4.5
+- Check-Preparado-Conjuro-Nivel-4.6
+- Check-Preparado-Conjuro-Nivel-4.7
+- Check-Preparado-Conjuro-Nivel-4.8
+- Check-Preparado-Conjuro-Nivel-4.9
+- Check-Preparado-Conjuro-Nivel-5.2
+- Check-Preparado-Conjuro-Nivel-5.3
+- Check-Preparado-Conjuro-Nivel-5.4
+- Check-Preparado-Conjuro-Nivel-5.5
+- Check-Preparado-Conjuro-Nivel-5.6
+- Check-Preparado-Conjuro-Nivel-5.7
+- Check-Preparado-Conjuro-Nivel-5.8
+- Check-Preparado-Conjuro-Nivel-6.1
+- Check-Preparado-Conjuro-Nivel-6.2
+- Check-Preparado-Conjuro-Nivel-6.3
+- Check-Preparado-Conjuro-Nivel-6.4
+- Check-Preparado-Conjuro-Nivel-6.5
+- Check-Preparado-Conjuro-Nivel-6.6
+- Check-Preparado-Conjuro-Nivel-6.7
+- Check-Preparado-Conjuro-Nivel-6.8
+- Check-Preparado-Conjuro-Nivel-7.1
+- Check-Preparado-Conjuro-Nivel-7.2
+- Check-Preparado-Conjuro-Nivel-7.3
+- Check-Preparado-Conjuro-Nivel-7.4
+- Check-Preparado-Conjuro-Nivel-7.5
+- Check-Preparado-Conjuro-Nivel-7.6
+- Check-Preparado-Conjuro-Nivel-7.7
+- Check-Preparado-Conjuro-Nivel-8.1
+- Check-Preparado-Conjuro-Nivel-8.2
+- Check-Preparado-Conjuro-Nivel-8.3
+- Check-Preparado-Conjuro-Nivel-8.4
+- Check-Preparado-Conjuro-Nivel-8.5
+- Check-Preparado-Conjuro-Nivel-8.6
+- Check-Preparado-Conjuro-Nivel-8.7
+- Check-Preparado-Conjuro-Nivel-9.1
+- Check-Preparado-Conjuro-Nivel-9.2
+- Check-Preparado-Conjuro-Nivel-9.3
+- Check-Preparado-Conjuro-Nivel-9.4
+- Check-Preparado-Conjuro-Nivel-9.5
+- Check-Preparado-Conjuro-Nivel-9.6
+- Check-Preparado-Conjuro-Nivel-9.7
+- Check-Refresco-Habilidades-Combate.1
+- Check-Refresco-Habilidades-Combate.2
+- Check-Refresco-Habilidades-Combate.3
+- Check-Refresco-Habilidades-Combate.4
+- Check-Refresco-Habilidades-Combate.5
+- Check-Refresco-Habilidades-Combate.6
+- Check-Refresco-Habilidades-Combate.7
+- Check-Refresco-Habilidades-Combate.8
+- Check-Refresco-Habilidades-Combate.9
+- Competencia.1
+- Competencia.2
+- Competencia.3
+- Competencia.4
+- Competencia.5
+- Competencia.6
+- Competencia.7
+- Dato-Personaje-Fecha-Creacion
+- Dato-Personaje-Lugar-Fecha-Nacimiento
+- Dato-Personaje.Defecto-3
+- Dato-Personaje.Ideal-3
+- Dato-Personaje.Vinculo-3
+- Dotes.1
+- Dotes.10
+- Dotes.11
+- Dotes.12
+- Dotes.13
+- Dotes.14
+- Dotes.15
+- Dotes.16
+- Dotes.2
+- Dotes.3
+- Dotes.4
+- Dotes.5
+- Dotes.6
+- Dotes.7
+- Dotes.8
+- Dotes.9
+- Gema.1
+- Gema.2
+- Gema.3
+- Gema.4
+- Gema.5
+- Gema.6
+- Gema.7
+- Habilidades-Combate.1
+- Habilidades-Combate.2
+- Habilidades-Combate.3
+- Habilidades-Combate.4
+- Habilidades-Combate.5
+- Habilidades-Combate.6
+- Habilidades-Combate.7
+- Habilidades-Combate.8
+- Habilidades-Combate.9
+- Imagen-Personaje_af_image
+- Inspiracion-Heroica
+- Modificador-Juegos-De-Manos
+- Montura.1
+- Montura.10
+- Montura.11
+- Montura.12
+- Montura.13
+- Montura.14
+- Montura.15
+- Montura.16
+- Montura.17
+- Montura.18
+- Montura.19
+- Montura.2
+- Montura.3
+- Montura.4
+- Montura.5
+- Montura.6
+- Montura.7
+- Montura.8
+- Montura.9
+- Municion-0-Nombre
+- Municion-1-Nombre
+- Municion-2-Nombre
+- Nombre-Conjuro-Nivel-0.6
+- Nombre-Conjuro-Nivel-0.7
+- Nombre-Conjuro-Nivel-1.10
+- Nombre-Conjuro-Nivel-1.11.1
+- Nombre-Conjuro-Nivel-1.5
+- Nombre-Conjuro-Nivel-1.6
+- Nombre-Conjuro-Nivel-1.7
+- Nombre-Conjuro-Nivel-1.8
+- Nombre-Conjuro-Nivel-1.9
+- Nombre-Conjuro-Nivel-2.10
+- Nombre-Conjuro-Nivel-2.10b
+- Nombre-Conjuro-Nivel-2.5
+- Nombre-Conjuro-Nivel-2.6
+- Nombre-Conjuro-Nivel-2.7
+- Nombre-Conjuro-Nivel-2.8
+- Nombre-Conjuro-Nivel-2.9
+- Nombre-Conjuro-Nivel-3.4
+- Nombre-Conjuro-Nivel-3.5
+- Nombre-Conjuro-Nivel-3.6
+- Nombre-Conjuro-Nivel-3.7
+- Nombre-Conjuro-Nivel-3.8
+- Nombre-Conjuro-Nivel-3.9
+- Nombre-Conjuro-Nivel-4.3
+- Nombre-Conjuro-Nivel-4.4
+- Nombre-Conjuro-Nivel-4.5
+- Nombre-Conjuro-Nivel-4.6
+- Nombre-Conjuro-Nivel-4.7
+- Nombre-Conjuro-Nivel-4.8
+- Nombre-Conjuro-Nivel-4.9
+- Nombre-Conjuro-Nivel-5.2
+- Nombre-Conjuro-Nivel-5.3
+- Nombre-Conjuro-Nivel-5.4
+- Nombre-Conjuro-Nivel-5.5
+- Nombre-Conjuro-Nivel-5.6
+- Nombre-Conjuro-Nivel-5.7
+- Nombre-Conjuro-Nivel-5.8
+- Nombre-Conjuro-Nivel-6.1
+- Nombre-Conjuro-Nivel-6.2
+- Nombre-Conjuro-Nivel-6.3
+- Nombre-Conjuro-Nivel-6.4
+- Nombre-Conjuro-Nivel-6.5
+- Nombre-Conjuro-Nivel-6.6
+- Nombre-Conjuro-Nivel-6.7
+- Nombre-Conjuro-Nivel-6.8
+- Nombre-Conjuro-Nivel-7.1
+- Nombre-Conjuro-Nivel-7.2
+- Nombre-Conjuro-Nivel-7.3
+- Nombre-Conjuro-Nivel-7.4
+- Nombre-Conjuro-Nivel-7.5
+- Nombre-Conjuro-Nivel-7.6
+- Nombre-Conjuro-Nivel-7.7
+- Nombre-Conjuro-Nivel-8.1
+- Nombre-Conjuro-Nivel-8.2
+- Nombre-Conjuro-Nivel-8.3
+- Nombre-Conjuro-Nivel-8.4
+- Nombre-Conjuro-Nivel-8.5
+- Nombre-Conjuro-Nivel-8.6
+- Nombre-Conjuro-Nivel-8.7
+- Nombre-Conjuro-Nivel-9.1
+- Nombre-Conjuro-Nivel-9.2
+- Nombre-Conjuro-Nivel-9.3
+- Nombre-Conjuro-Nivel-9.4
+- Nombre-Conjuro-Nivel-9.5
+- Nombre-Conjuro-Nivel-9.6
+- Nombre-Conjuro-Nivel-9.7
+- Nota.1
+- Nota.10
+- Nota.11
+- Nota.12
+- Nota.13
+- Nota.14
+- Nota.15
+- Nota.16
+- Nota.2
+- Nota.3
+- Nota.4
+- Nota.5
+- Nota.6
+- Nota.7
+- Nota.8
+- Nota.9
+- Numero-Objetos-1
+- Numero-Objetos-2
+- Objeto-Bolsa.13
+- Objeto-Bolsa.14
+- Objeto-Bolsa.15
+- Objeto-Bolsa.16
+- Objeto-Bolsa.17
+- Objeto-Bolsa.18
+- Objeto-Bolsa.19
+- Objeto-Bolsa.20
+- Objeto-Bolsa.21
+- Objeto-Bolsa.22
+- Objeto-Bolsa.23
+- Objeto-Bolsa.24
+- Objeto-Bolsa.25
+- Objeto-Bolsa.26
+- Objeto-Bolsa.27
+- Objeto-Bolsa.28
+- Objeto-Bolsa.29
+- Objeto-Bolsa.30
+- Objeto-Bolsa.31
+- Objeto-Bolsa.32
+- Objeto-Bolsa.33
+- Objeto-Bolsa.34
+- Objeto-Bolsa.35
+- Objeto-Bolsa.36
+- Objeto-Bolsa.37
+- Objeto-Bolsa.38
+- Objeto-Bolsa.39
+- Objeto-Bolsa.40
+- Objeto-Bolsa.41
+- Objeto-Bolsa.42
+- Objeto-Bolsa.43
+- Objeto-Bolsa.44
+- Objeto-Bolsa.45
+- Objeto-Bolsa.46
+- Objeto-Bolsa.47
+- Objeto-Cantidad.13
+- Objeto-Cantidad.14
+- Objeto-Cantidad.15
+- Objeto-Cantidad.16
+- Objeto-Cantidad.17
+- Objeto-Cantidad.18
+- Objeto-Cantidad.19
+- Objeto-Cantidad.20
+- Objeto-Cantidad.21
+- Objeto-Cantidad.22
+- Objeto-Cantidad.23
+- Objeto-Cantidad.24
+- Objeto-Cantidad.25
+- Objeto-Cantidad.26
+- Objeto-Cantidad.27
+- Objeto-Cantidad.28
+- Objeto-Cantidad.29
+- Objeto-Cantidad.30
+- Objeto-Cantidad.31
+- Objeto-Cantidad.32
+- Objeto-Cantidad.33
+- Objeto-Cantidad.34
+- Objeto-Cantidad.35
+- Objeto-Cantidad.36
+- Objeto-Cantidad.37
+- Objeto-Cantidad.38
+- Objeto-Cantidad.39
+- Objeto-Cantidad.40
+- Objeto-Cantidad.41
+- Objeto-Cantidad.42
+- Objeto-Cantidad.43
+- Objeto-Cantidad.44
+- Objeto-Cantidad.45
+- Objeto-Cantidad.46
+- Objeto-Cantidad.47
+- Objeto-Mochila.13
+- Objeto-Mochila.14
+- Objeto-Mochila.15
+- Objeto-Mochila.16
+- Objeto-Mochila.17
+- Objeto-Mochila.18
+- Objeto-Mochila.19
+- Objeto-Mochila.20
+- Objeto-Mochila.21
+- Objeto-Mochila.22
+- Objeto-Mochila.23
+- Objeto-Mochila.24
+- Objeto-Mochila.25
+- Objeto-Mochila.26
+- Objeto-Mochila.27
+- Objeto-Mochila.28
+- Objeto-Mochila.29
+- Objeto-Mochila.30
+- Objeto-Mochila.31
+- Objeto-Mochila.32
+- Objeto-Mochila.33
+- Objeto-Mochila.34
+- Objeto-Mochila.35
+- Objeto-Mochila.36
+- Objeto-Mochila.37
+- Objeto-Mochila.38
+- Objeto-Mochila.39
+- Objeto-Mochila.40
+- Objeto-Mochila.41
+- Objeto-Mochila.42
+- Objeto-Mochila.43
+- Objeto-Mochila.44
+- Objeto-Mochila.45
+- Objeto-Mochila.46
+- Objeto-Mochila.47
+- Objeto-Nombre.13
+- Objeto-Nombre.14
+- Objeto-Nombre.15
+- Objeto-Nombre.16
+- Objeto-Nombre.17
+- Objeto-Nombre.18
+- Objeto-Nombre.19
+- Objeto-Nombre.20
+- Objeto-Nombre.21
+- Objeto-Nombre.22
+- Objeto-Nombre.23
+- Objeto-Nombre.24
+- Objeto-Nombre.25
+- Objeto-Nombre.26
+- Objeto-Nombre.27
+- Objeto-Nombre.28
+- Objeto-Nombre.29
+- Objeto-Nombre.30
+- Objeto-Nombre.31
+- Objeto-Nombre.32
+- Objeto-Nombre.33
+- Objeto-Nombre.34
+- Objeto-Nombre.35
+- Objeto-Nombre.36
+- Objeto-Nombre.37
+- Objeto-Nombre.38
+- Objeto-Nombre.39
+- Objeto-Nombre.40
+- Objeto-Nombre.41
+- Objeto-Nombre.42
+- Objeto-Nombre.43
+- Objeto-Nombre.44
+- Objeto-Nombre.45
+- Objeto-Nombre.46
+- Objeto-Nombre.47
+- Objeto-Puesto.13
+- Objeto-Puesto.14
+- Objeto-Puesto.15
+- Objeto-Puesto.16
+- Objeto-Puesto.17
+- Objeto-Puesto.18
+- Objeto-Puesto.19
+- Objeto-Puesto.20
+- Objeto-Puesto.21
+- Objeto-Puesto.22
+- Objeto-Puesto.23
+- Objeto-Puesto.24
+- Objeto-Puesto.25
+- Objeto-Puesto.26
+- Objeto-Puesto.27
+- Objeto-Puesto.28
+- Objeto-Puesto.29
+- Objeto-Puesto.30
+- Objeto-Puesto.31
+- Objeto-Puesto.32
+- Objeto-Puesto.33
+- Objeto-Puesto.34
+- Objeto-Puesto.35
+- Objeto-Puesto.36
+- Objeto-Puesto.37
+- Objeto-Puesto.38
+- Objeto-Puesto.39
+- Objeto-Puesto.40
+- Objeto-Puesto.41
+- Objeto-Puesto.42
+- Objeto-Puesto.43
+- Objeto-Puesto.44
+- Objeto-Puesto.45
+- Objeto-Puesto.46
+- Objeto-Puesto.47
+- Otro-1
+- Piezas.Otros.1
+- Piezas.Otros.2
+- Prestad-Depositado-Recibido-Cantidad.1
+- Prestad-Depositado-Recibido-Cantidad.2
+- Prestad-Depositado-Recibido-Cantidad.3
+- Prestad-Depositado-Recibido-Cantidad.4
+- Prestad-Depositado-Recibido-Cantidad.5
+- Prestad-Depositado-Recibido-Cantidad.6
+- Prestad-Depositado-Recibido-Lugar.1
+- Prestad-Depositado-Recibido-Lugar.2
+- Prestad-Depositado-Recibido-Lugar.3
+- Prestad-Depositado-Recibido-Lugar.4
+- Prestad-Depositado-Recibido-Lugar.5
+- Prestad-Depositado-Recibido-Lugar.6
+- Prestad-Depositado-Recibido-Momento.1
+- Prestad-Depositado-Recibido-Momento.2
+- Prestad-Depositado-Recibido-Momento.3
+- Prestad-Depositado-Recibido-Momento.4
+- Prestad-Depositado-Recibido-Momento.5
+- Prestad-Depositado-Recibido-Momento.6
+- PX-Proximo-Nivel
+- Rasgo.1
+- Rasgo.10
+- Rasgo.11
+- Rasgo.12
+- Rasgo.13
+- Rasgo.14
+- Rasgo.15
+- Rasgo.16
+- Rasgo.17
+- Rasgo.18
+- Rasgo.19
+- Rasgo.2
+- Rasgo.20
+- Rasgo.3
+- Rasgo.4
+- Rasgo.5
+- Rasgo.6
+- Rasgo.7
+- Rasgo.8
+- Rasgo.9
+- Salto-Altura
+- Salto-Horizontal
+- Titulo-Otro
+- Total-Bolsa
+- Total-Cantidad
+- Total-Espacios-Conjuro.4 [2056]
+- Total-Espacios-Conjuro.6
+- Total-Espacios-Conjuro.7
+- Total-Espacios-Conjuro.8
+- Total-Espacios-Conjuro.9
+- Total-Mochila
+- Total-Pesos-Bolsa
+- Total-Pesos-Equipados
+- Total-Pesos-Mochila
+- Total-Pesos-Puesto
+- Total-Puesto
+- Velocidad-Especial
+- Velocidad-Hora
+- Velocidad-Jornada
+- Ventaja-Resistencia-Inmunidad.1
+- Ventaja-Resistencia-Inmunidad.2
+- Ventaja-Resistencia-Inmunidad.3
+- Ventaja-Resistencia-Inmunidad.4
+- Ventaja-Resistencia-Inmunidad.5
+- Ventaja-Resistencia-Inmunidad.6
+- Ventaja-Resistencia-Inmunidad.7
+- Ventaja-Resistencia-Inmunidad.8
+
+## Bloque D - TODAS las rutas/campos web sin correlacion hacia PDF (528)
+
+- appearance.size
+- appearance.summary
+- attacks[0].attack_roll
+- attacks[0].damage_bonus
+- attacks[0].damage_dice_count
+- attacks[0].damage_dice_type
+- attacks[0].damage_display
+- attacks[1].attack_roll
+- attacks[1].damage_bonus
+- attacks[1].damage_dice_count
+- attacks[1].damage_dice_type
+- attacks[1].damage_display
+- attacks[2].attack_roll
+- attacks[2].damage_bonus
+- attacks[2].damage_dice_count
+- attacks[2].damage_dice_type
+- attacks[2].damage_display
+- attacks[3].attack_roll
+- attacks[3].damage_bonus
+- attacks[3].damage_dice_count
+- attacks[3].damage_dice_type
+- attacks[3].damage_display
+- attacks[4].attack_roll
+- attacks[4].damage_bonus
+- attacks[4].damage_dice_count
+- attacks[4].damage_dice_type
+- attacks[4].damage_display
+- background_details.birth_date
+- background_details.birth_place
+- background_details.name
+- background_details.page_ref
+- background_details.skill_proficiencies[0]
+- background_details.skill_proficiencies[1]
+- background_details.skill_proficiencies[2]
+- basic_info.campaign
+- basic_info.creation_date
+- basic_info.next_level_xp
+- basic_info.portrait_url
+- basic_info.total_level
+- combat.advantages_resistances[0]
+- combat.advantages_resistances[1]
+- combat.advantages_resistances[2]
+- combat.advantages_resistances[3]
+- combat.ammunition[0].max
+- combat.ammunition[0].name
+- combat.ammunition[0].note
+- combat.ammunition[0].pip_states[0]
+- combat.ammunition[0].pip_states[1]
+- combat.ammunition[0].pip_states[10]
+- combat.ammunition[0].pip_states[11]
+- combat.ammunition[0].pip_states[12]
+- combat.ammunition[0].pip_states[13]
+- combat.ammunition[0].pip_states[14]
+- combat.ammunition[0].pip_states[15]
+- combat.ammunition[0].pip_states[16]
+- combat.ammunition[0].pip_states[17]
+- combat.ammunition[0].pip_states[18]
+- combat.ammunition[0].pip_states[19]
+- combat.ammunition[0].pip_states[2]
+- combat.ammunition[0].pip_states[3]
+- combat.ammunition[0].pip_states[4]
+- combat.ammunition[0].pip_states[5]
+- combat.ammunition[0].pip_states[6]
+- combat.ammunition[0].pip_states[7]
+- combat.ammunition[0].pip_states[8]
+- combat.ammunition[0].pip_states[9]
+- combat.ammunition[1].max
+- combat.ammunition[1].name
+- combat.ammunition[1].note
+- combat.ammunition[1].pip_states[0]
+- combat.ammunition[1].pip_states[1]
+- combat.ammunition[1].pip_states[2]
+- combat.ammunition[1].pip_states[3]
+- combat.ammunition[1].pip_states[4]
+- combat.ammunition[1].pip_states[5]
+- combat.concentration.active
+- combat.concentration.spell
+- combat.exhaustion
+- combat.hit_dice.count
+- combat.hit_dice.die_type
+- combat.hit_dice.type
+- combat.hit_dice.used
+- combat.protections[0].ac_bonus
+- combat.protections[0].equipped
+- combat.protections[0].name
+- combat.protections[0].type
+- combat.protections[0].weight_kg
+- combat.protections[1].ac_bonus
+- combat.protections[1].equipped
+- combat.protections[1].name
+- combat.protections[1].type
+- combat.protections[1].weight_kg
+- combat.protections[2].ac_bonus
+- combat.protections[2].equipped
+- combat.protections[2].name
+- combat.protections[2].type
+- combat.protections[2].weight_kg
+- combat.speed.climb_meters
+- combat.speed.fly_meters
+- combat.speed.jump_high
+- combat.speed.jump_long
+- combat.speed.special_senses
+- combat.speed.swim_meters
+- combat.speed.walking_feet
+- inventory.currency.other_notes
+- inventory.gems[0].name
+- inventory.gems[0].note
+- inventory.gems[0].quantity
+- inventory.gems[0].value_gp
+- inventory.gems[1].name
+- inventory.gems[1].note
+- inventory.gems[1].quantity
+- inventory.gems[1].value_gp
+- inventory.gems[2].name
+- inventory.gems[2].note
+- inventory.gems[2].quantity
+- inventory.gems[2].value_gp
+- inventory.items[0].attack_bonus
+- inventory.items[0].attack_roll
+- inventory.items[0].category
+- inventory.items[0].critical_damage
+- inventory.items[0].damage
+- inventory.items[0].damage_type
+- inventory.items[0].description
+- inventory.items[0].is_weapon
+- inventory.items[0].item_id
+- inventory.items[0].price
+- inventory.items[0].proficient
+- inventory.items[0].properties[0]
+- inventory.items[0].properties[1]
+- inventory.items[0].range_long.feet
+- inventory.items[0].range_long.meters
+- inventory.items[0].range_normal.feet
+- inventory.items[0].range_normal.meters
+- inventory.items[0].type
+- inventory.items[0].weight_kg
+- inventory.items[1].attack_bonus
+- inventory.items[1].attack_roll
+- inventory.items[1].category
+- inventory.items[1].critical_damage
+- inventory.items[1].damage
+- inventory.items[1].damage_type
+- inventory.items[1].description
+- inventory.items[1].is_weapon
+- inventory.items[1].item_id
+- inventory.items[1].price
+- inventory.items[1].proficient
+- inventory.items[1].properties[0]
+- inventory.items[1].properties[1]
+- inventory.items[1].range_long.feet
+- inventory.items[1].range_long.meters
+- inventory.items[1].range_normal.feet
+- inventory.items[1].range_normal.meters
+- inventory.items[1].type
+- inventory.items[1].weight_kg
+- inventory.items[10].category
+- inventory.items[10].description
+- inventory.items[10].is_weapon
+- inventory.items[10].item_id
+- inventory.items[10].price
+- inventory.items[10].proficient
+- inventory.items[10].type
+- inventory.items[10].weight_kg
+- inventory.items[11].category
+- inventory.items[11].description
+- inventory.items[11].is_weapon
+- inventory.items[11].item_id
+- inventory.items[11].price
+- inventory.items[11].proficient
+- inventory.items[11].type
+- inventory.items[11].weight_kg
+- inventory.items[2].attack_bonus
+- inventory.items[2].attack_roll
+- inventory.items[2].category
+- inventory.items[2].critical_damage
+- inventory.items[2].damage
+- inventory.items[2].damage_type
+- inventory.items[2].description
+- inventory.items[2].is_weapon
+- inventory.items[2].item_id
+- inventory.items[2].price
+- inventory.items[2].proficient
+- inventory.items[2].properties[0]
+- inventory.items[2].properties[1]
+- inventory.items[2].range_long.feet
+- inventory.items[2].range_long.meters
+- inventory.items[2].range_normal.feet
+- inventory.items[2].range_normal.meters
+- inventory.items[2].type
+- inventory.items[2].weight_kg
+- inventory.items[3].category
+- inventory.items[3].description
+- inventory.items[3].is_weapon
+- inventory.items[3].item_id
+- inventory.items[3].price
+- inventory.items[3].proficient
+- inventory.items[3].type
+- inventory.items[3].weight_kg
+- inventory.items[4].category
+- inventory.items[4].description
+- inventory.items[4].is_weapon
+- inventory.items[4].item_id
+- inventory.items[4].price
+- inventory.items[4].proficient
+- inventory.items[4].type
+- inventory.items[4].weight_kg
+- inventory.items[5].category
+- inventory.items[5].description
+- inventory.items[5].is_weapon
+- inventory.items[5].item_id
+- inventory.items[5].price
+- inventory.items[5].proficient
+- inventory.items[5].type
+- inventory.items[5].weight_kg
+- inventory.items[6].category
+- inventory.items[6].description
+- inventory.items[6].is_weapon
+- inventory.items[6].item_id
+- inventory.items[6].price
+- inventory.items[6].proficient
+- inventory.items[6].type
+- inventory.items[6].weight_kg
+- inventory.items[7].category
+- inventory.items[7].description
+- inventory.items[7].is_weapon
+- inventory.items[7].item_id
+- inventory.items[7].price
+- inventory.items[7].proficient
+- inventory.items[7].type
+- inventory.items[7].weight_kg
+- inventory.items[8].category
+- inventory.items[8].description
+- inventory.items[8].is_weapon
+- inventory.items[8].item_id
+- inventory.items[8].price
+- inventory.items[8].proficient
+- inventory.items[8].type
+- inventory.items[8].weight_kg
+- inventory.items[9].category
+- inventory.items[9].description
+- inventory.items[9].is_weapon
+- inventory.items[9].item_id
+- inventory.items[9].price
+- inventory.items[9].proficient
+- inventory.items[9].type
+- inventory.items[9].weight_kg
+- inventory.loaned[0].due
+- inventory.loaned[0].name
+- inventory.loaned[0].notes
+- inventory.loaned[0].quantity
+- inventory.loaned[0].to
+- inventory.loaned[1].due
+- inventory.loaned[1].name
+- inventory.loaned[1].notes
+- inventory.loaned[1].quantity
+- inventory.loaned[1].to
+- inventory.mounts[0].name
+- inventory.mounts[0].notes
+- inventory.mounts[0].quantity
+- inventory.mounts[0].species
+- inventory.mounts[0].speed_m
+- inventory.mounts[1].name
+- inventory.mounts[1].notes
+- inventory.mounts[1].quantity
+- inventory.mounts[1].species
+- inventory.mounts[1].speed_m
+- inventory.other_possessions
+- meta.character_id
+- meta.character_url
+- meta.last_sync
+- meta.nivel20_keys[0]
+- meta.nivel20_keys[1]
+- meta.nivel20_keys[10]
+- meta.nivel20_keys[11]
+- meta.nivel20_keys[12]
+- meta.nivel20_keys[13]
+- meta.nivel20_keys[14]
+- meta.nivel20_keys[15]
+- meta.nivel20_keys[2]
+- meta.nivel20_keys[3]
+- meta.nivel20_keys[4]
+- meta.nivel20_keys[5]
+- meta.nivel20_keys[6]
+- meta.nivel20_keys[7]
+- meta.nivel20_keys[8]
+- meta.nivel20_keys[9]
+- meta.owner
+- meta.platform
+- meta.system
+- notes.additional_notes
+- notes.backstory
+- notes.general
+- notes.organizations
+- notes.other_possessions
+- proficiencies.martial_weapons
+- proficiencies.raw[0]
+- proficiencies.raw[1]
+- proficiencies.raw[2]
+- proficiencies.raw[3]
+- proficiencies.simple_weapons
+- saving_throws.charisma.roll
+- saving_throws.constitution.roll
+- saving_throws.dexterity.roll
+- saving_throws.intelligence.roll
+- saving_throws.strength.roll
+- saving_throws.wisdom.roll
+- skills.acrobacias.ability
+- skills.acrobacias.name
+- skills.acrobacias.roll
+- skills.arcanos.ability
+- skills.arcanos.name
+- skills.arcanos.roll
+- skills.atletismo.ability
+- skills.atletismo.name
+- skills.atletismo.roll
+- skills.enganar.ability
+- skills.enganar.name
+- skills.enganar.roll
+- skills.historia.ability
+- skills.historia.name
+- skills.historia.roll
+- skills.interpretacion.ability
+- skills.interpretacion.name
+- skills.interpretacion.roll
+- skills.intimidar.ability
+- skills.intimidar.name
+- skills.intimidar.roll
+- skills.investigacion.ability
+- skills.investigacion.name
+- skills.investigacion.roll
+- skills.juego_de_manos.ability
+- skills.juego_de_manos.name
+- skills.juego_de_manos.roll
+- skills.medicina.ability
+- skills.medicina.name
+- skills.medicina.roll
+- skills.naturaleza.ability
+- skills.naturaleza.name
+- skills.naturaleza.roll
+- skills.percepcion.ability
+- skills.percepcion.name
+- skills.percepcion.roll
+- skills.perspicacia.ability
+- skills.perspicacia.name
+- skills.perspicacia.roll
+- skills.persuasion.ability
+- skills.persuasion.name
+- skills.persuasion.roll
+- skills.religion.ability
+- skills.religion.name
+- skills.religion.roll
+- skills.sigilo.ability
+- skills.sigilo.name
+- skills.sigilo.roll
+- skills.supervivencia.ability
+- skills.supervivencia.name
+- skills.supervivencia.roll
+- skills.trato_con_animales.ability
+- skills.trato_con_animales.name
+- skills.trato_con_animales.roll
+- spellcasting.sorcery_pips[0]
+- spellcasting.sorcery_pips[1]
+- spellcasting.sorcery_pips[2]
+- spellcasting.sorcery_pips[3]
+- spellcasting.sorcery_pips[4]
+- spellcasting.sorcery_pips[5]
+- spellcasting.sorcery_points_max
+- spellcasting.sorcery_points_used
+- spellcasting.spell_attack_roll
+- spellcasting.spell_slots.level_1.note
+- spellcasting.spell_slots.level_1.pip_states[0]
+- spellcasting.spell_slots.level_1.pip_states[1]
+- spellcasting.spell_slots.level_1.pip_states[2]
+- spellcasting.spell_slots.level_1.pip_states[3]
+- spellcasting.spell_slots.level_1.source
+- spellcasting.spell_slots.level_1.used
+- spellcasting.spell_slots.level_2.note
+- spellcasting.spell_slots.level_2.pip_states[0]
+- spellcasting.spell_slots.level_2.pip_states[1]
+- spellcasting.spell_slots.level_2.pip_states[2]
+- spellcasting.spell_slots.level_2.source
+- spellcasting.spell_slots.level_2.used
+- spellcasting.spell_slots.level_3.note
+- spellcasting.spell_slots.level_3.pip_states[0]
+- spellcasting.spell_slots.level_3.pip_states[1]
+- spellcasting.spell_slots.level_3.source
+- spellcasting.spell_slots.level_3.used
+- spellcasting.spell_slots.level_4.note
+- spellcasting.spell_slots.level_4.pip_states[0]
+- spellcasting.spell_slots.level_4.source
+- spellcasting.spell_slots.level_4.used
+- spellcasting.spell_slots.level_5.note
+- spellcasting.spell_slots.level_5.pip_states[0]
+- spellcasting.spell_slots.level_5.source
+- spellcasting.spell_slots.level_5.used
+- spellcasting.spells.cantrips[0].casting_time
+- spellcasting.spells.cantrips[0].components
+- spellcasting.spells.cantrips[0].description
+- spellcasting.spells.cantrips[0].duration
+- spellcasting.spells.cantrips[0].range
+- spellcasting.spells.cantrips[0].school
+- spellcasting.spells.cantrips[0].spell_id
+- spellcasting.spells.cantrips[1].casting_time
+- spellcasting.spells.cantrips[1].components
+- spellcasting.spells.cantrips[1].description
+- spellcasting.spells.cantrips[1].duration
+- spellcasting.spells.cantrips[1].range
+- spellcasting.spells.cantrips[1].school
+- spellcasting.spells.cantrips[1].spell_id
+- spellcasting.spells.cantrips[2].casting_time
+- spellcasting.spells.cantrips[2].components
+- spellcasting.spells.cantrips[2].description
+- spellcasting.spells.cantrips[2].duration
+- spellcasting.spells.cantrips[2].range
+- spellcasting.spells.cantrips[2].school
+- spellcasting.spells.cantrips[2].spell_id
+- spellcasting.spells.cantrips[3].casting_time
+- spellcasting.spells.cantrips[3].components
+- spellcasting.spells.cantrips[3].description
+- spellcasting.spells.cantrips[3].duration
+- spellcasting.spells.cantrips[3].range
+- spellcasting.spells.cantrips[3].school
+- spellcasting.spells.cantrips[3].spell_id
+- spellcasting.spells.cantrips[4].casting_time
+- spellcasting.spells.cantrips[4].components
+- spellcasting.spells.cantrips[4].description
+- spellcasting.spells.cantrips[4].duration
+- spellcasting.spells.cantrips[4].range
+- spellcasting.spells.cantrips[4].school
+- spellcasting.spells.cantrips[4].spell_id
+- spellcasting.spells.level_1[0].casting_time
+- spellcasting.spells.level_1[0].components
+- spellcasting.spells.level_1[0].description
+- spellcasting.spells.level_1[0].duration
+- spellcasting.spells.level_1[0].range
+- spellcasting.spells.level_1[0].school
+- spellcasting.spells.level_1[0].spell_id
+- spellcasting.spells.level_1[1].casting_time
+- spellcasting.spells.level_1[1].components
+- spellcasting.spells.level_1[1].description
+- spellcasting.spells.level_1[1].duration
+- spellcasting.spells.level_1[1].range
+- spellcasting.spells.level_1[1].school
+- spellcasting.spells.level_1[1].spell_id
+- spellcasting.spells.level_1[2].casting_time
+- spellcasting.spells.level_1[2].components
+- spellcasting.spells.level_1[2].description
+- spellcasting.spells.level_1[2].duration
+- spellcasting.spells.level_1[2].range
+- spellcasting.spells.level_1[2].school
+- spellcasting.spells.level_1[2].spell_id
+- spellcasting.spells.level_1[3].casting_time
+- spellcasting.spells.level_1[3].components
+- spellcasting.spells.level_1[3].description
+- spellcasting.spells.level_1[3].duration
+- spellcasting.spells.level_1[3].range
+- spellcasting.spells.level_1[3].school
+- spellcasting.spells.level_1[3].spell_id
+- spellcasting.spells.level_2[0].casting_time
+- spellcasting.spells.level_2[0].components
+- spellcasting.spells.level_2[0].description
+- spellcasting.spells.level_2[0].duration
+- spellcasting.spells.level_2[0].range
+- spellcasting.spells.level_2[0].school
+- spellcasting.spells.level_2[0].spell_id
+- spellcasting.spells.level_2[1].casting_time
+- spellcasting.spells.level_2[1].components
+- spellcasting.spells.level_2[1].description
+- spellcasting.spells.level_2[1].duration
+- spellcasting.spells.level_2[1].range
+- spellcasting.spells.level_2[1].school
+- spellcasting.spells.level_2[1].spell_id
+- spellcasting.spells.level_2[2].casting_time
+- spellcasting.spells.level_2[2].components
+- spellcasting.spells.level_2[2].description
+- spellcasting.spells.level_2[2].duration
+- spellcasting.spells.level_2[2].range
+- spellcasting.spells.level_2[2].school
+- spellcasting.spells.level_2[2].spell_id
+- spellcasting.spells.level_2[3].casting_time
+- spellcasting.spells.level_2[3].components
+- spellcasting.spells.level_2[3].description
+- spellcasting.spells.level_2[3].duration
+- spellcasting.spells.level_2[3].range
+- spellcasting.spells.level_2[3].school
+- spellcasting.spells.level_2[3].spell_id
+- spellcasting.spells.level_3[0].casting_time
+- spellcasting.spells.level_3[0].components
+- spellcasting.spells.level_3[0].description
+- spellcasting.spells.level_3[0].duration
+- spellcasting.spells.level_3[0].range
+- spellcasting.spells.level_3[0].school
+- spellcasting.spells.level_3[0].spell_id
+- spellcasting.spells.level_3[1].casting_time
+- spellcasting.spells.level_3[1].components
+- spellcasting.spells.level_3[1].description
+- spellcasting.spells.level_3[1].duration
+- spellcasting.spells.level_3[1].range
+- spellcasting.spells.level_3[1].school
+- spellcasting.spells.level_3[1].spell_id
+- spellcasting.spells.level_3[2].casting_time
+- spellcasting.spells.level_3[2].components
+- spellcasting.spells.level_3[2].description
+- spellcasting.spells.level_3[2].duration
+- spellcasting.spells.level_3[2].range
+- spellcasting.spells.level_3[2].school
+- spellcasting.spells.level_3[2].spell_id
+- spellcasting.spells.level_4[0].casting_time
+- spellcasting.spells.level_4[0].components
+- spellcasting.spells.level_4[0].description
+- spellcasting.spells.level_4[0].duration
+- spellcasting.spells.level_4[0].range
+- spellcasting.spells.level_4[0].school
+- spellcasting.spells.level_4[0].spell_id
+- spellcasting.spells.level_4[1].casting_time
+- spellcasting.spells.level_4[1].components
+- spellcasting.spells.level_4[1].description
+- spellcasting.spells.level_4[1].duration
+- spellcasting.spells.level_4[1].range
+- spellcasting.spells.level_4[1].school
+- spellcasting.spells.level_4[1].spell_id
+- spellcasting.spells.level_5[0].casting_time
+- spellcasting.spells.level_5[0].components
+- spellcasting.spells.level_5[0].description
+- spellcasting.spells.level_5[0].duration
+- spellcasting.spells.level_5[0].range
+- spellcasting.spells.level_5[0].school
+- spellcasting.spells.level_5[0].spell_id
+
+## Bloque E - Criterio de aceptacion para desarrollo posterior
+- Cada incidencia funcional del Bloque A debe resolverse con mapeo valido o decision explicita de exclusividad web/PDF.
+- Cada campo del Bloque B requiere una de dos acciones: crear widget en template PDF o redirigir mapeo a un campo existente.
+- Cada campo del Bloque C y D requiere clasificacion manual: obligatorio, opcional, derivado/meta o fuera de alcance.
+- Tras cada iteracion de cambios se debe regenerar la trazabilidad y validar que disminuyen los listados de no correlacion.
+

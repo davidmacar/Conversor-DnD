@@ -229,6 +229,10 @@
               <label>Nombre del Personaje</label>
               <input type="text" x-model="character.basic_info.name" class="id-name-input">
             </div>
+            <div class="id-class-header">
+              <label>Clases</label>
+              <button type="button" class="btn-add-small" @click="addClass()">+ Clase</button>
+            </div>
             <template x-for="(cls, ci) in (character.basic_info?.classes || [])" :key="ci">
               <div class="id-class-row">
                 <div class="char-field">
@@ -243,6 +247,13 @@
                   <label>Nivel</label>
                   <input type="number" x-model.number="cls.level" min="1" max="20"
                          @change="updateAll()">
+                </div>
+                <div class="id-class-actions">
+                  <button type="button"
+                          class="btn-remove"
+                          @click="removeClass(ci)"
+                          :disabled="(character.basic_info.classes || []).length <= 1"
+                          title="Eliminar clase">×</button>
                 </div>
               </div>
             </template>
@@ -573,6 +584,14 @@
           <div class="speed-cell">
             <label class="field-label">Salto Alt. (m)</label>
             <input type="number" x-model.number="character.combat.speed.jump_high" min="0">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Ritmo por Hora</label>
+            <input type="text" x-model="character.combat.speed.hour_text" readonly>
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Ritmo por Jornada</label>
+            <input type="text" x-model="character.combat.speed.day_text" readonly>
           </div>
         </div>
         <div class="field-group mt12">
@@ -1072,16 +1091,22 @@
           <template x-for="level in [1,2,3,4,5,6,7,8,9]" :key="level">
             <div class="slot-row slot-row--compact">
               <span class="slot-level-label" x-text="`Nv ${level}`"></span>
-              <input type="number" class="slot-total-input"
-                     :value="character.spellcasting.spell_slots?.[`level_${level}`]?.total || 0"
-                     min="0" max="9"
-                     @change="setSpellSlot(level, 'total', $event.target.value); onSlotTotalChange(level)">
-              <div class="slot-pips counter-pips">
-                <template x-for="j in slotRange(level)" :key="j">
-                  <div class="slot-pip counter-pip counter-pip--slot"
-                       :class="{used: !character.spellcasting.spell_slots?.[`level_${level}`]?.pip_states?.[j]}"
-                       @click="toggleSlotPip(level, j)"></div>
-                </template>
+              <div class="slot-field">
+                <span class="slot-col-title">Máximos</span>
+                <input type="number" class="slot-total-input"
+                       :value="character.spellcasting.spell_slots?.[`level_${level}`]?.total || 0"
+                       min="0" max="9"
+                       @change="setSpellSlot(level, 'total', $event.target.value); onSlotTotalChange(level)">
+              </div>
+              <div class="slot-field slot-field--pips">
+                <span class="slot-col-title">Utilizados</span>
+                <div class="slot-pips counter-pips">
+                  <template x-for="j in slotRange(level)" :key="j">
+                    <div class="slot-pip counter-pip counter-pip--slot"
+                         :class="{used: !character.spellcasting.spell_slots?.[`level_${level}`]?.pip_states?.[j]}"
+                         @click="toggleSlotPip(level, j)"></div>
+                  </template>
+                </div>
               </div>
             </div>
           </template>

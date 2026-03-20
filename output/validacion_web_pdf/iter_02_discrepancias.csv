@@ -1,0 +1,56 @@
+iteration,field,status,severity,expected,actual,source_paths,note
+2,Arma-1-Bonificador-Ataque,sin_campo_template,low,+8,,attacks[0].attack_bonus,No existe widget con ese nombre en la plantilla PDF
+2,Arma-1-Dano-Tipo,sin_campo_template,low,1d8 +4 perforante,,attacks[0].damage | attacks[0].damage_type,No existe widget con ese nombre en la plantilla PDF
+2,Arma-2-Bonificador-Ataque,sin_campo_template,low,+8,,attacks[1].attack_bonus,No existe widget con ese nombre en la plantilla PDF
+2,Arma-2-Dano-Tipo,sin_campo_template,low,1d6 +4 perforante,,attacks[1].damage | attacks[1].damage_type,No existe widget con ese nombre en la plantilla PDF
+2,Arma-3-Bonificador-Ataque,sin_campo_template,low,+8,,attacks[2].attack_bonus,No existe widget con ese nombre en la plantilla PDF
+2,Arma-3-Dano-Tipo,sin_campo_template,low,1d4 +4 perforante,,attacks[2].damage | attacks[2].damage_type,No existe widget con ese nombre en la plantilla PDF
+2,Arma-4-Bonificador-Ataque,sin_campo_template,low,+8,,attacks[3].attack_bonus,No existe widget con ese nombre en la plantilla PDF
+2,Arma-4-Dano-Tipo,sin_campo_template,low,2d8 +4 fuerza,,attacks[3].damage | attacks[3].damage_type,No existe widget con ese nombre en la plantilla PDF
+2,Arma-5-Bonificador-Ataque,sin_campo_template,low,+7,,attacks[4].attack_bonus,No existe widget con ese nombre en la plantilla PDF
+2,Arma-5-Dano-Tipo,sin_campo_template,low,2d6 +4 psiquico,,attacks[4].damage | attacks[4].damage_type,No existe widget con ese nombre en la plantilla PDF
+2,Atributos-Especie,sin_campo_template,low,"VERSATIL HUMANA
+Obtienes una dote de origen adicional.
+
+INGENIO ADAPTABLE
+Tras un descanso largo puedes cambiar una competencia de herramienta.
+
+DETERMINACION
+Una vez por descanso largo repites una tirada de habilidad fallida.",,features_and_traits.species[0].description | features_and_traits.species[0].details.dote | features_and_traits.species[0].name | features_and_traits.species[0].source | features_and_traits.species[1].description | features_and_traits.species[1].details.cambio | features_and_traits.species[1].name | features_and_traits.species[1].source | features_and_traits.species[2].description | features_and_traits.species[2].details.uso | features_and_traits.species[2].name | features_and_traits.species[2].source,No existe widget con ese nombre en la plantilla PDF
+2,Bonificador-Ataque-Conjuros,sin_campo_template,low,+8,,spellcasting.spell_attack_bonus,No existe widget con ese nombre en la plantilla PDF
+2,Check-Escudo,sin_campo_template,low,True,,combat.shield_equipped,No existe widget con ese nombre en la plantilla PDF
+2,Check-Inspiracion-Heroica,sin_campo_template,low,True,,basic_info.inspiration,No existe widget con ese nombre en la plantilla PDF
+2,Competencia-Armas,sin_campo_template,low,"Armas sencillas, Ropera, Ballesta de mano, Daga, Baston",,proficiencies.weapons[0] | proficiencies.weapons[1] | proficiencies.weapons[2] | proficiencies.weapons[3] | proficiencies.weapons[4],No existe widget con ese nombre en la plantilla PDF
+2,Competencia-Herramientas,sin_campo_template,low,"Herramientas de ladron, Kit de falsificacion, Instrumentos musicales, Herramientas de caligrafo",,proficiencies.tools[0] | proficiencies.tools[1] | proficiencies.tools[2] | proficiencies.tools[3],No existe widget con ese nombre en la plantilla PDF
+2,Dados-Golpe-Gastados,sin_campo_template,low,0,,,No existe widget con ese nombre en la plantilla PDF
+2,Deidad-Dominio,sin_campo_template,low,"Ioun, guardiana de los secretos",,background_details.deity,No existe widget con ese nombre en la plantilla PDF
+2,Descripcion-Deidad,sin_campo_template,low,Ariadna venera el conocimiento verificado y mantiene un ritual de copia diaria de hallazgos.,,background_details.deity_description,No existe widget con ese nombre en la plantilla PDF
+2,Dotes,sin_campo_template,low,"TOCADA POR LAS SOMBRAS
+Aprendes invisibilidad y un conjuro adicional de ilusion de nivel 1.
+
+ALERTA
+No puedes ser sorprendida mientras estes consciente y ganas +5 a iniciativa.
+
+LANZADORA DE GUERRA
+Ventaja en TS de concentracion y posibilidad de conjurar con armas en mano.",,features_and_traits.feats[0].description | features_and_traits.feats[0].details.conjuro | features_and_traits.feats[0].id | features_and_traits.feats[0].name | features_and_traits.feats[0].source | features_and_traits.feats[1].description | features_and_traits.feats[1].details.iniciativa | features_and_traits.feats[1].id | features_and_traits.feats[1].name | features_and_traits.feats[1].source | features_and_traits.feats[2].description | features_and_traits.feats[2].details.beneficio | features_and_traits.feats[2].id | features_and_traits.feats[2].name | features_and_traits.feats[2].source,No existe widget con ese nombre en la plantilla PDF
+2,Idiomas,sin_campo_template,low,"Comun, Elfico, Draconico, Enano, Silvano, Infernal",,languages[0] | languages[1] | languages[2] | languages[3] | languages[4] | languages[5],No existe widget con ese nombre en la plantilla PDF
+2,Modificador-Aptitud-Magica,sin_campo_template,low,+4,,,No existe widget con ese nombre en la plantilla PDF
+2,Modificador-Juego-De-Manos,sin_campo_template,low,+12,,skills.juego_de_manos.total,No existe widget con ese nombre en la plantilla PDF
+2,Rasgos-Clase-1,sin_campo_template,low,"RECUPERACION ARCANA
+Durante un descanso corto recuperas espacios de conjuro de nivel combinado igual a 3.
+
+DESFASE TEMPORAL
+Puedes retrasar o adelantar tu iniciativa en 3 posiciones una vez por combate.
+
+ATAQUE FURTIVO
+Infliges 2d6 extra cuando atacas con ventaja o con aliado adyacente al objetivo.",,features_and_traits.class_features[0].description | features_and_traits.class_features[0].details.recuperacion | features_and_traits.class_features[0].id | features_and_traits.class_features[0].name | features_and_traits.class_features[0].source | features_and_traits.class_features[1].description | features_and_traits.class_features[1].details.usos | features_and_traits.class_features[1].id | features_and_traits.class_features[1].name | features_and_traits.class_features[1].source | features_and_traits.class_features[2].description | features_and_traits.class_features[2].details.dano | features_and_traits.class_features[2].id | features_and_traits.class_features[2].name | features_and_traits.class_features[2].source | features_and_traits.class_features[3].description | features_and_traits.class_features[3].details.economia | features_and_traits.class_features[3].id | features_and_traits.class_features[3].name | features_and_traits.class_features[3].source | features_and_traits.class_features[4].description | features_and_traits.class_features[4].details.habilidades | features_and_traits.class_features[4].id | features_and_traits.class_features[4].name | features_and_traits.class_features[4].source | features_and_traits.class_features[5].description | features_and_traits.class_features[5].details.limite | features_and_traits.class_features[5].id | features_and_traits.class_features[5].name | features_and_traits.class_features[5].source,No existe widget con ese nombre en la plantilla PDF
+2,Rasgos-Clase-2,sin_campo_template,low,"ACCION ASTUTA
+Puedes correr, destrabarte u ocultarte como accion adicional.
+
+PERICIA
+Duplicas competencia en Arcanos, Investigacion, Sigilo y Juego de Manos.
+
+LANZAMIENTO RAPIDO
+Puedes reemplazar un truco lanzado por accion por uno lanzado como bonificacion 1/descanso largo.",,features_and_traits.class_features[0].description | features_and_traits.class_features[0].details.recuperacion | features_and_traits.class_features[0].id | features_and_traits.class_features[0].name | features_and_traits.class_features[0].source | features_and_traits.class_features[1].description | features_and_traits.class_features[1].details.usos | features_and_traits.class_features[1].id | features_and_traits.class_features[1].name | features_and_traits.class_features[1].source | features_and_traits.class_features[2].description | features_and_traits.class_features[2].details.dano | features_and_traits.class_features[2].id | features_and_traits.class_features[2].name | features_and_traits.class_features[2].source | features_and_traits.class_features[3].description | features_and_traits.class_features[3].details.economia | features_and_traits.class_features[3].id | features_and_traits.class_features[3].name | features_and_traits.class_features[3].source | features_and_traits.class_features[4].description | features_and_traits.class_features[4].details.habilidades | features_and_traits.class_features[4].id | features_and_traits.class_features[4].name | features_and_traits.class_features[4].source | features_and_traits.class_features[5].description | features_and_traits.class_features[5].details.limite | features_and_traits.class_features[5].id | features_and_traits.class_features[5].name | features_and_traits.class_features[5].source,No existe widget con ese nombre en la plantilla PDF
+2,Tamano,sin_campo_template,low,Mediana,,basic_info.species,No existe widget con ese nombre en la plantilla PDF
+2,Total-Espacios-Conjuro.4,sin_campo_template,low,1,,spellcasting.spell_slots.level_4.total,No existe widget con ese nombre en la plantilla PDF

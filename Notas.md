@@ -1,0 +1,2 @@
+- En velocidad especial no poner nada, será puesto por el usuario
+- El campo de botón de la imagen es correcto, probar a incrustar la url de la imagen

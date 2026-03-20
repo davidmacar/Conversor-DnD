@@ -443,7 +443,35 @@ textarea { resize: vertical; line-height: 1.5; }
 }
 .id-portrait-url:focus { color: var(--text); }
 .id-fields-col { display: flex; flex-direction: column; gap: 12px; }
-.id-class-row { display: grid; grid-template-columns: 2fr 2fr 60px; gap: 10px; }
+.id-class-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.id-class-header label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-family: var(--font-title);
+}
+.id-class-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 70px 28px;
+  gap: 10px;
+  align-items: end;
+}
+.id-class-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+}
+.id-class-actions .btn-remove[disabled] {
+  opacity: .4;
+  cursor: not-allowed;
+}
 .id-name-input {
   font-size: 20px !important;
   font-family: var(--font-title) !important;
@@ -464,6 +492,11 @@ textarea { resize: vertical; line-height: 1.5; }
 .id-appearance-bottom {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
   padding-top: 13px; border-top: 1px solid var(--border);
+}
+
+@media (max-width: 680px) {
+  .id-class-row { grid-template-columns: 1fr; gap: 8px; }
+  .id-class-actions { justify-content: flex-end; padding-bottom: 0; }
 }
 
 /* ── Lightbox retrato ────────────────────────────────────── */
@@ -1472,6 +1505,21 @@ textarea { resize: vertical; line-height: 1.5; }
 }
 .slot-level-label { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;
   letter-spacing: .5px; min-width: 48px; }
+.slot-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.slot-field--pips { flex: 1; }
+.slot-col-title {
+  font-size: 10px;
+  letter-spacing: .45px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-family: var(--font-title);
+  line-height: 1;
+}
 .slot-total-input { width: 36px; text-align: center; }
 .slot-row--compact .slot-pips { gap: 4px; }
 
