@@ -47,6 +47,7 @@
       "damage_display": "1d8+4 perforante",
       "damage_type": "perforante",
       "name": "Ropera del reloj",
+      "notes": "",
       "properties": [
         "Sutil",
         "Versatil",
@@ -63,6 +64,7 @@
       "damage_display": "1d6+4 perforante",
       "damage_type": "perforante",
       "name": "Ballesta de mano",
+      "notes": "",
       "properties": [
         "Carga",
         "Ligera",
@@ -79,6 +81,7 @@
       "damage_display": "1d4+4 perforante",
       "damage_type": "perforante",
       "name": "Daga gemela",
+      "notes": "",
       "properties": [
         "Ligera",
         "Arrojadiza"
@@ -94,6 +97,7 @@
       "damage_display": "2d8+4 fuerza",
       "damage_type": "fuerza",
       "name": "Rayo cronico",
+      "notes": "",
       "properties": [
         "A distancia",
         "Magico"
@@ -109,6 +113,7 @@
       "damage_display": "2d6+4 psiquico",
       "damage_type": "psiquico",
       "name": "Latigo de sombras",
+      "notes": "",
       "properties": [
         "Alcance 4,5 m",
         "Control"
@@ -189,42 +194,12 @@
       {
         "max": 20,
         "name": "Virotes de precision",
-        "note": "12 cargados, 8 en funda",
-        "pip_states": [
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          true,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false,
-          false
-        ]
+        "note": "12 cargados, 8 en funda"
       },
       {
         "max": 6,
         "name": "Bombas de humo",
-        "note": "Fabricacion artesanal",
-        "pip_states": [
-          true,
-          true,
-          true,
-          false,
-          false,
-          false
-        ]
+        "note": "Fabricacion artesanal"
       }
     ],
     "armor_class": 17,
@@ -277,15 +252,15 @@
     "shield_equipped": true,
     "speed": {
       "climb_meters": 3,
+      "day_text": "43.2 km/dia",
       "fly_meters": 0,
+      "hour_text": "5.4 km/h",
       "jump_high": 1,
       "jump_long": 4,
       "special_senses": "Sentido temporal (ecos de 3 segundos)",
       "swim_meters": 3,
       "walking_feet": 30,
-      "walking_meters": 9,
-      "hour_text": "5.4 km/h",
-      "day_text": "43.2 km/dia"
+      "walking_meters": 9
     }
   },
   "features_and_traits": {
@@ -449,6 +424,9 @@
           "Sutil",
           "Versatil"
         ],
+        "qty_backpack": 0,
+        "qty_bag": 0,
+        "qty_equipped": 1,
         "quantity": 1,
         "range_long": {
           "feet": 5,
@@ -479,6 +457,9 @@
           "Carga",
           "Ligera"
         ],
+        "qty_backpack": 0,
+        "qty_bag": 0,
+        "qty_equipped": 1,
         "quantity": 1,
         "range_long": {
           "feet": 120,
@@ -509,6 +490,9 @@
           "Arrojadiza",
           "Ligera"
         ],
+        "qty_backpack": 4,
+        "qty_bag": 0,
+        "qty_equipped": 0,
         "quantity": 4,
         "range_long": {
           "feet": 60,
@@ -530,6 +514,9 @@
         "name": "Tomo de la Novena Hora",
         "price": "250 po",
         "proficient": true,
+        "qty_backpack": 1,
+        "qty_bag": 0,
+        "qty_equipped": 0,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 4
@@ -543,6 +530,9 @@
         "name": "Herramientas de ladron",
         "price": "25 po",
         "proficient": true,
+        "qty_backpack": 1,
+        "qty_bag": 0,
+        "qty_equipped": 0,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 0.5
@@ -556,6 +546,9 @@
         "name": "Kit de falsificacion",
         "price": "15 po",
         "proficient": true,
+        "qty_backpack": 1,
+        "qty_bag": 0,
+        "qty_equipped": 0,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 2
@@ -569,6 +562,9 @@
         "name": "Capa de desplazamiento",
         "price": "No comerciable",
         "proficient": true,
+        "qty_backpack": 0,
+        "qty_bag": 0,
+        "qty_equipped": 1,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 1
@@ -582,6 +578,9 @@
         "name": "Botas de silencio",
         "price": "1200 po",
         "proficient": true,
+        "qty_backpack": 0,
+        "qty_bag": 0,
+        "qty_equipped": 1,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 0.7
@@ -595,6 +594,9 @@
         "name": "Mochila de campo",
         "price": "3 po",
         "proficient": false,
+        "qty_backpack": 1,
+        "qty_bag": 0,
+        "qty_equipped": 0,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 2
@@ -608,6 +610,9 @@
         "name": "Pocion de curacion",
         "price": "50 po",
         "proficient": false,
+        "qty_backpack": 3,
+        "qty_bag": 0,
+        "qty_equipped": 0,
         "quantity": 3,
         "type": "Equipo",
         "weight_kg": 0.3
@@ -621,6 +626,9 @@
         "name": "Pergamino de puerta dimensional",
         "price": "500 po",
         "proficient": true,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "qty_equipped": 0,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 0.1
@@ -634,6 +642,9 @@
         "name": "Juego de naipes marcados",
         "price": "1 po",
         "proficient": true,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "qty_equipped": 0,
         "quantity": 1,
         "type": "Equipo",
         "weight_kg": 0.2

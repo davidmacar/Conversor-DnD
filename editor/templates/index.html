@@ -585,14 +585,6 @@
             <label class="field-label">Salto Alt. (m)</label>
             <input type="number" x-model.number="character.combat.speed.jump_high" min="0">
           </div>
-          <div class="speed-cell">
-            <label class="field-label">Ritmo por Hora</label>
-            <input type="text" x-model="character.combat.speed.hour_text" readonly>
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Ritmo por Jornada</label>
-            <input type="text" x-model="character.combat.speed.day_text" readonly>
-          </div>
         </div>
         <div class="field-group mt12">
           <label class="field-label">Sentidos y Movimiento Especiales</label>
@@ -825,6 +817,13 @@
               </div>
             </div>
             <div class="field-group">
+              <label class="field-label">Propiedades (coma separadas)</label>
+              <input type="text"
+                     :value="attackPropertiesText(atk)"
+                     @input="onAttackPropertiesInput(atk, $event.target.value)"
+                     placeholder="Ligera, Finesse, Maestria...">
+            </div>
+            <div class="field-group">
               <label class="field-label">Notas</label>
               <input type="text" x-model="atk.notes" placeholder="Propiedades, condiciones…">
             </div>
@@ -847,12 +846,6 @@
               <span style="font-size: calc(12px * var(--font-scale));color:var(--text-dim)">Máx:</span>
               <input type="number" x-model.number="ammo.max" min="1" @change="onAmmoMaxChange(i)">
               <button class="btn-remove" @click="removeAmmo(i)">×</button>
-            </div>
-            <div class="ammo-pips counter-pips">
-              <template x-for="j in ammoRange(i)" :key="j">
-                <div class="ammo-pip counter-pip" :class="{filled: ammo.pip_states?.[j]}"
-                     @click="toggleAmmoPip(i, j)"></div>
-              </template>
             </div>
           </div>
         </template>
@@ -1167,24 +1160,25 @@
           <button class="btn-add-small ml-auto" @click="addItem()">+ Objeto</button>
         </div>
         <div class="row-head inventory-head-row">
-          <span>Nombre</span><span>Cant.</span><span class="inv-col-location">Ubicación</span><span class="inv-col-weight">Peso kg</span><span></span>
+          <span>Nombre</span><span>Puesto</span><span>Mochila</span><span>Bolsa</span><span>Total</span><span class="inv-col-weight">Peso kg</span><span></span>
         </div>
         <template x-for="(item, i) in character.inventory.items" :key="i">
           <div class="inventory-item-row">
             <input type="text" x-model="item.name" placeholder="Nombre">
-            <input type="number" x-model.number="item.quantity" min="1" class="text-center">
-            <select x-model="item.location" class="item-location">
-              <option value="">—</option>
-              <option value="Equipado">Equipado</option>
-              <option value="Transportado">Transportado</option>
-              <option value="Otros">Bolsa/Otros</option>
-            </select>
+            <input type="number" x-model.number="item.qty_equipped" min="0" class="text-center" @change="onItemSlotChange(item)">
+            <input type="number" x-model.number="item.qty_backpack" min="0" class="text-center" @change="onItemSlotChange(item)">
+            <input type="number" x-model.number="item.qty_bag" min="0" class="text-center" @change="onItemSlotChange(item)">
+            <input type="number" :value="itemTotalQuantity(item)" readonly class="text-center">
             <input type="number" x-model.number="item.weight_kg" min="0" step="0.1" placeholder="—" class="item-weight">
             <button class="btn-remove" @click="removeItem(i)">×</button>
           </div>
         </template>
         <div class="empty-state" x-show="!character.inventory.items?.length">Sin objetos</div>
         <div class="weight-summary">
+          <span>Puesto: <b x-text="totalByLocation('Equipado')"></b></span>
+          <span>Mochila: <b x-text="totalByLocation('Transportado')"></b></span>
+          <span>Bolsa: <b x-text="totalByLocation('Otros')"></b></span>
+          <span>Total Objetos: <b x-text="totalItemsCount()"></b></span>
           <span>Equipado: <b x-text="weightByLocation('Equipado')"></b> kg</span>
           <span>Transportado: <b x-text="weightByLocation('Transportado')"></b> kg</span>
           <span>Otros: <b x-text="weightByLocation('Otros')"></b> kg</span>
@@ -1253,6 +1247,7 @@
             <input type="text" x-model="gem.name" placeholder="Descripción">
             <input type="text" x-model="gem.value" placeholder="Valor">
             <input type="number" x-model.number="gem.quantity" min="1" style="width:60px">
+            <input type="text" x-model="gem.note" placeholder="Nota">
             <button class="btn-remove" @click="removeGem(i)">×</button>
           </div>
         </template>

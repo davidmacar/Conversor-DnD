@@ -381,11 +381,6 @@ def parse_basic_info(soup: BeautifulSoup) -> dict:
                     total_level = int(m.group(1))
 
         # Campaña
-        campaign = None
-        campaign_link = soup.find("a", href=re.compile(r"/campaigns/"))
-        if campaign_link:
-            campaign = campaign_link.get_text(strip=True)
-
         # Trasfondo: h4 "Trasfondo: X" en #panel-background
         background = None
         panel_bg = soup.find(id="panel-background")
@@ -410,7 +405,6 @@ def parse_basic_info(soup: BeautifulSoup) -> dict:
             "alignment": alignment,
             "experience_points": None,
             "inspiration": False,
-            "campaign": campaign,
             "portrait_url": portrait_url,
         }
     except Exception as e:
@@ -1237,8 +1231,7 @@ def _extract_item_data(body: Tag, item_name: str) -> dict:
 
 def parse_inventory(soup: BeautifulSoup) -> dict:
     currency      = {"PP": 0, "GP": 0, "EP": 0, "SP": 0, "CP": 0}
-    items_data:     dict[str, dict] = {}   # nombre → datos del ítem (incluye location)
-    items_count:    dict[str, int]  = {}   # nombre → número de copias
+    items_data:     dict[str, dict] = {}   # nombre → datos del ítem con cantidades por ubicación
     custom_trackers: list[dict]     = []
     other_possessions = None
     current_location  = ""
@@ -1306,10 +1299,18 @@ def parse_inventory(soup: BeautifulSoup) -> dict:
                     continue
 
             # --- Ítem normal ---
-            items_count[item_name] = items_count.get(item_name, 0) + 1
             if item_name not in items_data:
                 items_data[item_name] = _extract_item_data(body, item_name) if body else {"name": item_name}
-            items_data[item_name]["location"] = current_location  # gana la última ubicación vista
+                items_data[item_name]["qty_equipped"] = 0
+                items_data[item_name]["qty_backpack"] = 0
+                items_data[item_name]["qty_bag"] = 0
+
+            if current_location == "Equipado":
+                items_data[item_name]["qty_equipped"] += 1
+            elif current_location == "Transportado":
+                items_data[item_name]["qty_backpack"] += 1
+            else:
+                items_data[item_name]["qty_bag"] += 1
 
     except Exception as e:
         _warn(f"parse_inventory: {e}")
@@ -1317,9 +1318,13 @@ def parse_inventory(soup: BeautifulSoup) -> dict:
 
     # Construir lista final con cantidad y localización
     items: list[dict] = []
-    for name, count in items_count.items():
-        entry = items_data.get(name, {"name": name})
-        entry["quantity"] = count
+    for entry in items_data.values():
+        qty_total = (
+            int(entry.get("qty_equipped") or 0)
+            + int(entry.get("qty_backpack") or 0)
+            + int(entry.get("qty_bag") or 0)
+        )
+        entry["quantity"] = qty_total
         items.append(entry)
 
     return {
@@ -1627,7 +1632,7 @@ def parse_html(source: Path | str) -> dict:
     nivel20_keys = [
         "basic_info.name", "basic_info.species", "basic_info.classes",
         "basic_info.total_level", "basic_info.background", "basic_info.alignment",
-        "basic_info.campaign", "basic_info.portrait_url",
+        "basic_info.portrait_url",
         "appearance.age", "appearance.size",
         "languages",
         "ability_scores",

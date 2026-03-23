@@ -1,19 +1,3 @@
-- En velocidad especial no poner nada, será puesto por el usuario
-- El campo de botón de la imagen es correcto, probar a incrustar la url de la imagen
-- En las competencias no hay que volver a poner las competencias que se han hecho check. Actualizar los mapeos a los nuevos espacios. 
-- Idiomas adaptar a los nuevos recuadros
-- Genero y Peso se ven mal
-- En rasgos de clase y especia eliminar el añadido del final de "1 por descanso" 
-- Dotes: eliminar el añadido final de "Invisibilidad" y otros comentarios similares
-- Que se está añadiendo al final de las notas?
-- Rehacer la sección de equipo, poner slots para cantidad puesto, cantidad mochila, cantidad bolsa, peso del objeto individual y cantidad total de objetos que sea calculado con el sumatorio y no se pueda editar. 
-- Los pesos de los ítems están mal
-- En monturas, eliminar el texto extra que no aparece en la web. Eliminar tambien del json
-- En gemas y joyeria añadir una sección de notas por cada item a la web donde s eponga lo de "Catalizador de cronomancia" etc que debe aparecer en el json.
-- Que valores se ponen en los cuadros finales de equipo?
-- Las ventajas, resistencias e inmunidades no aparecen en la web. Concatenar el tipo +  la descripción separando con un "|"
-- En las protecciones, no indicar el peso (tampoco se indica en la web), mostrar si esta equipada con su checkBox correspondiente (se ha actualizado su nombre). Hay un espacio en blanco que no debería estar en el espacio 3
-- Las propiedades de las armas no se están mostrando en la web pero sí en el PDF, hay que mostrarlo en ambas. Hay que mapear el bono de ataque a la nueva caja de texto de de cada item de la lista llamado "Arma-X-Ataque". En propiedades no es necesario mostrar la información que ya se muestra en el resto de cuadros.
-- En la web no hay que hacer un contador de munición, únicamente hay que indicar el máximo que deberá ser rellenado en los cuadros del pdf correspondientes. 
-- En munición del PDF no se mapean correctamente los campos. Solo es necesario mapear el nombre en el cuadro del texto e indicar el numero de proyectiles disponibles a traves de los checkbox. La munición 1 utilizará los checkbox "Check-Contador-Municion.1.X", la munición 2, los "Check-Contador-Municion.2.X" y la munición 3 los "Check-Contador-Municion.3.X" que indican toda la munición disponible, es decir, el maximo. 
-- No son suficientes 
+- El campo de botón de la imagen es correcto, probar a incrustar la imagen del personaje para que se pueda visualizar
+
+- Trabajo personal y concreto, fuera de edición del agente. Decidir como estructurar los Items y sus pesos etc. Que valores se ponen en los cuadros finales de equipo?

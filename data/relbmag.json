@@ -1,10 +1,7 @@
 {
   "meta": {
-    "system": "D&D 5.5 (2024)",
-    "platform": "Nivel20.com",
-    "character_url": "https://nivel20.com/games/dnd-2024/characters/1974264-relbmag",
     "character_id": 1974264,
-    "owner": null,
+    "last_sync": "2026-03-13T18:03:15Z",
     "nivel20_keys": [
       "basic_info.name",
       "basic_info.species",
@@ -42,36 +39,37 @@
       "background_details.skill_proficiencies",
       "resources",
       "notes.backstory"
-    ],
-    "last_sync": "2026-03-13T18:03:15Z"
+    ]
   },
   "basic_info": {
     "name": "Relbmag",
-    "species": "Humano",
     "classes": [
       {
         "name": "Bárbaro",
-        "level": 2,
-        "subclass": null
+        "subclass": null,
+        "level": 2
       }
     ],
-    "total_level": 2,
     "background": "Soldado",
+    "species": "Humano",
     "alignment": "Legal bueno",
-    "experience_points": null,
+    "experience_points": 0,
     "inspiration": true,
-    "campaign": "El silencio de los dioses",
-    "portrait_url": "https://nivel20.com/images/3039972/original-cd074962b2b4d1d12348cb909474490e306c845d.jpg?1767863959"
+    "player_name": "",
+    "vision": "",
+    "creation_date": "",
+    "next_level_xp": 0
   },
   "appearance": {
     "age": null,
     "height": null,
     "weight": null,
+    "gender": null,
+    "size": "Mediana",
     "eyes": null,
     "skin": null,
     "hair": null,
-    "gender": null,
-    "size": "Mediana"
+    "summary": ""
   },
   "languages": [
     "Mediano",
@@ -106,242 +104,235 @@
   "proficiency_bonus": 2,
   "saving_throws": {
     "strength": {
-      "total": 5,
       "proficient": true,
-      "roll": "1d20+5"
+      "total": 5
     },
     "dexterity": {
-      "total": 1,
       "proficient": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "constitution": {
-      "total": 5,
       "proficient": true,
-      "roll": "1d20+5"
+      "total": 5
     },
     "intelligence": {
-      "total": -1,
       "proficient": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "wisdom": {
-      "total": 0,
       "proficient": false,
-      "roll": "1d20+0"
+      "total": 0
     },
     "charisma": {
-      "total": 1,
       "proficient": false,
-      "roll": "1d20+1"
+      "total": 1
     }
   },
   "skills": {
     "acrobacias": {
-      "name": "Acrobacias",
       "ability": "dexterity",
-      "total": 3,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+3"
+      "total": 3
     },
     "atletismo": {
-      "name": "Atletismo",
       "ability": "strength",
-      "total": 5,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+5"
+      "total": 5
     },
     "arcanos": {
-      "name": "Conocimiento arcano",
       "ability": "intelligence",
-      "total": -1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "enganar": {
-      "name": "Engaño",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "historia": {
-      "name": "Historia",
       "ability": "intelligence",
-      "total": -1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "interpretacion": {
-      "name": "Interpretación",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "intimidar": {
-      "name": "Intimidación",
       "ability": "charisma",
-      "total": 3,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+3"
+      "total": 3
     },
     "investigacion": {
-      "name": "Investigación",
       "ability": "intelligence",
-      "total": -1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "juego_de_manos": {
-      "name": "Juego de Manos",
       "ability": "dexterity",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "medicina": {
-      "name": "Medicina",
       "ability": "wisdom",
-      "total": 0,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+0"
+      "total": 0
     },
     "naturaleza": {
-      "name": "Naturaleza",
       "ability": "intelligence",
-      "total": -1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "percepcion": {
-      "name": "Percepción",
       "ability": "wisdom",
-      "total": 2,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+2"
+      "total": 2
     },
     "perspicacia": {
-      "name": "Perspicacia",
       "ability": "wisdom",
-      "total": 0,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+0"
+      "total": 0
     },
     "persuasion": {
-      "name": "Persuasión",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "religion": {
-      "name": "Religión",
       "ability": "intelligence",
-      "total": -1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "sigilo": {
-      "name": "Sigilo",
       "ability": "dexterity",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "supervivencia": {
-      "name": "Supervivencia",
       "ability": "wisdom",
-      "total": 2,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+2"
+      "total": 2
     },
     "trato_con_animales": {
-      "name": "Trato con Animales",
       "ability": "wisdom",
-      "total": 0,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+0"
+      "total": 0
     }
   },
   "combat": {
     "armor_class": 14,
     "initiative": 1,
+    "shield_equipped": false,
     "speed": {
-      "walking_feet": 30,
-      "walking_meters": 9,
-      "swim_meters": null,
-      "fly_meters": null,
-      "climb_meters": null
+      "walking_meters": 9.0,
+      "swim_meters": 0.0,
+      "fly_meters": 0.0,
+      "climb_meters": 0.0,
+      "hour_text": "",
+      "day_text": "",
+      "jump_long": "",
+      "jump_high": "",
+      "special_senses": ""
     },
     "hit_points": {
       "maximum": 26,
-      "current": null,
-      "temporary": null
+      "current": 0,
+      "temporary": 0
     },
     "hit_dice": {
-      "total": "2d12",
-      "remaining": 2,
+      "count": 1,
+      "type": "d8",
       "used": 0,
-      "die_type": "d12"
+      "total": "2d12",
+      "remaining": 2
     },
     "death_saves": {
       "successes": 0,
       "failures": 0
-    }
+    },
+    "exhaustion": 0,
+    "concentration": {
+      "active": false,
+      "spell": ""
+    },
+    "protections": [],
+    "advantages_resistances": [],
+    "ammunition": []
   },
   "attacks": [
     {
       "name": "Hacha a dos manos",
       "attack_bonus": 5,
       "attack_roll": "1d20+5",
+      "damage_dice_count": 1,
+      "damage_dice_type": "d6",
+      "damage_bonus": 0,
       "damage": "1d12 +3",
       "damage_type": "cortante",
-      "damage_display": "1d12 +3 cortante"
+      "damage_display": "1d12 +3 cortante",
+      "range": "",
+      "weight": 0.0,
+      "properties": [],
+      "notes": ""
     },
     {
       "name": "Hacha de mano",
       "attack_bonus": 5,
       "attack_roll": "1d20+5",
+      "damage_dice_count": 1,
+      "damage_dice_type": "d6",
+      "damage_bonus": 0,
       "damage": "1d6 +3",
       "damage_type": "cortante",
-      "damage_display": "1d6 +3 cortante"
+      "damage_display": "1d6 +3 cortante",
+      "range": "",
+      "weight": 0.0,
+      "properties": [],
+      "notes": ""
     }
   ],
   "proficiencies": {
-    "armor": [
-      "Armadura intermedia",
-      "Armadura ligera",
-      "Escudo"
-    ],
+    "armor_flags": {
+      "light": false,
+      "medium": false,
+      "heavy": false,
+      "shield": false
+    },
+    "simple_weapons": false,
+    "martial_weapons": false,
+    "tools": [],
     "weapons": [
       "Armas marciales",
       "Armas sencillas"
-    ],
-    "tools": [],
-    "raw": [
-      "Armadura intermedia, Armadura ligera, Armas marciales, Armas sencillas y Escudo"
     ]
   },
   "features_and_traits": {
+    "feats": [
+      {
+        "name": "Atacante salvaje",
+        "source": "Dotes",
+        "description": "Te has preparado para asestar golpes especialmente dañinos. Uno vez por turno, cuando aciertes a un objetivo con un arma, podrás tirar dos veces los dados de daño del arma y usar el resultado que prefieras contra el objetivo."
+      }
+    ],
     "species": [
       {
         "name": "Diestro",
@@ -363,122 +354,76 @@
       {
         "name": "Ataque temerario",
         "source": "Bárbaro",
-        "description": "Cuando vayas a realizar la primera tirada de ataque de tu turno, puedes decidir atacar temerariamente. Tienes ventaja en las tiradas de ataque que utilicen la Fuerza hasta el principio de tu siguiente turno, pero las tiradas de ataque contra ti también tendrán ventaja.",
-        "id": "99708"
+        "description": "Cuando vayas a realizar la primera tirada de ataque de tu turno, puedes decidir atacar temerariamente. Tienes ventaja en las tiradas de ataque que utilicen la Fuerza hasta el principio de tu siguiente turno, pero las tiradas de ataque contra ti también tendrán ventaja."
       },
       {
         "name": "Defensa sin armadura",
         "source": "Bárbaro",
-        "description": "Mientras no lleves armadura alguna, tu clase de armadura base será igual a 10 más tus modificadores por Destreza y Constitución. Obtienes este beneficio aunque lleves un escudo.",
-        "id": "99706"
+        "description": "Mientras no lleves armadura alguna, tu clase de armadura base será igual a 10 más tus modificadores por Destreza y Constitución. Obtienes este beneficio aunque lleves un escudo."
       },
       {
         "name": "Furia",
         "source": "Bárbaro",
-        "description": "Puedes entrar en furia como acción adicional. Consigues ventaja en las pruebas y TS de Fuerza. Al hacer ataques cuerpo a cuerpo usando Fuerza, consigues un bonificador al daño. Tienes resistencia al daño contundente, perforante y cortante. No puedes lanzar conjuros ni concentrarte.",
-        "details": {
-          "item_0": "2 veces/día, +2 daño"
-        },
-        "id": "99707"
+        "description": "Puedes entrar en furia como acción adicional. Consigues ventaja en las pruebas y TS de Fuerza. Al hacer ataques cuerpo a cuerpo usando Fuerza, consigues un bonificador al daño. Tienes resistencia al daño contundente, perforante y cortante. No puedes lanzar conjuros ni concentrarte."
       },
       {
         "name": "Maestría con armas",
         "source": "Bárbaro",
-        "description": "Tu entrenamiento con armas te permite utilizar las propiedades de maestría con dos tipos de armas cuerpo a cuerpo sencillas o marciales de tu elección.",
-        "details": {
-          "item_0": "2 maestría con armas"
-        },
-        "id": "103669"
+        "description": "Tu entrenamiento con armas te permite utilizar las propiedades de maestría con dos tipos de armas cuerpo a cuerpo sencillas o marciales de tu elección."
       },
       {
         "name": "Sentir el peligro",
         "source": "Bárbaro",
-        "description": "Eres capaz de percibir de forma casi sobrenatural cuándo las cosas no son como deberían. Gracias a ello, se te da bien evitar el peligro. Tienes ventaja en las tiradas de salvación de Destreza salvo que tengas el estado de incapacitado.",
-        "id": "99709"
-      }
-    ],
-    "feats": [
-      {
-        "name": "Atacante salvaje",
-        "source": "Dotes",
-        "description": "Te has preparado para asestar golpes especialmente dañinos. Uno vez por turno, cuando aciertes a un objetivo con un arma, podrás tirar dos veces los dados de daño del arma y usar el resultado que prefieras contra el objetivo.",
-        "id": "12989"
+        "description": "Eres capaz de percibir de forma casi sobrenatural cuándo las cosas no son como deberían. Gracias a ello, se te da bien evitar el peligro. Tienes ventaja en las tiradas de salvación de Destreza salvo que tengas el estado de incapacitado."
       }
     ]
   },
-  "spellcasting": {},
+  "spellcasting": {
+    "spellcasting_ability": "",
+    "spell_save_dc": 0,
+    "spell_attack_bonus": 0,
+    "spells_prepared": 0,
+    "spells_known": 0,
+    "sorcery_points_max": 0,
+    "sorcery_points_used": 0,
+    "sorcery_pips": [],
+    "spell_slots": {},
+    "spells": {}
+  },
   "inventory": {
-    "currency": {
-      "PP": 0,
-      "GP": 0,
-      "EP": 0,
-      "SP": 0,
-      "CP": 0
-    },
-    "other_possessions": null,
     "items": [
       {
         "name": "Hacha a dos manos",
-        "description": "El hacha de dos manos es un arma pesada diseñada para infligir un daño brutal con cada golpe. Su fuerza destructiva la hace temible en manos de guerreros y bárbaros.",
-        "type": "Armas",
-        "category": "Armas marciales",
-        "proficient": true,
-        "price": "30 po",
-        "weight_kg": 3.5,
-        "is_weapon": true,
-        "attack_roll": "1d20+5",
-        "attack_bonus": 5,
-        "damage": "1d12 + 3",
-        "critical_damage": "2d12 + 3",
-        "damage_type": "cortante",
-        "properties": [
-          "A dos manos",
-          "Maestría: Hender",
-          "Pesada"
-        ],
-        "quantity": 1,
-        "location": "Equipado"
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 0,
+        "weight_kg": 3.5
       },
       {
         "name": "Hacha de mano",
-        "description": "El hacha de mano es un arma ligera y versátil, adecuada tanto para el combate cuerpo a cuerpo como para ser arrojada a corta distancia. Popular entre guerreros y exploradores, los cuales tienen un estilo de combate rápido y eficaz.",
-        "type": "Armas",
-        "category": "Armas sencillas",
-        "proficient": true,
-        "price": "5 po",
-        "weight_kg": 1.0,
-        "is_weapon": true,
-        "attack_roll": "1d20+5",
-        "attack_bonus": 5,
-        "damage": "1d6 + 3",
-        "critical_damage": "2d6 + 3",
-        "damage_type": "cortante",
-        "range_normal": {
-          "feet": 6,
-          "meters": 2
-        },
-        "range_long": {
-          "feet": 10,
-          "meters": 3
-        },
-        "properties": [
-          "Arrojadiza",
-          "Distancia",
-          "Ligera",
-          "Maestría: Molestar"
-        ],
-        "quantity": 1,
-        "location": "Equipado"
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 0,
+        "weight_kg": 1.0
       }
-    ]
+    ],
+    "currency": {
+      "CP": 0,
+      "SP": 0,
+      "EP": 0,
+      "GP": 0,
+      "PP": 0,
+      "other_notes": ""
+    },
+    "mounts": [],
+    "gems": [],
+    "loaned": []
   },
   "background_details": {
-    "name": "Soldado",
-    "description": "Comenzaste a entrenarte para la guerra anda más llegar a la edad adulta y tienes pocos recuerdos preciados de tu vida anterior a tomar las armas. Luchas es parte de identidad y a veces realizas sin darte cuenta los primeros ejercicios básicos de combate que aprendiste. En algún momento, sacaste partido a tu entrenamiento en el campo de batalla y protegiste el reino.",
-    "skill_proficiencies": [
-      "Atletismo",
-      "Intimidación"
-    ],
+    "birth_place": "",
+    "birth_date": "",
+    "deity": "",
+    "deity_description": "",
     "personality_traits": [],
     "ideals": [
       "La fuerza protege a los débiles"
@@ -490,16 +435,17 @@
     "inspiracion_heroica": {
       "name": "Inspiración heroica (Ingenioso)",
       "max": 1,
-      "current": null,
-      "recharge": "descanso largo"
+      "current": 0,
+      "recharge": "descanso largo",
+      "note": "",
+      "pip_states": []
     }
   },
   "notes": {
-    "other_possessions": null,
-    "backstory": "Historia manual: guerrero forjado en las brasas de muchas batallas",
-    "organizations": "",
     "allies": "",
     "enemies": "",
-    "additional_notes": ""
+    "backstory": "Historia manual: guerrero forjado en las brasas de muchas batallas",
+    "physical_description": "",
+    "general": ""
   }
 }

@@ -1,10 +1,7 @@
 {
   "meta": {
-    "system": "D&D 5.5 (2024)",
-    "platform": "Nivel20.com",
-    "character_url": "https://nivel20.com/games/dnd-2024/characters/1974503-elariel-vaeloran",
     "character_id": 1974503,
-    "owner": null,
+    "last_sync": "2026-03-13T18:03:38Z",
     "nivel20_keys": [
       "basic_info.name",
       "basic_info.species",
@@ -42,36 +39,37 @@
       "background_details.skill_proficiencies",
       "resources",
       "notes.backstory"
-    ],
-    "last_sync": "2026-03-13T18:03:38Z"
+    ]
   },
   "basic_info": {
     "name": "Elariel Vaeloran",
-    "species": "Alto elfo",
     "classes": [
       {
         "name": "Mago",
-        "level": 2,
-        "subclass": null
+        "subclass": null,
+        "level": 2
       }
     ],
-    "total_level": 2,
     "background": "Escriba",
+    "species": "Alto elfo",
     "alignment": "Neutral",
-    "experience_points": null,
+    "experience_points": 0,
     "inspiration": false,
-    "campaign": "El silencio de los dioses",
-    "portrait_url": "https://nivel20.com/images/3039956/original-75b9633235e31cd09cbe5a75ae132d8d500ce15d.JPG?1767863769"
+    "player_name": "",
+    "vision": "",
+    "creation_date": "",
+    "next_level_xp": 0
   },
   "appearance": {
     "age": null,
     "height": null,
     "weight": null,
+    "gender": null,
+    "size": "Mediana",
     "eyes": null,
     "skin": null,
     "hair": null,
-    "gender": null,
-    "size": "Mediana"
+    "summary": ""
   },
   "languages": [
     "Común",
@@ -107,220 +105,203 @@
   "proficiency_bonus": 2,
   "saving_throws": {
     "strength": {
-      "total": -1,
       "proficient": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "dexterity": {
-      "total": 1,
       "proficient": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "constitution": {
-      "total": 0,
       "proficient": false,
-      "roll": "1d20+0"
+      "total": 0
     },
     "intelligence": {
-      "total": 5,
       "proficient": true,
-      "roll": "1d20+5"
+      "total": 5
     },
     "wisdom": {
-      "total": 4,
       "proficient": true,
-      "roll": "1d20+4"
+      "total": 4
     },
     "charisma": {
-      "total": 1,
       "proficient": false,
-      "roll": "1d20+1"
+      "total": 1
     }
   },
   "skills": {
     "acrobacias": {
-      "name": "Acrobacias",
       "ability": "dexterity",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "atletismo": {
-      "name": "Atletismo",
       "ability": "strength",
-      "total": -1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20-1"
+      "total": -1
     },
     "arcanos": {
-      "name": "Conocimiento arcano",
       "ability": "intelligence",
-      "total": 7,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+7"
+      "total": 7
     },
     "enganar": {
-      "name": "Engaño",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "historia": {
-      "name": "Historia",
       "ability": "intelligence",
-      "total": 5,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+5"
+      "total": 5
     },
     "interpretacion": {
-      "name": "Interpretación",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "intimidar": {
-      "name": "Intimidación",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "investigacion": {
-      "name": "Investigación",
       "ability": "intelligence",
-      "total": 5,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+5"
+      "total": 5
     },
     "juego_de_manos": {
-      "name": "Juego de Manos",
       "ability": "dexterity",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "medicina": {
-      "name": "Medicina",
       "ability": "wisdom",
-      "total": 2,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+2"
+      "total": 2
     },
     "naturaleza": {
-      "name": "Naturaleza",
       "ability": "intelligence",
-      "total": 3,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+3"
+      "total": 3
     },
     "percepcion": {
-      "name": "Percepción",
       "ability": "wisdom",
-      "total": 4,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+4"
+      "total": 4
     },
     "perspicacia": {
-      "name": "Perspicacia",
       "ability": "wisdom",
-      "total": 4,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+4"
+      "total": 4
     },
     "persuasion": {
-      "name": "Persuasión",
       "ability": "charisma",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "religion": {
-      "name": "Religión",
       "ability": "intelligence",
-      "total": 3,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+3"
+      "total": 3
     },
     "sigilo": {
-      "name": "Sigilo",
       "ability": "dexterity",
-      "total": 1,
       "proficient": false,
       "expertise": false,
-      "roll": "1d20+1"
+      "total": 1
     },
     "supervivencia": {
-      "name": "Supervivencia",
       "ability": "wisdom",
-      "total": 4,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+4"
+      "total": 4
     },
     "trato_con_animales": {
-      "name": "Trato con Animales",
       "ability": "wisdom",
-      "total": 4,
       "proficient": true,
       "expertise": false,
-      "roll": "1d20+4"
+      "total": 4
     }
   },
   "combat": {
     "armor_class": 11,
     "initiative": 1,
+    "shield_equipped": false,
     "speed": {
-      "walking_feet": 30,
-      "walking_meters": 9,
-      "swim_meters": null,
-      "fly_meters": null,
-      "climb_meters": null
+      "walking_meters": 9.0,
+      "swim_meters": 0.0,
+      "fly_meters": 0.0,
+      "climb_meters": 0.0,
+      "hour_text": "",
+      "day_text": "",
+      "jump_long": "",
+      "jump_high": "",
+      "special_senses": ""
     },
     "hit_points": {
       "maximum": 10,
-      "current": null,
-      "temporary": null
+      "current": 0,
+      "temporary": 0
     },
     "hit_dice": {
-      "total": "2d6",
-      "remaining": 2,
+      "count": 1,
+      "type": "d8",
       "used": 0,
-      "die_type": "d6"
+      "total": "2d6",
+      "remaining": 2
     },
     "death_saves": {
       "successes": 0,
       "failures": 0
-    }
+    },
+    "exhaustion": 0,
+    "concentration": {
+      "active": false,
+      "spell": ""
+    },
+    "protections": [],
+    "advantages_resistances": [],
+    "ammunition": []
   },
   "attacks": [],
   "proficiencies": {
-    "armor": [],
-    "weapons": [
-      "Armas sencillas"
-    ],
+    "armor_flags": {
+      "light": false,
+      "medium": false,
+      "heavy": false,
+      "shield": false
+    },
+    "simple_weapons": false,
+    "martial_weapons": false,
     "tools": [],
-    "raw": [
+    "weapons": [
       "Armas sencillas"
     ]
   },
   "features_and_traits": {
+    "feats": [
+      {
+        "name": "Habilidoso",
+        "source": "Dotes",
+        "description": "Ganas competencia en cualquier combinación de tres habilidades o herramientas que elijas."
+      }
+    ],
     "species": [
       {
         "name": "Visión en la oscuridad",
@@ -347,46 +328,32 @@
       {
         "name": "Académico",
         "source": "Mago",
-        "description": "Mientras estudiabas magia, también te especializaste en otro campo. Elige una de las siguientes habilidades en la que tengas competencia: Conocimiento arcano, Historia, Investigación, Medicina, Naturaleza o Religión. Ganas pericia en la habilidad elegida.",
-        "id": "116097"
+        "description": "Mientras estudiabas magia, también te especializaste en otro campo. Elige una de las siguientes habilidades en la que tengas competencia: Conocimiento arcano, Historia, Investigación, Medicina, Naturaleza o Religión. Ganas pericia en la habilidad elegida."
       },
       {
         "name": "Adepto en rituales",
         "source": "Mago",
-        "description": "Puedes lanzar de forma ritual cualquier conjuro de mago que figure en tu libro de conjuros y esté marcado como \"ritual\". No necesitas tenerlo preparado, pero debes leerlo del libro para lanzarlo de esta forma.",
-        "id": "99990"
+        "description": "Puedes lanzar de forma ritual cualquier conjuro de mago que figure en tu libro de conjuros y esté marcado como \"ritual\". No necesitas tenerlo preparado, pero debes leerlo del libro para lanzarlo de esta forma."
       },
       {
         "name": "Ampliar y sustituir un libro de conjuros",
         "source": "Mago",
-        "description": "Puedes copiar conjuros a tu libro con un costo de 2 h y 60 po por cada nivel del conjuro. Puedes copiar un conjuro de tu libro en otro libro: Solo necesitas dedicar 1 hora e invertir 10 po por cada nivel del conjuro copiado.",
-        "id": "144904"
+        "description": "Puedes copiar conjuros a tu libro con un costo de 2 h y 60 po por cada nivel del conjuro. Puedes copiar un conjuro de tu libro en otro libro: Solo necesitas dedicar 1 hora e invertir 10 po por cada nivel del conjuro copiado."
       },
       {
         "name": "Lanzamiento de conjuros",
         "source": "Mago",
-        "description": "Puedes lanzar conjuros arcanos utilizando tu inteligencia. Tienes un libro de conjuros con los conjuros que conoces, excepto los trucos, que conoces de memoria. Prepara tantos conjuros como tu mod. de Int + tu nivel de mago. Para lanzar un conjuro debes gastar un espacio de conjuro (salvo trucos).",
-        "id": "99879"
+        "description": "Puedes lanzar conjuros arcanos utilizando tu inteligencia. Tienes un libro de conjuros con los conjuros que conoces, excepto los trucos, que conoces de memoria. Prepara tantos conjuros como tu mod. de Int + tu nivel de mago. Para lanzar un conjuro debes gastar un espacio de conjuro (salvo trucos)."
       },
       {
         "name": "Recuperación arcana",
         "source": "Mago",
-        "description": "Tras un descanso corto, el mago puede recuperar espacios de conjuro gastados cuya suma de niveles sea igual o menor a la mitad de su nivel (redondeando hacia arriba), sin superar nivel 5. Solo puede usarse una vez por descanso largo.",
-        "id": "99884"
+        "description": "Tras un descanso corto, el mago puede recuperar espacios de conjuro gastados cuya suma de niveles sea igual o menor a la mitad de su nivel (redondeando hacia arriba), sin superar nivel 5. Solo puede usarse una vez por descanso largo."
       },
       {
         "name": "Remplazar el libro",
         "source": "Mago",
-        "description": "Puedes copiar un conjuro de tu propio libro de conjuros en otro libro, por ejemplo, si quieres hacer una copia de seguridad. Esto se hace igual que copiar un conjuro nuevo en tu libro de conjuros, pero más rápido y fácil. Solo necesitas gastar 1 hora y 10 po por cada nivel del conjuro copiado.",
-        "id": "99882"
-      }
-    ],
-    "feats": [
-      {
-        "name": "Habilidoso",
-        "source": "Dotes",
-        "description": "Ganas competencia en cualquier combinación de tres habilidades o herramientas que elijas.",
-        "id": "12999"
+        "description": "Puedes copiar un conjuro de tu propio libro de conjuros en otro libro, por ejemplo, si quieres hacer una copia de seguridad. Esto se hace igual que copiar un conjuro nuevo en tu libro de conjuros, pero más rápido y fácil. Solo necesitas gastar 1 hora y 10 po por cada nivel del conjuro copiado."
       }
     ]
   },
@@ -394,138 +361,94 @@
     "spellcasting_ability": "Inteligencia",
     "spell_save_dc": 13,
     "spell_attack_bonus": 5,
-    "spell_attack_roll": "1d20+5",
+    "spells_prepared": 0,
+    "spells_known": 0,
+    "sorcery_points_max": 0,
+    "sorcery_points_used": 0,
+    "sorcery_pips": [],
     "spell_slots": {
       "level_1": {
         "total": 3,
-        "used": 0
+        "used": 0,
+        "pip_states": []
       }
     },
     "spells": {
       "cantrips": [
         {
           "name": "Descarga de fuego",
-          "spell_id": "14861",
-          "school": "Evocación",
           "casting_time": "1 acción",
-          "duration": "Instantáneo",
-          "range": null,
-          "components": "V, S",
-          "description": "Haz un ataque de conjuro a distancia contra el objetivo. Si acierta, el objetivo recibe 1d10 de daño de fuego. Los objetos inflamables a los que acierte el conjuro empezarán a arder si nadie los lleva o viste. El daño aumenta en 1d10 en los niveles 5, 11 y 17."
+          "prepared": false
         },
         {
           "name": "Mano de mago",
-          "spell_id": "14857",
-          "school": "Conjuración",
           "casting_time": "1 acción",
-          "duration": "1 minuto",
-          "range": null,
-          "components": "V, S",
-          "description": "Una mano espectral aparece flotando. Puedes usar una acción de magia para controlarla, manipular un objeto, abrir una puerta. etc. Puedes moverla9 metroscada vez que la usas. No puede atacar, activar objetos mágicos ni transportar más de 5 kg."
+          "prepared": false
         },
         {
           "name": "Prestidigitación",
-          "spell_id": "14859",
-          "school": "Transmutación",
           "casting_time": "1 acción",
-          "duration": "1 hora",
-          "range": null,
-          "components": "V, S",
-          "description": "Efectos mágicos menores: efecto sensorial (como chispas, viento, música suave, olor), encender/apagar fuego, limpiar/ensuciar objeto, enfriar/calentar o dar sabor a un material inerte, añadir color, una marca o símbolo a un objeto o crear baratija o ilusión menor."
+          "prepared": false
         },
         {
           "name": "Rayo de escarcha",
-          "spell_id": "14860",
-          "school": "Evocación",
           "casting_time": "1 acción",
-          "duration": "Instantáneo",
-          "range": null,
-          "components": "V, S",
-          "description": "Un rayo helador de luz azul blanquecina alcanza a una criatura. Realiza un ataque de conjuro a distancia. Si aciertas, el objetivo recibe 1d8 de daño de frío y reduce su velocidad en3 metroshasta tu siguiente turno. El daño aumenta a nivel 5 (2d8), a nivel 11 (3d8) y a nivel 17 (4d8)."
+          "prepared": false
         }
       ],
       "level_1": [
         {
           "name": "Armadura de mago",
-          "spell_id": "14870",
-          "school": "Abjuración",
           "casting_time": "1 acción",
-          "duration": "8 horas",
-          "range": null,
-          "components": "V, S, M",
-          "description": "Tocas a una criatura voluntaria que no lleve armadura. Hasta que el conjuro termine, la CA base del objetivo pasa a ser de 13 más su modificador por Destreza. El conjuro termina antes si el objetivo se pone una armadura."
+          "prepared": false
         },
         {
           "name": "Caída de pluma",
-          "spell_id": "14873",
-          "school": "Transmutación",
           "casting_time": "1 reacción",
-          "duration": "1 minuto",
-          "range": null,
-          "components": "V, M",
-          "description": "Elige hasta cinco criaturas dentro del alcance que estén cayendo. La velocidad de descenso de cada objetivo se reduce a18 metrospor asalto hasta que el conjuro termine. Si una criatura aterriza antes de que el conjuro termine, no sufrirá daño de la caída y el conjuro terminará para esa criatura."
+          "prepared": false
         },
         {
           "name": "Dormir",
-          "spell_id": "14882",
-          "school": "Encantamiento",
           "casting_time": "1 acción",
-          "duration": "Concentración 1 minuto",
-          "range": null,
-          "components": "V, S, M",
-          "description": "Todas las criaturas de tu elección en un radio de1.5 metrosdeben superar Sabiduría o quedan incapacitadas hasta el final de su siguiente turno, repitiendo la tirada; si fallan, quedan inconscientes. Recibir daño o ser zarandeadas termina el efecto. Inmunes al sueño/cansancio superan automáticamente."
+          "prepared": false
         },
         {
           "name": "Encontrar familiar",
-          "spell_id": "14883",
-          "school": "Conjuración",
           "casting_time": "1 hora\n(R)",
-          "duration": "Instantáneo",
-          "range": null,
-          "components": "V, S, M",
-          "description": "Consigues el servicio de un familiar, un espíritu con la forma animal que elijas. Actúa de manera independiente, pero obedece tus órdenes. No puede atacar, pero puede realizar otras acciones. Como acción si está a menos de30 metros, puedes ver a través de sus ojos y comunicarte telepáticamente."
+          "prepared": false
         },
         {
           "name": "Escudo",
-          "spell_id": "14886",
-          "school": "Abjuración",
           "casting_time": "1 reacción",
-          "duration": "1 asalto",
-          "range": null,
-          "components": "V, S",
-          "description": "Una barrera imperceptible de fuerza mágica te protege. Hasta el principio de tu siguiente turno, tienes un bonificador de +5 a la CA, incluido contra el ataque al que reacciona, y no recibes ningún daño del conjuro proyectil mágico."
+          "prepared": false
         },
         {
           "name": "Nube de oscurecimiento",
-          "spell_id": "14900",
-          "school": "Conjuración",
           "casting_time": "1 acción",
-          "duration": "Concentración 1 hora",
-          "range": null,
-          "components": "V, S",
-          "description": "Creas una esfera de niebla de6 metrosde radio centrada en un punto dentro del alcance. La esfera está muy oscura y dura hasta que el conjuro termine o hasta que la disperse un viento fuerte. El radio de la niebla aumenta en6 metrospor cada nivel por encima de 1 que tenga el espacio."
+          "prepared": false
         }
       ]
     }
   },
   "inventory": {
+    "items": [],
     "currency": {
-      "PP": 0,
-      "GP": 0,
-      "EP": 0,
+      "CP": 0,
       "SP": 0,
-      "CP": 0
+      "EP": 0,
+      "GP": 0,
+      "PP": 0,
+      "other_notes": ""
     },
-    "other_possessions": null,
-    "items": []
+    "mounts": [],
+    "gems": [],
+    "loaned": []
   },
   "background_details": {
-    "name": "Escriba",
-    "description": "Pasaste tus años de formación en un scriptorium, un monasterio consagrado a la conservación del conocimiento o un organismo gubernamental, donde aprendiste a escribir con letra clara y producir textos exquisitos. Quizás transcribías documentos oficiales o copiabas tomos de literatura. Podrías tener ciertas cualidades para la poesía, la narrativa o la investigación. Sobre todo, prestas mucha atención a los detalles, lo que te impide cometer errores en los documentos que copias y creas.",
-    "skill_proficiencies": [
-      "Investigación",
-      "Percepción"
-    ],
+    "birth_place": "",
+    "birth_date": "",
+    "deity": "",
+    "deity_description": "",
     "personality_traits": [],
     "ideals": [],
     "bonds": [],
@@ -533,11 +456,10 @@
   },
   "resources": {},
   "notes": {
-    "other_possessions": null,
-    "backstory": "Pasaste tus años de formación en un scriptorium, un monasterio consagrado a la conservación del conocimiento o un organismo gubernamental, donde aprendiste a escribir con letra clara y producir textos exquisitos. Quizás transcribías documentos oficiales o copiabas tomos de literatura. Podrías tener ciertas cualidades para la poesía, la narrativa o la investigación. Sobre todo, prestas mucha atención a los detalles, lo que te impide cometer errores en los documentos que copias y creas.",
-    "organizations": "",
     "allies": "",
     "enemies": "",
-    "additional_notes": ""
+    "backstory": "Pasaste tus años de formación en un scriptorium, un monasterio consagrado a la conservación del conocimiento o un organismo gubernamental, donde aprendiste a escribir con letra clara y producir textos exquisitos. Quizás transcribías documentos oficiales o copiabas tomos de literatura. Podrías tener ciertas cualidades para la poesía, la narrativa o la investigación. Sobre todo, prestas mucha atención a los detalles, lo que te impide cometer errores en los documentos que copias y creas.",
+    "physical_description": "",
+    "general": ""
   }
 }

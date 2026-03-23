@@ -7,6 +7,8 @@
 
 /* ── Variables ──────────────────────────────────────────── */
 :root {
+  --font-scale: 1;
+
   /* Fondos */
   --bg:     #090c13;
   --bg2:    #0d1120;
@@ -1537,7 +1539,7 @@ textarea { resize: vertical; line-height: 1.5; }
 .inventory-head-row,
 .inventory-item-row {
   display: grid;
-  grid-template-columns: 1fr 50px 100px 60px 34px;
+  grid-template-columns: minmax(0, 1fr) 58px 58px 58px 58px 70px 34px;
   gap: 6px;
   min-width: 0;
 }
@@ -1555,7 +1557,7 @@ textarea { resize: vertical; line-height: 1.5; }
 }
 
 .mount-row { display: grid; grid-template-columns: 1fr 2fr 34px; gap: 6px; margin-bottom: 5px; align-items: center; min-width: 0; }
-.gem-row   { display: grid; grid-template-columns: 1fr 80px 60px 34px; gap: 6px; margin-bottom: 5px; align-items: center; min-width: 0; }
+.gem-row   { display: grid; grid-template-columns: minmax(0, 1fr) 80px 60px minmax(0, 1fr) 34px; gap: 6px; margin-bottom: 5px; align-items: center; min-width: 0; }
 
 .loaned-head-row,
 .loaned-row {
@@ -1572,11 +1574,9 @@ textarea { resize: vertical; line-height: 1.5; }
 @media (max-width: 768px) {
   .inventory-head-row,
   .inventory-item-row {
-    grid-template-columns: 1fr 50px 34px;
+    grid-template-columns: minmax(0, 1fr) 52px 52px 52px 52px 34px;
   }
-  .inventory-head-row .inv-col-location,
   .inventory-head-row .inv-col-weight,
-  .inventory-item-row .item-location,
   .inventory-item-row .item-weight {
     display: none;
   }
@@ -1591,7 +1591,8 @@ textarea { resize: vertical; line-height: 1.5; }
   .loaned-head-row { grid-template-columns: 1fr 1fr 34px; }
   .loaned-head-row .loaned-head-extra { display: none; }
   .loaned-row .loaned-extra { display: none; }
-  .gem-row    { grid-template-columns: 1fr 60px 34px; }
+  .gem-row    { grid-template-columns: minmax(0, 1fr) 70px minmax(0, 1fr) 34px; }
+  .gem-row input:nth-child(3) { display: none; }
   .carry-capacity-grid { grid-template-columns: repeat(2, 1fr); }
 }
 

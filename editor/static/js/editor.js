@@ -95,12 +95,50 @@ function characterEditor() {
           atk.damage_dice_type  = m ? m[2].toLowerCase() : 'd6';
           atk.damage_bonus      = m && m[3] ? parseInt(m[3].replace(/\s/g,'')) : 0;
         }
+        if (!Array.isArray(atk.properties)) {
+          atk.properties = String(atk.properties || '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        }
+        atk.notes = String(atk.notes || '').trim();
         delete atk.custom_bonuses;
         this.syncDamageDisplay(atk);
       });
       this.character.languages     ??= [];
       this.character.inventory     ??= {};
       this.character.inventory.items ??= [];
+      this.character.inventory.items = this.character.inventory.items.map((item) => {
+        const it = item && typeof item === 'object' ? item : {};
+        const toInt = (v) => Math.max(0, parseInt(v, 10) || 0);
+
+        let qtyEquipped = toInt(it.qty_equipped);
+        let qtyBackpack = toInt(it.qty_backpack);
+        let qtyBag = toInt(it.qty_bag);
+
+        // Compatibilidad con JSON antiguo basado en quantity + location.
+        if (qtyEquipped + qtyBackpack + qtyBag === 0) {
+          const legacyQty = toInt(it.quantity);
+          const legacyLoc = String(it.location || '').trim();
+          if (legacyQty > 0) {
+            if (legacyLoc === 'Equipado') qtyEquipped = legacyQty;
+            else if (legacyLoc === 'Transportado') qtyBackpack = legacyQty;
+            else qtyBag = legacyQty;
+          }
+        }
+
+        return {
+          ...it,
+          name: String(it.name || ''),
+          qty_equipped: qtyEquipped,
+          qty_backpack: qtyBackpack,
+          qty_bag: qtyBag,
+          quantity: qtyEquipped + qtyBackpack + qtyBag,
+          weight_kg: it.weight_kg === null || it.weight_kg === undefined || it.weight_kg === ''
+            ? null
+            : Number(it.weight_kg),
+        };
+      });
       this.character.inventory.currency ??= {};
       this.character.resources     ??= {};
       this.character.spellcasting  ??= {};
@@ -129,8 +167,6 @@ function characterEditor() {
       this.character.combat.speed.swim_meters  ??= 0;
       this.character.combat.speed.fly_meters   ??= 0;
       this.character.combat.speed.climb_meters ??= 0;
-      this.character.combat.speed.hour_text ??= '';
-      this.character.combat.speed.day_text ??= '';
       this.character.combat.shield_equipped    ??= false;
       this.character.combat.concentration      ??= { active: false, spell: '' };
       this.character.combat.exhaustion         ??= 0;
@@ -161,6 +197,7 @@ function characterEditor() {
       this.character.notes.backstory           ??= '';
       this.character.notes.physical_description ??= '';
       this.character.notes.other_notes          ??= '';
+      this.character.notes.additional_notes     ??= '';
       this.character.background_details.deity             ??= '';
       this.character.background_details.deity_description ??= '';
       this.character.features_and_traits         ??= {};
@@ -257,13 +294,11 @@ function characterEditor() {
         slot.pip_states = this.canonicalizePips(slot.pip_states, slot.total, 'used', slot.used);
         slot.used = this.countUsedPips(slot.pip_states);
       }
-      // Migrar ammunition pip_states
+      // Municion: en web solo se edita nombre + maximo.
       for (const ammo of this.character.combat.ammunition) {
         ammo.max = Math.max(0, parseInt(ammo.max, 10) || 0);
-        const filled = Array.isArray(ammo.pip_states)
-          ? this.countFilledPips(ammo.pip_states)
-          : ammo.max;
-        ammo.pip_states = this.canonicalizePips(ammo.pip_states, ammo.max, 'filled', filled);
+        ammo.name = String(ammo.name || '');
+        delete ammo.pip_states;
       }
       // Migrar sorcery pips
       const max = Math.max(0, parseInt(this.character.spellcasting.sorcery_points_max, 10) || 0);
@@ -460,14 +495,6 @@ function characterEditor() {
         hd.count = Math.max(1, parseInt(hd.count, 10) || 1);
         hd.used = Math.max(0, Math.min(hd.count, parseInt(hd.used, 10) || 0));
         this.character.combat.hit_dice = hd;
-
-        const speed = this.character.combat.speed || {};
-        const walking = Number(speed.walking_meters) || 0;
-        const kmPerHour = walking * 0.6;
-        const kmPerDay = kmPerHour * 8;
-        speed.hour_text = `${kmPerHour.toFixed(1)} km/h`;
-        speed.day_text = `${kmPerDay.toFixed(1)} km/dia`;
-        this.character.combat.speed = speed;
       }
     },
 
@@ -514,6 +541,18 @@ function characterEditor() {
       atk.damage_display = [atk.damage, atk.damage_type].filter(Boolean).join(' ');
     },
 
+    attackPropertiesText(atk) {
+      const props = Array.isArray(atk?.properties) ? atk.properties : [];
+      return props.join(', ');
+    },
+
+    onAttackPropertiesInput(atk, rawValue) {
+      atk.properties = String(rawValue || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+    },
+
     // ── Spell helpers ────────────────────────────────────────────────────────
 
     spellLevelKey(level) { return level === 0 ? 'cantrips' : `level_${level}`; },
@@ -551,15 +590,30 @@ function characterEditor() {
 
     addItem() {
       this.character.inventory.items.push({
-        name: '', quantity: 1, weight_kg: null, is_weapon: false, location: ''
+        name: '', qty_equipped: 0, qty_backpack: 1, qty_bag: 0, quantity: 1, weight_kg: null
       });
     },
 
     removeItem(i) { this.character.inventory.items.splice(i, 1); },
 
+    itemTotalQuantity(item) {
+      const eq = Math.max(0, parseInt(item?.qty_equipped, 10) || 0);
+      const bp = Math.max(0, parseInt(item?.qty_backpack, 10) || 0);
+      const bg = Math.max(0, parseInt(item?.qty_bag, 10) || 0);
+      return eq + bp + bg;
+    },
+
+    onItemSlotChange(item) {
+      if (!item) return;
+      item.qty_equipped = Math.max(0, parseInt(item.qty_equipped, 10) || 0);
+      item.qty_backpack = Math.max(0, parseInt(item.qty_backpack, 10) || 0);
+      item.qty_bag = Math.max(0, parseInt(item.qty_bag, 10) || 0);
+      item.quantity = this.itemTotalQuantity(item);
+    },
+
     totalWeight() {
       return (this.character.inventory.items || [])
-        .reduce((s, it) => s + ((it.weight_kg || 0) * (it.quantity || 1)), 0)
+        .reduce((s, it) => s + ((it.weight_kg || 0) * this.itemTotalQuantity(it)), 0)
         .toFixed(1);
     },
 
@@ -869,29 +923,13 @@ function characterEditor() {
 
     addAmmo() {
       this.character.combat.ammunition.push({
-        name: '', max: 6, pip_states: this.buildPips(6, 6, 'filled')
+        name: '', max: 20
       });
     },
     removeAmmo(i) { this.character.combat.ammunition.splice(i, 1); },
-    ammoRange(i) {
-      return Array.from({ length: Math.min(this.character.combat.ammunition[i]?.max || 0, 40) }, (_, j) => j);
-    },
-    toggleAmmoPip(i, j) {
-      const ammo = this.character.combat.ammunition[i];
-      const filled = this.countFilledPips(ammo.pip_states);
-      ammo.pip_states = this.ensurePips(
-        ammo.pip_states,
-        ammo.max || 0,
-        'filled',
-        filled
-      );
-      ammo.pip_states = this.setPipCascade(ammo.pip_states, j, 'filled');
-    },
     onAmmoMaxChange(i) {
       const ammo = this.character.combat.ammunition[i];
       ammo.max = Math.max(0, parseInt(ammo.max, 10) || 0);
-      const filled = this.countFilledPips(ammo.pip_states);
-      ammo.pip_states = this.canonicalizePips(ammo.pip_states, ammo.max, 'filled', filled);
     },
 
     // ── Spell slot pip helpers ────────────────────────────────────────────────
@@ -961,9 +999,29 @@ function characterEditor() {
 
     weightByLocation(loc) {
       return (this.character.inventory.items || [])
-        .filter(it => it.location === loc)
-        .reduce((s, it) => s + ((it.weight_kg || 0) * (it.quantity || 1)), 0)
+        .reduce((s, it) => {
+          const qty = loc === 'Equipado'
+            ? (parseInt(it.qty_equipped, 10) || 0)
+            : loc === 'Transportado'
+              ? (parseInt(it.qty_backpack, 10) || 0)
+              : (parseInt(it.qty_bag, 10) || 0);
+          return s + ((it.weight_kg || 0) * qty);
+        }, 0)
         .toFixed(1);
+    },
+
+    totalByLocation(loc) {
+      return (this.character.inventory.items || [])
+        .reduce((s, it) => {
+          if (loc === 'Equipado') return s + (parseInt(it.qty_equipped, 10) || 0);
+          if (loc === 'Transportado') return s + (parseInt(it.qty_backpack, 10) || 0);
+          return s + (parseInt(it.qty_bag, 10) || 0);
+        }, 0);
+    },
+
+    totalItemsCount() {
+      return (this.character.inventory.items || [])
+        .reduce((s, it) => s + this.itemTotalQuantity(it), 0);
     },
 
     // ── Mount helpers ──────────────────────────────────────────────────────────
@@ -973,12 +1031,12 @@ function characterEditor() {
 
     // ── Gem helpers ────────────────────────────────────────────────────────────
 
-    addGem()          { this.character.inventory.gems.push({ name: '', value: '', quantity: 1 }); },
+    addGem()          { this.character.inventory.gems.push({ name: '', value: '', quantity: 1, note: '' }); },
     removeGem(i)      { this.character.inventory.gems.splice(i, 1); },
 
     // ── Loaned item helpers ────────────────────────────────────────────────────
 
-    addLoaned()       { this.character.inventory.loaned.push({ name: '', where: '', amount: '', when: '' }); },
+    addLoaned()       { this.character.inventory.loaned.push({ name: '', where: '', amount: '', when: '', notes: '' }); },
     removeLoaned(i)   { this.character.inventory.loaned.splice(i, 1); },
   };
 }
