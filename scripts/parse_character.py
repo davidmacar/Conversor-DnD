@@ -27,10 +27,20 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT_BOOTSTRAP = _SCRIPT_DIR.parent
+if str(_PROJECT_ROOT_BOOTSTRAP) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT_BOOTSTRAP))
+
+from project_paths import ensure_runtime_directories, get_project_paths
+
+PATHS = get_project_paths()
+ensure_runtime_directories(PATHS)
+
 try:
     from bs4 import BeautifulSoup, Tag
-except ImportError:
-    sys.exit("Error: instala beautifulsoup4 con:  pip install beautifulsoup4")
+except ImportError as exc:
+    raise ImportError("Error: instala beautifulsoup4 con:  pip install beautifulsoup4") from exc
 
 
 # ---------------------------------------------------------------------------
@@ -1687,7 +1697,6 @@ def main() -> None:
     positional = [a for a in sys.argv[1:] if not a.startswith("-")]
     VERBOSE = "--verbose" in sys.argv or "-v" in sys.argv
 
-    script_dir = Path(__file__).parent
     source_arg = positional[0] if positional else None
     is_url = bool(source_arg and source_arg.startswith(("http://", "https://")))
 
@@ -1695,7 +1704,7 @@ def main() -> None:
         url = source_arg
         # Nombre de salida por defecto: slug de la URL, p. ej. "1966429-webons.json"
         slug = url.rstrip("/").split("/")[-1]
-        default_out = script_dir.parent / "data" / f"{slug}.json"
+        default_out = PATHS.data_dir / f"{slug}.json"
         output_path = Path(positional[1]) if len(positional) >= 2 else default_out
 
         print(f"Descargando: {url}")
@@ -1705,7 +1714,7 @@ def main() -> None:
             sys.exit(f"Error al descargar '{url}': {e}")
         print(f"Descarga completada ({len(source):,} bytes)")
     else:
-        input_path  = Path(source_arg) if source_arg else script_dir.parent / "data" / "personaje.html"
+        input_path  = Path(source_arg) if source_arg else PATHS.data_dir / "personaje.html"
         output_path = Path(positional[1]) if len(positional) >= 2 else input_path.with_suffix(".json")
 
         if not input_path.exists():
@@ -1716,6 +1725,7 @@ def main() -> None:
 
     data = parse_html(source)
 
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps(data, ensure_ascii=False, indent=2),
         encoding="utf-8",

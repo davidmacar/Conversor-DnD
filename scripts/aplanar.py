@@ -28,18 +28,27 @@ import re
 import sys
 from pathlib import Path
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT_BOOTSTRAP = _SCRIPT_DIR.parent
+if str(_PROJECT_ROOT_BOOTSTRAP) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT_BOOTSTRAP))
+
+from project_paths import get_project_paths
+
 try:
     import pikepdf
-except ImportError:
-    sys.exit("Error: instala pikepdf con:  pip install pikepdf")
+except ImportError as exc:
+    raise ImportError("Error: instala pikepdf con:  pip install pikepdf") from exc
 
 
 # ---------------------------------------------------------------------------
 # Paths del proyecto
 # ---------------------------------------------------------------------------
 
-PROJECT_ROOT  = Path(__file__).parent.parent
-TEMPLATE_PATH = PROJECT_ROOT / "templates" / "Hoja-Personaje-Editable-Completa-ES.pdf"
+PATHS = get_project_paths()
+
+PROJECT_ROOT  = PATHS.project_root
+TEMPLATE_PATH = PATHS.template_pdf
 
 # Tipos de anotación que se renderizan al content y se eliminan
 VISUAL_SUBTYPES = {

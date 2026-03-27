@@ -1,1316 +1,794 @@
 {
-  "ability_scores": {
-    "charisma": {
-      "modifier": 1,
-      "score": 12
-    },
-    "constitution": {
-      "modifier": 2,
-      "score": 14
-    },
-    "dexterity": {
-      "modifier": 4,
-      "score": 18
-    },
-    "intelligence": {
-      "modifier": 4,
-      "score": 18
-    },
-    "strength": {
-      "modifier": 0,
-      "score": 10
-    },
-    "wisdom": {
-      "modifier": 1,
-      "score": 13
-    }
-  },
-  "appearance": {
-    "age": 31,
-    "eyes": "Gris acero",
-    "gender": "Mujer",
-    "hair": "Negro con mechones plateados",
-    "height": "1,72 m",
-    "size": "Mediana",
-    "skin": "Oliva palida",
-    "summary": "Ariadna camina con postura de duelista y lleva un abrigo reforzado con runas de proteccion temporal.",
-    "weight": "65 kg"
-  },
-  "attacks": [
-    {
-      "attack_bonus": 8,
-      "attack_roll": "1d20+8",
-      "damage": "1d8+4",
-      "damage_bonus": 4,
-      "damage_dice_count": 1,
-      "damage_dice_type": "d8",
-      "damage_display": "1d8+4 perforante",
-      "damage_type": "perforante",
-      "name": "Ropera del reloj",
-      "notes": "",
-      "properties": [
-        "Sutil",
-        "Versatil",
-        "Maestria: Finta"
-      ],
-      "range_min": "2 m",
-      "range_max": "",
-      "range": "2 m"
-    },
-    {
-      "attack_bonus": 8,
-      "attack_roll": "1d20+8",
-      "damage": "1d6+4",
-      "damage_bonus": 4,
-      "damage_dice_count": 1,
-      "damage_dice_type": "d6",
-      "damage_display": "1d6+4 perforante",
-      "damage_type": "perforante",
-      "name": "Ballesta de mano",
-      "notes": "",
-      "properties": [
-        "Carga",
-        "Ligera",
-        "Distancia"
-      ],
-      "range_min": "9 m",
-      "range_max": "36 m",
-      "range": "9 m / 36 m"
-    },
-    {
-      "attack_bonus": 8,
-      "attack_roll": "1d20+8",
-      "damage": "1d4+4",
-      "damage_bonus": 4,
-      "damage_dice_count": 1,
-      "damage_dice_type": "d4",
-      "damage_display": "1d4+4 perforante",
-      "damage_type": "perforante",
-      "name": "Daga gemela",
-      "notes": "",
-      "properties": [
-        "Ligera",
-        "Arrojadiza"
-      ],
-      "range_min": "",
-      "range_max": "",
-      "range": ""
-    },
-    {
-      "attack_bonus": 8,
-      "attack_roll": "1d20+8",
-      "damage": "2d8+4",
-      "damage_bonus": 4,
-      "damage_dice_count": 2,
-      "damage_dice_type": "d8",
-      "damage_display": "2d8+4 fuerza",
-      "damage_type": "fuerza",
-      "name": "Rayo cronico",
-      "notes": "",
-      "properties": [
-        "A distancia",
-        "Magico"
-      ],
-      "range_min": "",
-      "range_max": "",
-      "range": ""
-    },
-    {
-      "attack_bonus": 7,
-      "attack_roll": "1d20+7",
-      "damage": "2d6+4",
-      "damage_bonus": 4,
-      "damage_dice_count": 2,
-      "damage_dice_type": "d6",
-      "damage_display": "2d6+4 psiquico",
-      "damage_type": "psiquico",
-      "name": "Latigo de sombras",
-      "notes": "",
-      "properties": [
-        "Alcance 4,5 m",
-        "Control"
-      ],
-      "range_min": "",
-      "range_max": "",
-      "range": ""
-    }
-  ],
-  "background_details": {
-    "birth_date": "1495-11-02",
-    "birth_place": "Puerto Ceniza",
-    "bonds": [
-      "Debe limpiar el nombre de su maestra desaparecida.",
-      "Protege a su escuadra de investigacion por encima de su carrera."
-    ],
-    "deity": "Ioun, guardiana de los secretos",
-    "deity_description": "Ariadna venera el conocimiento verificado y mantiene un ritual de copia diaria de hallazgos.",
-    "description": "Ariadna fue escriba judicial antes de convertirse en agente de campo. Su especialidad es detectar contradicciones en testimonios y rastrear cronologias imposibles.",
-    "flaws": [
-      "Le cuesta delegar cuando hay riesgo alto.",
-      "Puede obsesionarse con un patron hasta descuidar descanso."
-    ],
-    "ideals": [
-      "La verdad necesita pruebas, no volumen.",
-      "La magia debe responder ante la ley."
-    ],
-    "name": "Erudita del Tribunal de Bronce",
-    "page_ref": "Manual de Campana, pag. 188",
-    "personality_traits": [
-      "Anota todo con hora exacta, incluso en combate.",
-      "Cuando duda, formula tres hipotesis antes de actuar.",
-      "Tiene humor seco y muy preciso."
-    ],
-    "skill_proficiencies": [
-      "Investigacion",
-      "Perspicacia",
-      "Engano"
-    ]
-  },
-  "basic_info": {
-    "alignment": "Neutral buena",
-    "background": "Erudita del Tribunal de Bronce",
-    "campaign": "Las Runas del Horizonte Roto",
-    "classes": [
-      {
-        "name": "Maga",
-        "subclass": "Cronomancia",
-        "level": 5
-      },
-      {
-        "name": "Picara",
-        "subclass": "Bribon Arcano",
-        "level": 4
-      },
-      {
-        "name": "Pajaro",
-        "subclass": "Volador",
-        "level": 1
-      }
-    ],
-    "creation_date": "2026-03-19",
-    "experience_points": 51200,
-    "inspiration": true,
-    "name": "Ariadna Thorne",
-    "next_level_xp": 12800,
-    "player_name": "Mesa de Pruebas",
-    "portrait_url": "https://example.com/portraits/ariadna-thorne.png",
-    "species": "Humano",
-    "total_level": 9,
-    "vision": "Vision en la oscuridad 18 m"
-  },
-  "combat": {
-    "advantages_resistances": [
-      "Ventaja contra trampas mecanicas",
-      "Resistencia a dano de fuerza una vez por descanso corto",
-      "Inmunidad a enfermedad mundana",
-      "Ventaja en iniciativa durante la primera ronda"
-    ],
-    "ammunition": [
-      {
-        "max": 20,
-        "name": "Virotes de precision",
-        "note": "12 cargados, 8 en funda"
-      },
-      {
-        "max": 6,
-        "name": "Bombas de humo",
-        "note": "Fabricacion artesanal"
-      }
-    ],
-    "armor_class": 17,
-    "concentration": {
-      "active": true,
-      "spell": "Acelerar"
-    },
-    "death_saves": {
-      "failures": 0,
-      "successes": 1
-    },
-    "exhaustion": 1,
-    "hit_dice": {
-      "count": 9,
-      "die_type": "d8",
-      "remaining": 6,
-      "total": "9d8",
-      "type": "d8",
-      "used": 3
-    },
-    "hit_points": {
-      "current": 46,
-      "maximum": 58,
-      "temporary": 5
-    },
-    "initiative": 4,
-    "protections": [
-      {
-        "ac_bonus": 3,
-        "equipped": true,
-        "name": "Armadura de mago",
-        "type": "Abjuracion",
-        "weight_kg": 0
-      },
-      {
-        "ac_bonus": 2,
-        "equipped": true,
-        "name": "Escudo de duelo",
-        "type": "Escudo ligero",
-        "weight_kg": 2.8
-      },
-      {
-        "ac_bonus": 1,
-        "equipped": true,
-        "name": "Capa de desplazamiento",
-        "type": "Objeto magico",
-        "weight_kg": 1
-      }
-    ],
-    "shield_equipped": true,
-    "speed": {
-      "climb_meters": 3,
-      "day_text": "43.2 km/dia",
-      "fly_meters": 0,
-      "hour_text": "5.4 km/h",
-      "jump_high": 1,
-      "jump_long": 4,
-      "special_senses": "Sentido temporal (ecos de 3 segundos)",
-      "swim_meters": 3,
-      "walking_feet": 30,
-      "walking_meters": 9
-    }
-  },
-  "features_and_traits": {
-    "class_features": [
-      {
-        "description": "Durante un descanso corto recuperas espacios de conjuro de nivel combinado igual a 3.",
-        "details": {
-          "recuperacion": "3 niveles de conjuro"
-        },
-        "id": "CF-ARC-001",
-        "name": "Recuperacion arcana",
-        "source": "Maga"
-      },
-      {
-        "description": "Puedes retrasar o adelantar tu iniciativa en 3 posiciones una vez por combate.",
-        "details": {
-          "usos": "1 por descanso corto"
-        },
-        "id": "CF-ARC-002",
-        "name": "Desfase temporal",
-        "source": "Maga (Cronomancia)"
-      },
-      {
-        "description": "Infliges 2d6 extra cuando atacas con ventaja o con aliado adyacente al objetivo.",
-        "details": {
-          "dano": "2d6"
-        },
-        "id": "CF-ARC-003",
-        "name": "Ataque furtivo",
-        "source": "Picara"
-      },
-      {
-        "description": "Puedes correr, destrabarte u ocultarte como accion adicional.",
-        "details": {
-          "economia": "accion adicional"
-        },
-        "id": "CF-ARC-004",
-        "name": "Accion astuta",
-        "source": "Picara"
-      },
-      {
-        "description": "Duplicas competencia en Arcanos, Investigacion, Sigilo y Juego de Manos.",
-        "details": {
-          "habilidades": "4"
-        },
-        "id": "CF-ARC-005",
-        "name": "Pericia",
-        "source": "Picara"
-      },
-      {
-        "description": "Puedes reemplazar un truco lanzado por accion por uno lanzado como bonificacion 1/descanso largo.",
-        "details": {
-          "limite": "1 por descanso largo"
-        },
-        "id": "CF-ARC-006",
-        "name": "Lanzamiento rapido",
-        "source": "Maga"
-      }
-    ],
-    "feats": [
-      {
-        "description": "Aprendes invisibilidad y un conjuro adicional de ilusion de nivel 1.",
-        "details": {
-          "conjuro": "Invisibilidad"
-        },
-        "id": "FT-001",
-        "name": "Tocada por las sombras",
-        "source": "Dote"
-      },
-      {
-        "description": "No puedes ser sorprendida mientras estes consciente y ganas +5 a iniciativa.",
-        "details": {
-          "iniciativa": "+5"
-        },
-        "id": "FT-002",
-        "name": "Alerta",
-        "source": "Dote"
-      },
-      {
-        "description": "Ventaja en TS de concentracion y posibilidad de conjurar con armas en mano.",
-        "details": {
-          "beneficio": "Concentracion"
-        },
-        "id": "FT-003",
-        "name": "Lanzadora de guerra",
-        "source": "Dote"
-      }
-    ],
-    "species": [
-      {
-        "description": "Obtienes una dote de origen adicional.",
-        "details": {
-          "dote": "Adicional"
-        },
-        "name": "Versatil humana",
-        "source": "Humano"
-      },
-      {
-        "description": "Tras un descanso largo puedes cambiar una competencia de herramienta.",
-        "details": {
-          "cambio": "1 herramienta"
-        },
-        "name": "Ingenio adaptable",
-        "source": "Humano"
-      },
-      {
-        "description": "Una vez por descanso largo repites una tirada de habilidad fallida.",
-        "details": {
-          "uso": "1 por descanso largo"
-        },
-        "name": "Determinacion",
-        "source": "Humano"
-      }
-    ]
-  },
-  "inventory": {
-    "currency": {
-      "CP": 34,
-      "EP": 11,
-      "GP": 457,
-      "PP": 9,
-      "SP": 82,
-      "other_notes": "150 po reservadas para componentes raros"
-    },
-    "gems": [
-      {
-        "name": "Zafiro tallado",
-        "note": "Catalizador de cronomancia",
-        "quantity": 2,
-        "value_gp": 100
-      },
-      {
-        "name": "Opalo lechoso",
-        "note": "Pago pendiente de un contacto",
-        "quantity": 1,
-        "value_gp": 75
-      },
-      {
-        "name": "Granate oscuro",
-        "note": "Intercambio rapido",
-        "quantity": 4,
-        "value_gp": 25
-      }
-    ],
-    "items": [
-      {
-        "attack_bonus": 8,
-        "attack_roll": "1d20+8",
-        "category": "Armas marciales",
-        "critical_damage": "2d8 +4",
-        "damage": "1d8 +4",
-        "damage_type": "perforante",
-        "description": "Hoja ligera con canal temporal grabado.",
-        "is_weapon": true,
-        "item_id": "IT-001",
-        "location": "Equipado",
-        "name": "Ropera del reloj",
-        "price": "45 po",
-        "proficient": true,
-        "properties": [
-          "Sutil",
-          "Versatil"
-        ],
-        "qty_backpack": 0,
-        "qty_bag": 0,
-        "qty_equipped": 1,
-        "quantity": 1,
-        "range_long": {
-          "feet": 5,
-          "meters": 2
-        },
-        "range_normal": {
-          "feet": 5,
-          "meters": 2
-        },
-        "type": "Armas",
-        "weight_kg": 1
-      },
-      {
-        "attack_bonus": 8,
-        "attack_roll": "1d20+8",
-        "category": "Armas marciales",
-        "critical_damage": "2d6 +4",
-        "damage": "1d6 +4",
-        "damage_type": "perforante",
-        "description": "Ballesta compacta de mecanismo reforzado.",
-        "is_weapon": true,
-        "item_id": "IT-002",
-        "location": "Equipado",
-        "name": "Ballesta de mano",
-        "price": "75 po",
-        "proficient": true,
-        "properties": [
-          "Carga",
-          "Ligera"
-        ],
-        "qty_backpack": 0,
-        "qty_bag": 0,
-        "qty_equipped": 1,
-        "quantity": 1,
-        "range_long": {
-          "feet": 120,
-          "meters": 36
-        },
-        "range_normal": {
-          "feet": 30,
-          "meters": 9
-        },
-        "type": "Armas",
-        "weight_kg": 1.5
-      },
-      {
-        "attack_bonus": 8,
-        "attack_roll": "1d20+8",
-        "category": "Armas sencillas",
-        "critical_damage": "2d4 +4",
-        "damage": "1d4 +4",
-        "damage_type": "perforante",
-        "description": "Dagas equilibradas para lanzamiento rapido.",
-        "is_weapon": true,
-        "item_id": "IT-003",
-        "location": "Transportado",
-        "name": "Dagas de reserva",
-        "price": "8 po",
-        "proficient": true,
-        "properties": [
-          "Arrojadiza",
-          "Ligera"
-        ],
-        "qty_backpack": 4,
-        "qty_bag": 0,
-        "qty_equipped": 0,
-        "quantity": 4,
-        "range_long": {
-          "feet": 60,
-          "meters": 18
-        },
-        "range_normal": {
-          "feet": 20,
-          "meters": 6
-        },
-        "type": "Armas",
-        "weight_kg": 2
-      },
-      {
-        "category": "Arcano",
-        "description": "Grimorio con hojas de metal fino y tinta cronica.",
-        "is_weapon": false,
-        "item_id": "IT-004",
-        "location": "Transportado",
-        "name": "Tomo de la Novena Hora",
-        "price": "250 po",
-        "proficient": true,
-        "qty_backpack": 1,
-        "qty_bag": 0,
-        "qty_equipped": 0,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 4
-      },
-      {
-        "category": "Herramientas",
-        "description": "Juego completo para cerraduras complejas.",
-        "is_weapon": false,
-        "item_id": "IT-005",
-        "location": "Transportado",
-        "name": "Herramientas de ladron",
-        "price": "25 po",
-        "proficient": true,
-        "qty_backpack": 1,
-        "qty_bag": 0,
-        "qty_equipped": 0,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 0.5
-      },
-      {
-        "category": "Herramientas",
-        "description": "Sellos, tintas y plantillas para documentos.",
-        "is_weapon": false,
-        "item_id": "IT-006",
-        "location": "Transportado",
-        "name": "Kit de falsificacion",
-        "price": "15 po",
-        "proficient": true,
-        "qty_backpack": 1,
-        "qty_bag": 0,
-        "qty_equipped": 0,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 2
-      },
-      {
-        "category": "Objeto magico",
-        "description": "Desvia la percepcion de enemigos cercanos.",
-        "is_weapon": false,
-        "item_id": "IT-007",
-        "location": "Equipado",
-        "name": "Capa de desplazamiento",
-        "price": "No comerciable",
-        "proficient": true,
-        "qty_backpack": 0,
-        "qty_bag": 0,
-        "qty_equipped": 1,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 1
-      },
-      {
-        "category": "Objeto magico",
-        "description": "Anulan ruido de pasos en piedra y madera.",
-        "is_weapon": false,
-        "item_id": "IT-008",
-        "location": "Equipado",
-        "name": "Botas de silencio",
-        "price": "1200 po",
-        "proficient": true,
-        "qty_backpack": 0,
-        "qty_bag": 0,
-        "qty_equipped": 1,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 0.7
-      },
-      {
-        "category": "Contenedor",
-        "description": "Mochila con soporte rigido y compartimentos ocultos.",
-        "is_weapon": false,
-        "item_id": "IT-009",
-        "location": "Transportado",
-        "name": "Mochila de campo",
-        "price": "3 po",
-        "proficient": false,
-        "qty_backpack": 1,
-        "qty_bag": 0,
-        "qty_equipped": 0,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 2
-      },
-      {
-        "category": "Consumible",
-        "description": "Restaura 2d4 +2 puntos de golpe.",
-        "is_weapon": false,
-        "item_id": "IT-010",
-        "location": "Transportado",
-        "name": "Pocion de curacion",
-        "price": "50 po",
-        "proficient": false,
-        "qty_backpack": 3,
-        "qty_bag": 0,
-        "qty_equipped": 0,
-        "quantity": 3,
-        "type": "Equipo",
-        "weight_kg": 0.3
-      },
-      {
-        "category": "Consumible",
-        "description": "Uso unico para desplazamiento de emergencia.",
-        "is_weapon": false,
-        "item_id": "IT-011",
-        "location": "Otros",
-        "name": "Pergamino de puerta dimensional",
-        "price": "500 po",
-        "proficient": true,
-        "qty_backpack": 0,
-        "qty_bag": 1,
-        "qty_equipped": 0,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 0.1
-      },
-      {
-        "category": "Juego",
-        "description": "Baraja amaestrada para distracciones y senales.",
-        "is_weapon": false,
-        "item_id": "IT-012",
-        "location": "Otros",
-        "name": "Juego de naipes marcados",
-        "price": "1 po",
-        "proficient": true,
-        "qty_backpack": 0,
-        "qty_bag": 1,
-        "qty_equipped": 0,
-        "quantity": 1,
-        "type": "Equipo",
-        "weight_kg": 0.2
-      }
-    ],
-    "loaned": [
-      {
-        "due": "Cuando acabe el asedio",
-        "name": "Bracal de runas",
-        "notes": "Prestamo tactico",
-        "quantity": 1,
-        "to": "Capitana Vera"
-      },
-      {
-        "due": "2026-04-12",
-        "name": "Kit alquimico",
-        "notes": "A cambio de tres pociones",
-        "quantity": 1,
-        "to": "Gremio de Forja Azul"
-      }
-    ],
-    "mounts": [
-      {
-        "name": "Risco",
-        "notes": "Entrenado para no asustarse con magia",
-        "quantity": 1,
-        "species": "Caballo de guerra",
-        "speed_m": 18
-      },
-      {
-        "name": "Mula de carga",
-        "notes": "Transporta consumibles y equipo campamento",
-        "quantity": 1,
-        "species": "Mula",
-        "speed_m": 12
-      }
-    ],
-    "other_possessions": "Llave de cobre sin cerradura conocida, mapa parcial del faro hundido y sello del Tribunal."
-  },
-  "languages": [
-    "Comun",
-    "Elfico",
-    "Draconico",
-    "Enano",
-    "Silvano",
-    "Infernal"
-  ],
   "meta": {
-    "character_id": 9987001,
-    "character_url": "https://nivel20.com/games/dnd-2024/characters/9987001-ariadna-thorne",
-    "last_sync": "2026-03-19T12:00:00Z",
+    "system": "D&D 5.5 (2024)",
+    "platform": "Nivel20.com",
+    "character_url": "https://nivel20.com/games/dnd-2024/characters/1966429-webons",
+    "character_id": 1966429,
+    "owner": "Davidmacar",
     "nivel20_keys": [
-      "basic_info",
-      "appearance",
+      "basic_info.name",
+      "basic_info.species",
+      "basic_info.classes",
+      "basic_info.total_level",
+      "basic_info.background",
+      "basic_info.alignment",
+      "basic_info.portrait_url",
+      "appearance.age",
+      "appearance.size",
       "languages",
       "ability_scores",
       "proficiency_bonus",
       "saving_throws",
       "skills",
-      "combat",
+      "combat.armor_class",
+      "combat.initiative",
+      "combat.speed.walking_feet",
+      "combat.speed.walking_meters",
+      "combat.hit_dice",
       "attacks",
       "proficiencies",
       "features_and_traits",
-      "spellcasting",
-      "inventory",
-      "background_details",
-      "resources",
-      "notes"
+      "spellcasting.spell_save_dc",
+      "spellcasting.spell_attack_bonus",
+      "spellcasting.spell_attack_roll",
+      "spellcasting.spell_slots",
+      "spellcasting.spells",
+      "spellcasting.spellcasting_ability",
+      "inventory.items",
+      "inventory.currency",
+      "background_details.name",
+      "background_details.description",
+      "background_details.skill_proficiencies",
+      "resources"
     ],
-    "owner": "Equipo QA Conversor",
-    "platform": "Nivel20.com",
-    "system": "D&D 5.5 (2024)"
+    "last_sync": "2026-03-27T13:27:10Z"
   },
-  "notes": {
-    "additional_notes": "Mantener dos espacios de nivel 2 para contingencias.",
-    "allies": "Capitana Vera de la Guardia de Bronce\nNeralis, bibliotecaria de la Torre Helicoidal\nBrom, herrero runico del puerto",
-    "backstory": "El caso de las Siete Campanas marco su vida: descubrio una manipulacion de pruebas temporales y perdio a su mentora en una grieta cronica. Desde entonces, combina investigacion legal y operaciones de campo.",
-    "enemies": "Magistrado Corvin, implicado en falsificacion de actas\nLa celula Umbral de Ceniza\nContrabandistas del Muelle Once",
-    "general": "Objetivo actual: recuperar el fragmento de reloj solar antes de la tercera luna.",
-    "organizations": "Tribunal de Bronce, Catedra de Cronologia Aplicada",
-    "other_notes": "Clave de archivo: BR-9-Kappa\nRuta de escape secundaria: cloaca norte\nProtocolo si cae la magia: senal de espejo",
-    "other_possessions": "Anillo de lacre oficial, medallon de su maestra y diario impermeable.",
-    "physical_description": "Porte firme y mirada analitica\nGuantes con hilos de plata para gestos arcanos\nCicatriz fina en la ceja izquierda"
-  },
-  "proficiencies": {
-    "armor": [
-      "Armadura ligera",
-      "Escudo"
+  "basic_info": {
+    "name": "WebOns",
+    "species": "Humano",
+    "classes": [
+      {
+        "name": "Monje",
+        "level": 2,
+        "subclass": null
+      }
     ],
-    "armor_flags": {
-      "heavy": false,
-      "light": true,
-      "medium": false,
-      "shield": true
-    },
-    "martial_weapons": true,
-    "raw": [
-      "Armas sencillas y marciales rapidas",
-      "Herramientas de ladron",
-      "Kit de falsificacion",
-      "Caligrafia de guerra"
-    ],
-    "simple_weapons": true,
-    "tools": [
-      "Herramientas de ladron",
-      "Kit de falsificacion",
-      "Instrumentos musicales",
-      "Herramientas de caligrafo"
-    ],
-    "weapons": [
-      "Armas sencillas",
-      "Ropera",
-      "Ballesta de mano",
-      "Daga",
-      "Baston"
-    ]
+    "total_level": 2,
+    "background": "Vagabundo",
+    "alignment": "Caótico bueno",
+    "experience_points": null,
+    "inspiration": false,
+    "portrait_url": "https://nivel20.com/images/4033884/original-331eaff72d8d19f4c6033e32fd83723261de75d8.png?1772629469"
   },
-  "proficiency_bonus": 4,
-  "resources": {
-    "dados_suerte": {
-      "current": 3,
-      "max": 4,
-      "name": "Dados de suerte estrategica",
-      "note": "Permite repetir tiradas de habilidad",
-      "pip_states": [
-        true,
-        true,
-        true,
-        false
-      ],
-      "recharge": "descanso largo",
-      "trigger": "al completar un objetivo secundario"
-    },
-    "foco_tiempo": {
-      "current": 1,
-      "max": 3,
-      "name": "Foco temporal del tribunal",
-      "note": "Activa ventaja en iniciativa",
-      "pip_states": [
-        true,
-        false,
-        false
-      ],
-      "recharge": "descanso corto o largo",
-      "trigger": "al desactivar una trampa arcana"
-    },
-    "hechiceria_experimental": {
-      "current": 4,
-      "max": 6,
-      "name": "Nucleo de hechiceria experimental",
-      "note": "Se usa para potenciar conjuros de control",
-      "pip_states": [
-        true,
-        true,
-        true,
-        true,
-        false,
-        false
-      ],
-      "recharge": "descanso largo",
-      "trigger": "al amanecer o tras estabilizar una anomalia"
-    },
-    "inspiracion_heroica": {
-      "current": 2,
-      "max": 2,
-      "name": "Inspiracion heroica",
-      "note": "Apoyo tactico de equipo",
-      "pip_states": [
-        true,
-        true
-      ],
-      "recharge": "descanso largo",
-      "trigger": "al rolear un conflicto personal"
-    },
-    "pociones_rapidas": {
-      "current": 2,
-      "max": 3,
-      "name": "Inyecciones de vigor",
-      "note": "Version alquimica de emergencia",
-      "pip_states": [
-        true,
-        true,
-        false
-      ],
-      "recharge": "reabastecer en ciudad",
-      "trigger": "tras cada combate"
-    }
+  "appearance": {
+    "age": 25,
+    "height": null,
+    "weight": null,
+    "eyes": null,
+    "skin": null,
+    "hair": null,
+    "gender": null,
+    "size": "Mediana"
   },
-  "saving_throws": {
-    "charisma": {
-      "proficient": false,
-      "roll": "1d20+1",
-      "total": 1
-    },
-    "constitution": {
-      "proficient": false,
-      "roll": "1d20+2",
-      "total": 2
+  "languages": [
+    "Común",
+    "Elfo",
+    "Mediano"
+  ],
+  "ability_scores": {
+    "strength": {
+      "score": 8,
+      "modifier": -1
     },
     "dexterity": {
-      "proficient": true,
-      "roll": "1d20+8",
-      "total": 8
+      "score": 17,
+      "modifier": 3
+    },
+    "constitution": {
+      "score": 14,
+      "modifier": 2
     },
     "intelligence": {
-      "proficient": true,
-      "roll": "1d20+8",
-      "total": 8
-    },
-    "strength": {
-      "proficient": false,
-      "roll": "1d20+0",
-      "total": 0
+      "score": 10,
+      "modifier": 0
     },
     "wisdom": {
+      "score": 16,
+      "modifier": 3
+    },
+    "charisma": {
+      "score": 8,
+      "modifier": -1
+    }
+  },
+  "proficiency_bonus": 2,
+  "saving_throws": {
+    "strength": {
+      "total": 1,
+      "proficient": true,
+      "roll": "1d20+1"
+    },
+    "dexterity": {
+      "total": 5,
+      "proficient": true,
+      "roll": "1d20+5"
+    },
+    "constitution": {
+      "total": 2,
       "proficient": false,
-      "roll": "1d20+1",
-      "total": 1
+      "roll": "1d20+2"
+    },
+    "intelligence": {
+      "total": 0,
+      "proficient": false,
+      "roll": "1d20+0"
+    },
+    "wisdom": {
+      "total": 3,
+      "proficient": false,
+      "roll": "1d20+3"
+    },
+    "charisma": {
+      "total": -1,
+      "proficient": false,
+      "roll": "1d20-1"
     }
   },
   "skills": {
     "acrobacias": {
-      "ability": "dexterity",
-      "expertise": false,
       "name": "Acrobacias",
+      "ability": "dexterity",
+      "total": 5,
       "proficient": true,
-      "roll": "1d20+8",
-      "total": 8
-    },
-    "arcanos": {
-      "ability": "intelligence",
-      "expertise": true,
-      "name": "Conocimiento arcano",
-      "proficient": true,
-      "roll": "1d20+12",
-      "total": 12
+      "expertise": false,
+      "roll": "1d20+5"
     },
     "atletismo": {
-      "ability": "strength",
-      "expertise": false,
       "name": "Atletismo",
+      "ability": "strength",
+      "total": 1,
+      "proficient": true,
+      "expertise": false,
+      "roll": "1d20+1"
+    },
+    "arcanos": {
+      "name": "Conocimiento arcano",
+      "ability": "intelligence",
+      "total": 0,
       "proficient": false,
-      "roll": "1d20+0",
-      "total": 0
+      "expertise": false,
+      "roll": "1d20+0"
     },
     "enganar": {
+      "name": "Engaño",
       "ability": "charisma",
+      "total": -1,
+      "proficient": false,
       "expertise": false,
-      "name": "Engano",
-      "proficient": true,
-      "roll": "1d20+5",
-      "total": 5
+      "roll": "1d20-1"
     },
     "historia": {
-      "ability": "intelligence",
-      "expertise": false,
       "name": "Historia",
-      "proficient": true,
-      "roll": "1d20+8",
-      "total": 8
+      "ability": "intelligence",
+      "total": 0,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+0"
     },
     "interpretacion": {
+      "name": "Interpretación",
       "ability": "charisma",
+      "total": -1,
+      "proficient": false,
       "expertise": false,
-      "name": "Interpretacion",
-      "proficient": true,
-      "roll": "1d20+5",
-      "total": 5
+      "roll": "1d20-1"
     },
     "intimidar": {
+      "name": "Intimidación",
       "ability": "charisma",
-      "expertise": false,
-      "name": "Intimidacion",
+      "total": -1,
       "proficient": false,
-      "roll": "1d20+1",
-      "total": 1
+      "expertise": false,
+      "roll": "1d20-1"
     },
     "investigacion": {
+      "name": "Investigación",
       "ability": "intelligence",
-      "expertise": true,
-      "name": "Investigacion",
+      "total": 2,
       "proficient": true,
-      "roll": "1d20+12",
-      "total": 12
+      "expertise": false,
+      "roll": "1d20+2"
     },
     "juego_de_manos": {
-      "ability": "dexterity",
-      "expertise": true,
       "name": "Juego de Manos",
-      "proficient": true,
-      "roll": "1d20+12",
-      "total": 12
+      "ability": "dexterity",
+      "total": 3,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+3"
     },
     "medicina": {
-      "ability": "wisdom",
-      "expertise": false,
       "name": "Medicina",
+      "ability": "wisdom",
+      "total": 3,
       "proficient": false,
-      "roll": "1d20+1",
-      "total": 1
+      "expertise": false,
+      "roll": "1d20+3"
     },
     "naturaleza": {
-      "ability": "intelligence",
-      "expertise": false,
       "name": "Naturaleza",
-      "proficient": true,
-      "roll": "1d20+8",
-      "total": 8
+      "ability": "intelligence",
+      "total": 0,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+0"
     },
     "percepcion": {
+      "name": "Percepción",
       "ability": "wisdom",
-      "expertise": true,
-      "name": "Percepcion",
-      "proficient": true,
-      "roll": "1d20+9",
-      "total": 9
+      "total": 3,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+3"
     },
     "perspicacia": {
-      "ability": "wisdom",
-      "expertise": false,
       "name": "Perspicacia",
+      "ability": "wisdom",
+      "total": 5,
       "proficient": true,
-      "roll": "1d20+5",
-      "total": 5
+      "expertise": false,
+      "roll": "1d20+5"
     },
     "persuasion": {
+      "name": "Persuasión",
       "ability": "charisma",
+      "total": -1,
+      "proficient": false,
       "expertise": false,
-      "name": "Persuasion",
-      "proficient": true,
-      "roll": "1d20+5",
-      "total": 5
+      "roll": "1d20-1"
     },
     "religion": {
+      "name": "Religión",
       "ability": "intelligence",
+      "total": 0,
+      "proficient": false,
       "expertise": false,
-      "name": "Religion",
-      "proficient": true,
-      "roll": "1d20+8",
-      "total": 8
+      "roll": "1d20+0"
     },
     "sigilo": {
-      "ability": "dexterity",
-      "expertise": true,
       "name": "Sigilo",
+      "ability": "dexterity",
+      "total": 5,
       "proficient": true,
-      "roll": "1d20+12",
-      "total": 12
+      "expertise": false,
+      "roll": "1d20+5"
     },
     "supervivencia": {
-      "ability": "wisdom",
-      "expertise": false,
       "name": "Supervivencia",
-      "proficient": true,
-      "roll": "1d20+5",
-      "total": 5
+      "ability": "wisdom",
+      "total": 3,
+      "proficient": false,
+      "expertise": false,
+      "roll": "1d20+3"
     },
     "trato_con_animales": {
-      "ability": "wisdom",
-      "expertise": false,
       "name": "Trato con Animales",
+      "ability": "wisdom",
+      "total": 3,
       "proficient": false,
-      "roll": "1d20+1",
-      "total": 1
+      "expertise": false,
+      "roll": "1d20+3"
     }
   },
-  "spellcasting": {
-    "sorcery_pips": [
-      false,
-      false,
-      true,
-      true,
-      true,
-      true
+  "combat": {
+    "armor_class": 16,
+    "initiative": 3,
+    "speed": {
+      "walking_feet": 40,
+      "walking_meters": 12,
+      "swim_meters": null,
+      "fly_meters": null,
+      "climb_meters": null
+    },
+    "hit_points": {
+      "maximum": 16,
+      "current": null,
+      "temporary": null
+    },
+    "hit_dice": {
+      "total": "2d8",
+      "remaining": 2,
+      "used": 0,
+      "die_type": "d8"
+    },
+    "death_saves": {
+      "successes": 0,
+      "failures": 0
+    }
+  },
+  "attacks": [
+    {
+      "name": "Daga",
+      "attack_bonus": 5,
+      "attack_roll": "1d20+5",
+      "damage": "1d6 +3",
+      "damage_type": "perforante",
+      "damage_display": "1d6 +3 perforante"
+    },
+    {
+      "name": "Ataque desarmado",
+      "attack_bonus": 5,
+      "attack_roll": "1d20+5",
+      "damage": "1d6+3",
+      "damage_type": "contundente",
+      "damage_display": "1d6+3 contundente",
+      "properties": [
+        "finura",
+        "sin carga"
+      ]
+    },
+    {
+      "name": "Antorcha",
+      "attack_bonus": 3,
+      "attack_roll": "1d20+3",
+      "damage": "1d6 +4",
+      "damage_type": "Fuego",
+      "damage_display": "1d6 +4 Fuego"
+    }
+  ],
+  "proficiencies": {
+    "armor": [],
+    "weapons": [
+      "Armas sencillas",
+      "Ballesta de mano",
+      "Cimitarra",
+      "Espada corta"
     ],
-    "sorcery_points_max": 6,
-    "sorcery_points_used": 2,
-    "spell_attack_bonus": 8,
-    "spell_attack_roll": "1d20+8",
-    "spell_save_dc": 16,
+    "tools": [
+      "Instrumentos musicales"
+    ],
+    "raw": [
+      "Armas sencillas y Instrumentos musicales",
+      "Ballesta de mano, Cimitarra y Espada corta"
+    ]
+  },
+  "features_and_traits": {
+    "species": [
+      {
+        "name": "Diestro",
+        "source": "Humano",
+        "description": "Ganas competencia en una habilidad de tu elección."
+      },
+      {
+        "name": "Ingenioso",
+        "source": "Humano",
+        "description": "Obtienes inspiración heroica tras finalizar un descanso largo."
+      },
+      {
+        "name": "Versátil",
+        "source": "Humano",
+        "description": "Obtienes una dote de origen de tu elección (consulta el capítulo 5). Se recomienda Habilidoso."
+      }
+    ],
+    "class_features": [
+      {
+        "name": "Artes marciales",
+        "source": "Monje",
+        "description": "Cuando usas arma de monje y no llevas armadura ni escudo: Puedes usar Des en lugar de Fue para ataque y daño. Puedes usar el dado de daño desarmado en lugar del daño del arma. Tras atacar desarmado o con arma de monje, puedes usar una acción adicional para realizar un ataque desarmado.",
+        "details": {
+          "Daño desarmado": "1d6"
+        },
+        "id": "99895"
+      },
+      {
+        "name": "Concentración de monje",
+        "source": "Monje",
+        "description": "Tienes puntos de Concetración igual a tu nivel de monje. Ganas Defensa paciente (destrabarse como Acción Adicional, gasta 1 PC y también esquivas), Paso del viento (correr como Acción Adicional,  gasta 1 PC y también te destrabas) y Ráfaga de golpes (1, dos atacas sin arma como Acción adicional)",
+        "id": "99896"
+      },
+      {
+        "name": "Defensa paciente",
+        "source": "Monje",
+        "description": "Puedes llevar a cabo la acción de destrabarse como acción adicional. De manera alternativa, puedes gastar 1 punto de concentración para llevar a cabo tanto la acción de destrabarse como la de esquivar como acción adicional.",
+        "id": "99898"
+      },
+      {
+        "name": "Defensa sin armadura",
+        "source": "Monje",
+        "description": "Mientras no lleves armadura ni portes un escudo, tu clase de armadura base será igual a 10 más tus modificadores por Destreza y Sabiduría.",
+        "id": "99894"
+      },
+      {
+        "name": "Metabolismo asombroso",
+        "source": "Monje",
+        "description": "Una vez por descanso largo, cuando tires iniciativa, recupera todos tus puntos de concentración gastados y lanza tu dado de Artes marciales. Recuperas PG igual al resultado más tu nivel de monje.",
+        "id": "131871"
+      },
+      {
+        "name": "Movimiento sin armadura",
+        "source": "Monje",
+        "description": "Tu velocidad aumenta en3 metrossi no llevas armadura ni portas un escudo. Esta bonificación aumenta cuando alcanzas ciertos niveles de monje.",
+        "details": {
+          "Movimiento sin armadura": "+3 m+10 Velocidad",
+          "item_1": "+10 Velocidad"
+        },
+        "id": "99900"
+      },
+      {
+        "name": "Paso del viento",
+        "source": "Monje",
+        "description": "Puedes llevar a cabo la acción de correr como acción adicional. De manera alternativa, puedes gastar 1 punto de concentración para llevar a cabo tanto la acción de destrabarse como la de correr como acción adicional, y tu distancia de salto se duplicará durante el turno.",
+        "id": "99899"
+      },
+      {
+        "name": "Ráfaga de golpes",
+        "source": "Monje",
+        "description": "Puedes gastar 1 punto de concentración para hacer dos ataques sin armas como acción adicional.",
+        "id": "99897"
+      }
+    ],
+    "feats": [
+      {
+        "name": "Iniciado en la magia",
+        "source": "Dotes",
+        "description": "Aprendes 2 trucos y 1 conjuro de nivel 1 de una lista (clérigo, druida o mago). Puedes lanzar el conjuro gratis 1 vez por descanso largo y cambiar los conjuros al subir de nivel.",
+        "id": "13000"
+      },
+      {
+        "name": "Afortunado",
+        "source": "Dotes",
+        "description": "Tienes una cantidad de puntos de suerte igual a tu bonificador por competencia y puedes gastarlos para darte Ventaja (1 punto) o dar Desventaja a una criatura que ataque contra ti (1 punto). Recuperas los puntos gastados tras un descanso largo.",
+        "id": "12986"
+      }
+    ]
+  },
+  "spellcasting": {
+    "spellcasting_ability": "Sabiduría",
+    "spell_save_dc": 10,
+    "spell_attack_bonus": 2,
+    "spell_attack_roll": "1d20+2",
     "spell_slots": {
       "level_1": {
-        "note": "Ranuras base",
-        "pip_states": [
-          false,
-          true,
-          true,
-          true
-        ],
-        "source": "Maga",
-        "total": 4,
-        "used": 1
-      },
-      "level_2": {
-        "note": "Control",
-        "pip_states": [
-          false,
-          true,
-          true
-        ],
-        "source": "Maga",
-        "total": 3,
-        "used": 1
-      },
-      "level_3": {
-        "note": "Principal",
-        "pip_states": [
-          true,
-          true
-        ],
-        "source": "Maga",
-        "total": 2,
-        "used": 0
-      },
-      "level_4": {
-        "note": "Uso tactico",
-        "pip_states": [
-          true
-        ],
-        "source": "Pergamino grabado",
         "total": 1,
-        "used": 0
-      },
-      "level_5": {
-        "note": "Recargable al alba",
-        "pip_states": [
-          false
-        ],
-        "source": "Catalizador temporal",
-        "total": 1,
-        "used": 1
+        "used": 0,
+        "source": "Iniciado en la magia",
+        "note": "1 lanzamiento gratuito por descanso largo"
       }
     },
-    "spellcasting_ability": "Inteligencia",
     "spells": {
       "cantrips": [
         {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Inflige frio y reduce velocidad del objetivo en 3 m.",
-          "duration": "Instantaneo",
-          "name": "Rayo de escarcha",
-          "range": "18 m",
-          "school": "Evocacion",
-          "spell_id": "C-001"
+          "name": "Ilusión menor",
+          "spell_id": "14852",
+          "school": "Ilusionismo",
+          "casting_time": "1 acción",
+          "duration": "1 minuto",
+          "range": null,
+          "components": "S, M",
+          "description": "Creas un sonido o la imagen de un objeto dentro del alcance. Una criatura puede descubrir la ilusión con una prueba de Inteligencia (Investigación) contra tu CD de conjuros. El sonido puede variar en volumen o forma; la imagen ocupa hasta un cubo de1.5 metrosy no produce otros efectos sensoriales."
         },
         {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Manipula objetos ligeros a distancia.",
-          "duration": "1 minuto",
           "name": "Mano de mago",
-          "range": "9 m",
-          "school": "Conjuracion",
-          "spell_id": "C-002"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "S,M",
-          "description": "Crea sonido o imagen menor para distraccion.",
+          "spell_id": "14857",
+          "school": "Conjuración",
+          "casting_time": "1 acción",
           "duration": "1 minuto",
-          "name": "Ilusion menor",
-          "range": "9 m",
-          "school": "Ilusion",
-          "spell_id": "C-003"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Dano electrico en contacto.",
-          "duration": "Instantaneo",
-          "name": "Descarga electrica",
-          "range": "Toque",
-          "school": "Evocacion",
-          "spell_id": "C-004"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Pequenos trucos arcanos utilitarios.",
-          "duration": "1 hora",
-          "name": "Prestidigitacion",
-          "range": "3 m",
-          "school": "Transmutacion",
-          "spell_id": "C-005"
+          "range": null,
+          "components": "V, S",
+          "description": "Una mano espectral aparece flotando. Puedes usar una acción de magia para controlarla, manipular un objeto, abrir una puerta. etc. Puedes moverla9 metroscada vez que la usas. No puede atacar, activar objetos mágicos ni transportar más de 5 kg."
         }
       ],
       "level_1": [
         {
-          "casting_time": "1 reaccion",
-          "components": "V,S",
-          "description": "+5 CA hasta tu siguiente turno.",
-          "duration": "1 asalto",
           "name": "Escudo",
-          "prepared": true,
-          "range": "Personal",
-          "school": "Abjuracion",
-          "spell_id": "L1-001"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "CA base 13 + DEX.",
-          "duration": "8 horas",
-          "name": "Armadura de mago",
-          "prepared": true,
-          "range": "Toque",
-          "school": "Abjuracion",
-          "spell_id": "L1-002"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Alteras temporalmente tu aspecto.",
-          "duration": "1 hora",
-          "name": "Disfrazarse",
-          "prepared": false,
-          "range": "Personal",
-          "school": "Ilusion",
-          "spell_id": "L1-003"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Dardos de fuerza que impactan automaticamente.",
-          "duration": "Instantaneo",
-          "name": "Misil magico",
-          "prepared": true,
-          "range": "36 m",
-          "school": "Evocacion",
-          "spell_id": "L1-004"
-        }
-      ],
-      "level_2": [
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "Hace invisible al objetivo hasta que ataque o conjure.",
-          "duration": "1 hora",
-          "name": "Invisibilidad",
-          "prepared": true,
-          "range": "Toque",
-          "school": "Ilusion",
-          "spell_id": "L2-001"
-        },
-        {
-          "casting_time": "1 accion adicional",
-          "components": "V",
-          "description": "Teletransporte corto de 9 m.",
-          "duration": "Instantaneo",
-          "name": "Paso brumoso",
-          "prepared": true,
-          "range": "Personal",
-          "school": "Conjuracion",
-          "spell_id": "L2-002"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S",
-          "description": "Genera duplicados para esquivar ataques.",
-          "duration": "1 minuto",
-          "name": "Imagen multiple",
-          "prepared": false,
-          "range": "Personal",
-          "school": "Ilusion",
-          "spell_id": "L2-003"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "Lees pensamientos superficiales y profundizas con salvacion.",
-          "duration": "1 minuto",
-          "name": "Detectar pensamientos",
-          "prepared": true,
-          "range": "Personal",
-          "school": "Adivinacion",
-          "spell_id": "L2-004"
-        }
-      ],
-      "level_3": [
-        {
-          "casting_time": "1 reaccion",
-          "components": "S",
-          "description": "Interrumpes lanzamiento enemigo.",
-          "duration": "Instantaneo",
-          "name": "Contraconjuro",
-          "prepared": true,
-          "range": "18 m",
-          "school": "Abjuracion",
-          "spell_id": "L3-001"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "Duplicas velocidad, +2 CA y accion adicional limitada.",
-          "duration": "Concentracion, 1 minuto",
-          "name": "Acelerar",
-          "prepared": true,
-          "range": "9 m",
-          "school": "Transmutacion",
-          "spell_id": "L3-002"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "Explosion de fuego en area.",
-          "duration": "Instantaneo",
-          "name": "Bola de fuego",
-          "prepared": false,
-          "range": "45 m",
-          "school": "Evocacion",
-          "spell_id": "L3-003"
-        }
-      ],
-      "level_4": [
-        {
-          "casting_time": "1 accion",
-          "components": "V",
-          "description": "Teletransporte de larga distancia con acompanante.",
-          "duration": "Instantaneo",
-          "name": "Puerta dimensional",
-          "prepared": true,
-          "range": "150 m",
-          "school": "Conjuracion",
-          "spell_id": "L4-001"
-        },
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "Resistencia al dano no magico.",
-          "duration": "Concentracion, 1 hora",
-          "name": "Piel petrea",
-          "prepared": false,
-          "range": "Toque",
-          "school": "Abjuracion",
-          "spell_id": "L4-002"
-        }
-      ],
-      "level_5": [
-        {
-          "casting_time": "1 accion",
-          "components": "V,S,M",
-          "description": "Barrera inquebrantable e inmune a casi todo dano.",
-          "duration": "Concentracion, 10 minutos",
-          "name": "Muro de fuerza",
-          "prepared": true,
-          "range": "36 m",
-          "school": "Evocacion",
-          "spell_id": "L5-001"
+          "spell_id": "14886",
+          "school": "Abjuración",
+          "casting_time": "1 reacción",
+          "duration": "1 asalto",
+          "range": null,
+          "components": "V, S",
+          "description": "Una barrera imperceptible de fuerza mágica te protege. Hasta el principio de tu siguiente turno, tienes un bonificador de +5 a la CA, incluido contra el ataque al que reacciona, y no recibes ningún daño del conjuro proyectil mágico."
         }
       ]
     }
+  },
+  "inventory": {
+    "currency": {
+      "PP": 0,
+      "GP": 27,
+      "EP": 0,
+      "SP": 1,
+      "CP": 0
+    },
+    "other_possessions": "Camafeo de una persona muy fea",
+    "items": [
+      {
+        "name": "Daga",
+        "description": "La daga es un arma pequeña y fácil de ocultar, ideal para ataques rápidos y precisos. Muy utilizada como arma secundaria o en combates cercanos, es especialmente común entre pícaros, asesinos y lanzadores de conjuros.",
+        "type": "Armas",
+        "category": "Armas sencillas",
+        "proficient": true,
+        "price": "2 po",
+        "weight_kg": 0.5,
+        "is_weapon": true,
+        "attack_roll": "1d20+5",
+        "attack_bonus": 5,
+        "damage": "1d6 + 3",
+        "critical_damage": "2d6 + 3",
+        "damage_type": "perforante",
+        "range_normal": {
+          "feet": 20,
+          "meters": 6
+        },
+        "range_long": {
+          "feet": 60,
+          "meters": 18
+        },
+        "properties": [
+          "Alcance",
+          "Arrojadiza",
+          "Distancia",
+          "Ligera",
+          "Maestría: Mellar",
+          "Sutil"
+        ],
+        "item_id": "5665771",
+        "qty_equipped": 0,
+        "qty_backpack": 5,
+        "qty_bag": 0,
+        "quantity": 5
+      },
+      {
+        "name": "Herramientas de Calígrafo",
+        "description": "Característica:Destreza",
+        "type": "Equipo de aventuras",
+        "category": "Herramientas",
+        "proficient": false,
+        "price": "10 po",
+        "weight_kg": 2.5,
+        "is_weapon": false,
+        "properties": [
+          "Herramientas de artesano"
+        ],
+        "item_id": "5665775",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Paquete de explorador",
+        "description": "Un paquete de explorador contiene los siguientes objetos: \n                            10 antorchas, cantimplora, cuerda, 2 frascos de aceite, mochila, petate, raciones para 10 días y yesquero.",
+        "type": "Equipo de aventuras",
+        "category": "Paquetes de equipo",
+        "proficient": false,
+        "price": "10 po",
+        "weight_kg": 27.5,
+        "is_weapon": false,
+        "item_id": "5665776",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Herramientas de Ladrón",
+        "description": "Característica:Destreza",
+        "type": "Equipo de aventuras",
+        "category": "Herramientas",
+        "proficient": false,
+        "price": "25 po",
+        "weight_kg": 0.5,
+        "is_weapon": false,
+        "properties": [
+          "Otras herramientas"
+        ],
+        "item_id": "5665777",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Bolsa",
+        "description": "Una bolsa soporta hasta 3 kg en un volumen de 6 L.",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "5 pp",
+        "weight_kg": 0.5,
+        "is_weapon": false,
+        "item_id": "5665778",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 2,
+        "quantity": 2
+      },
+      {
+        "name": "Petate",
+        "description": "En un petate puede dormir una criatura Pequeña o Mediana. Mientras estés en un petate, superarás automáticamente las tiradas de salvación contra el frío extremo (consulta laGuía del Dungeon Master).",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "1 po",
+        "weight_kg": 3.5,
+        "is_weapon": false,
+        "item_id": "5665781",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 2,
+        "quantity": 2
+      },
+      {
+        "name": "Ropas de viaje",
+        "description": "Las ropas de viaje son prendas resistentes y diseñadas para viajar por diversos entornos.",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "2 po",
+        "weight_kg": 2.0,
+        "is_weapon": false,
+        "item_id": "5665782",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Naipes",
+        "description": "Característica:Sabiduría",
+        "type": "Equipo de aventuras",
+        "category": "Juegos",
+        "proficient": false,
+        "price": "5 pp",
+        "weight_kg": null,
+        "is_weapon": false,
+        "properties": [
+          "Otras herramientas"
+        ],
+        "item_id": "5665783",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Antorcha",
+        "description": "Una antorcha arde durante 1 hora y emite luz brillante en un radio de 6 m y luz tenue 6 m más allá. Cuando llevas a cabo la acción de atacar, puedes hacerlo con la antorcha como si fuera un arma cuerpo a cuerpo sencilla. Si acierta, el objetivo sufre 1 de daño de fuego.",
+        "type": "Equipo de aventuras",
+        "category": "Consumibles",
+        "proficient": false,
+        "price": "1 pc",
+        "weight_kg": 0.5,
+        "is_weapon": true,
+        "attack_roll": "1d20+3",
+        "attack_bonus": 3,
+        "damage": "1d6 + 4",
+        "critical_damage": "2d6 + 4",
+        "damage_type": "Fuego",
+        "range_normal": {
+          "feet": 5,
+          "meters": 2
+        },
+        "item_id": "5665801",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 10,
+        "quantity": 10
+      },
+      {
+        "name": "Yesquero",
+        "description": "Un yesquero es un pequeño recipiente que contiene un pedernal, un chispero y yescas (normalmente, tela seca untada en aceite) y se utiliza para encender un fuego. \n                            Se necesita una acción adicional para prender con él una antorcha, lámpara, linterna o vela (o cualquier otra cosa con combustible expuesto). Encender cualquier otro tipo de fuego lleva 1 minuto.",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "5 pp",
+        "weight_kg": 0.5,
+        "is_weapon": false,
+        "item_id": "5665822",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Mochila",
+        "description": "Una mochila soporta hasta 15 kg en un volumen de 30 l. También puede servir de Alforja.",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "2 po",
+        "weight_kg": 2.5,
+        "is_weapon": false,
+        "item_id": "5665824",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Cantimplora",
+        "description": "En una cantimplora caben hasta 2 l de líquido. Si no bebes suficiente agua, te arriesgas a sufrir deshidratación (consulta el glosario de reglas).",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "2 pp",
+        "weight_kg": null,
+        "is_weapon": false,
+        "item_id": "5665826",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 1,
+        "quantity": 1
+      },
+      {
+        "name": "Frasco de Aceite",
+        "description": "Lleno con 0,5l de ACEITE",
+        "type": "Equipo de aventuras",
+        "category": "Otros",
+        "proficient": false,
+        "price": "2 pc",
+        "weight_kg": 0.5,
+        "is_weapon": false,
+        "item_id": "5665828",
+        "qty_equipped": 0,
+        "qty_backpack": 0,
+        "qty_bag": 2,
+        "quantity": 2
+      }
+    ]
+  },
+  "background_details": {
+    "name": "Vagabundo",
+    "description": "Creciste en las calles junto a personas con expectativas tan aciagas con las tuyas, entre las que había algunas amistad y algunos rivales. Dormías donde podías y hacías encargos ocasionales a cambio de comida. A veces, cuando el hambre se volvía insoportable, recurrías al robo. Sin embargo, nunca renunciaste a tu orgullo ni perdiste la esperanza. El destino aún tiene algo reservado para ti.",
+    "skill_proficiencies": [
+      "Perspicacia",
+      "Sigilo"
+    ],
+    "personality_traits": [],
+    "ideals": [],
+    "bonds": [],
+    "flaws": []
+  },
+  "resources": {
+    "concentration_points": {
+      "name": "Puntos de Concentración (Ki)",
+      "max": 2,
+      "current": 2,
+      "recharge": "descanso corto o largo"
+    },
+    "luck_points": {
+      "name": "Puntos de Suerte (Afortunado)",
+      "max": 2,
+      "current": 2,
+      "recharge": "descanso largo"
+    },
+    "metabolismo_asombroso": {
+      "name": "Metabolismo asombroso",
+      "max": 1,
+      "current": 1,
+      "recharge": "descanso largo",
+      "trigger": "al tirar iniciativa"
+    },
+    "inspiracion_heroica": {
+      "name": "Inspiración heroica (Ingenioso)",
+      "max": 1,
+      "current": null,
+      "recharge": "descanso largo"
+    },
+    "escudo_gratis": {
+      "name": "Escudo (conjuro gratuito - Iniciado en la magia)",
+      "max": 1,
+      "current": 1,
+      "recharge": "descanso largo"
+    }
+  },
+  "notes": {
+    "other_possessions": "Camafeo de una persona muy fea",
+    "backstory": "Creciste en las calles junto a personas con expectativas tan aciagas con las tuyas, entre las que había algunas amistad y algunos rivales. Dormías donde podías y hacías encargos ocasionales a cambio de comida. A veces, cuando el hambre se volvía insoportable, recurrías al robo. Sin embargo, nunca renunciaste a tu orgullo ni perdiste la esperanza. El destino aún tiene algo reservado para ti.",
+    "organizations": "",
+    "allies": "",
+    "enemies": "",
+    "additional_notes": ""
   }
 }

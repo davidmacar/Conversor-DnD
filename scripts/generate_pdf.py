@@ -27,25 +27,35 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT_BOOTSTRAP = _SCRIPT_DIR.parent
+if str(_PROJECT_ROOT_BOOTSTRAP) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT_BOOTSTRAP))
+
+from project_paths import ensure_runtime_directories, get_project_paths
+
 try:
     import fitz  # PyMuPDF
-except ImportError:
-    sys.exit("Error: instala PyMuPDF con:  pip install pymupdf")
+except ImportError as exc:
+    raise ImportError("Error: instala PyMuPDF con:  pip install pymupdf") from exc
 
 try:
     from fontTools.ttLib import TTFont as _TTFont
-except ImportError:
-    sys.exit("Error: instala fonttools con:  pip install fonttools")
+except ImportError as exc:
+    raise ImportError("Error: instala fonttools con:  pip install fonttools") from exc
 
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 
-PROJECT_ROOT  = Path(__file__).parent.parent
-TEMPLATE_PATH = PROJECT_ROOT / "templates" / "Hoja-Personaje-Editable-Completa-ES.pdf"
-FONT_PATH     = PROJECT_ROOT / "fonts" / "CaslonAntique-Regular.ttf"
-DEFAULT_JSON  = PROJECT_ROOT / "data" / "personaje.json"
-DEFAULT_OUT   = PROJECT_ROOT / "output" / "personaje_output.pdf"
+PATHS = get_project_paths()
+ensure_runtime_directories(PATHS)
+
+PROJECT_ROOT  = PATHS.project_root
+TEMPLATE_PATH = PATHS.template_pdf
+FONT_PATH     = PATHS.font_ttf
+DEFAULT_JSON  = PATHS.character_json
+DEFAULT_OUT   = PATHS.output_dir / "personaje_output.pdf"
 
 # ---------------------------------------------------------------------------
 # Lógica de mapeo y tipografía unificada (antes en fill_pdf.py)
@@ -1310,9 +1320,15 @@ def generate(
     Espacios conjuro   → _set_spell_slot_value (Helv, preserva fondo azul)
     Stamps ☆ y sin mapeo → conservados intactos desde la plantilla
     """
+    if not json_path.exists():
+        raise FileNotFoundError(f"JSON no encontrado: {json_path}")
+    if not template_path.exists():
+        raise FileNotFoundError(f"Plantilla PDF no encontrada: {template_path}")
     if not FONT_PATH.exists():
-        sys.exit(f"Error: fuente no encontrada en {FONT_PATH}\n"
-                 f"Coloca la fuente en fonts/CaslonAntique-Regular.ttf")
+        raise FileNotFoundError(
+            f"Fuente no encontrada: {FONT_PATH}. "
+            "Coloca CaslonAntique-Regular.ttf en la carpeta fonts/ o configura DND_FONT_TTF."
+        )
 
     with open(json_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -1491,8 +1507,11 @@ def main() -> None:
     parser.add_argument("--verify", action="store_true",
                         help="Genera 4 capturas PNG de verificación en output/")
     args = parser.parse_args()
-    generate(args.json, args.template, args.output,
-             verbose=args.verbose, verify=args.verify)
+    try:
+        generate(args.json, args.template, args.output,
+                 verbose=args.verbose, verify=args.verify)
+    except Exception as exc:
+        sys.exit(f"Error: {exc}")
 
 
 if __name__ == "__main__":
