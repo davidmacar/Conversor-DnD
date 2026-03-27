@@ -1511,16 +1511,30 @@ function characterEditor() {
       }
       this.activeSubsection = id.includes('-') ? id : '';
 
-      const headerOffset = 82;
-      const top = window.scrollY + el.getBoundingClientRect().top - headerOffset;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      this.$nextTick(() => {
+        const headerOffset = this.currentHeaderOffset();
+        const top = window.scrollY + el.getBoundingClientRect().top - headerOffset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      });
+    },
+
+    currentHeaderOffset() {
+      const navbarHeight = document.querySelector('.navbar')?.offsetHeight || 70;
+      const tabsHeight = document.querySelector('.top-tabs-shell')?.offsetHeight || 0;
+      const offset = navbarHeight + tabsHeight + 14;
+
+      // Keep CSS anchor offsets in sync with the real sticky header height.
+      document.documentElement.style.setProperty('--section-scroll-offset', `${offset}px`);
+      document.documentElement.style.setProperty('--card-scroll-offset', `${offset + 6}px`);
+
+      return offset;
     },
 
     initScrollSpy() {
       const sections = document.querySelectorAll('.section-block[data-section]');
       if (!sections.length) return;
       const update = () => {
-        const offset = 90;
+        const offset = this.currentHeaderOffset();
         let current = sections[0]?.dataset?.section || 'identidad';
         for (const s of sections) {
           if (s.getBoundingClientRect().top <= offset) current = s.dataset.section;
@@ -1531,13 +1545,31 @@ function characterEditor() {
         const subsectionCards = document.querySelectorAll(`#${current} > .dnd-card[id]`);
         let currentSub = '';
         for (const card of subsectionCards) {
-          if (card.getBoundingClientRect().top <= offset + 80) currentSub = card.id;
+          if (card.getBoundingClientRect().top <= offset + 20) currentSub = card.id;
         }
         this.activeSubsection = currentSub;
       };
+
       window.removeEventListener('scroll', this._scrollHandler);
-      this._scrollHandler = update;
-      window.addEventListener('scroll', update, { passive: true });
+
+      this._scrollHandler = () => {
+        if (this._scrollTicking) return;
+        this._scrollTicking = true;
+        window.requestAnimationFrame(() => {
+          this._scrollTicking = false;
+          update();
+        });
+      };
+
+      window.addEventListener('scroll', this._scrollHandler, { passive: true });
+
+      window.removeEventListener('resize', this._resizeHandler);
+      this._resizeHandler = () => {
+        this.currentHeaderOffset();
+        update();
+      };
+      window.addEventListener('resize', this._resizeHandler, { passive: true });
+
       update();
     },
 

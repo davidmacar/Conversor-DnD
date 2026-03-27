@@ -194,19 +194,44 @@
     </ul>
   </aside>
 
+    <div class="top-tabs-shell">
+      <div class="top-tabs-main" role="tablist" aria-label="Secciones principales">
+        <button class="top-tab-btn" :class="{active: activeSection==='identidad'}"
+          @click="scrollToSection('identidad')">👤 Identidad</button>
+        <button class="top-tab-btn" :class="{active: activeSection==='atributos'}"
+          @click="scrollToSection('atributos')">💪 Atributos</button>
+        <button class="top-tab-btn" :class="{active: activeSection==='combate'}"
+          @click="scrollToSection('combate')">⚔ Combate</button>
+        <button class="top-tab-btn" :class="{active: activeSection==='habilidades'}"
+          @click="scrollToSection('habilidades')">✨ Habilidades</button>
+        <button class="top-tab-btn" :class="{active: activeSection==='conjuros'}"
+          @click="scrollToSection('conjuros')">🔮 Conjuros</button>
+        <button class="top-tab-btn" :class="{active: activeSection==='inventario'}"
+          @click="scrollToSection('inventario')">🎒 Inventario</button>
+      </div>
+      <div class="top-tabs-sub" x-show="(subsectionNav[activeSection] || []).length">
+        <template x-for="sub in (subsectionNav[activeSection] || [])" :key="sub.id">
+    <button class="top-subtab-btn"
+      :class="{active: activeSubsection===sub.id}"
+      @click="scrollToSection(sub.id)"
+      x-text="sub.label"></button>
+        </template>
+      </div>
+    </div>
+
   <!-- ─── MAIN CONTENT ────────────────────────────────── -->
   <main class="main-content">
 
     <!-- ══════════════════════════════════════════════════
          SECCIÓN 1: IDENTIDAD
     ══════════════════════════════════════════════════ -->
-    <section id="identidad" class="section-block" data-section="identidad">
+    <section id="identidad" class="section-block multi-col" data-section="identidad">
       <div class="section-header">
         <div class="section-title">✦ Identidad del Personaje ✦</div>
       </div>
 
       <!-- Datos Básicos -->
-      <div class="dnd-card id-card">
+      <div class="dnd-card id-card card-full">
         <div class="id-hero-layout">
           <div class="id-portrait-col">
             <div class="id-portrait"
@@ -335,7 +360,7 @@
       </div>
 
       <!-- Trasfondo -->
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">Trasfondo</div>
         <div class="field-row-3">
           <div class="field-group">
@@ -437,7 +462,7 @@
       </div>
 
       <!-- Idiomas -->
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Idiomas
           <button class="btn-add-small ml-auto" @click="addLanguage()">+ Idioma</button>
@@ -457,7 +482,7 @@
     <!-- ══════════════════════════════════════════════════
          SECCIÓN 2: ATRIBUTOS
     ══════════════════════════════════════════════════ -->
-    <section id="atributos" class="section-block" data-section="atributos">
+    <section id="atributos" class="section-block multi-col" data-section="atributos">
       <div class="section-header">
         <div class="section-title">✦ Atributos & Habilidades ✦</div>
       </div>
@@ -501,7 +526,7 @@
         </div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">Puntuaciones de Habilidad</div>
         <div class="ability-groups-grid">
           <template x-for="[key, ab] in Object.entries(character.ability_scores || {})" :key="key">
@@ -741,7 +766,7 @@
       </div>
 
       <!-- Protecciones -->
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Protecciones
           <button class="btn-add-small ml-auto" @click="addProtection()">+ Añadir</button>
@@ -762,7 +787,7 @@
       </div>
 
       <!-- Ventajas, Resistencias e Inmunidades -->
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Ventajas, Resistencias e Inmunidades
           <button class="btn-add-small ml-auto" @click="addAdvantage()">+ Añadir</button>
@@ -784,7 +809,7 @@
       </div>
 
       <!-- Ataques y Munición -->
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Ataques y Armas
           <button class="btn-add-small ml-auto" @click="addAttack()">+ Ataque</button>
@@ -872,7 +897,7 @@
       </div>
 
       <!-- Habilidades y Beneficios de Combate -->
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Habilidades y Beneficios de Combate
           <button class="btn-add-small ml-auto" @click="addResource()">+ Recurso</button>
@@ -971,7 +996,7 @@
     <!-- ══════════════════════════════════════════════════
          SECCIÓN 4: OTRAS HABILIDADES
     ══════════════════════════════════════════════════ -->
-    <section id="habilidades" class="section-block" data-section="habilidades">
+    <section id="habilidades" class="section-block multi-col" data-section="habilidades">
       <div class="section-header">
         <div class="section-title">✦ Otras Habilidades ✦</div>
       </div>
@@ -1004,10 +1029,9 @@
         <div class="feature-sections-grid">
           <template x-for="(ft, i) in character.features_and_traits.species" :key="i">
             <div class="feature-block">
-              <div class="feature-header-row">
+              <div class="feature-header-row feature-header-row--with-source">
                 <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
-                <input type="text" x-model="ft.source" placeholder="Fuente"
-                       style="width:110px;font-size: calc(12px * var(--font-scale))">
+                <input type="text" x-model="ft.source" placeholder="Fuente" class="feat-source-input">
                 <button class="btn-remove" @click="removeFeature('species', i)">×</button>
               </div>
               <textarea x-model="ft.description" placeholder="Descripción..." rows="2"
@@ -1026,10 +1050,9 @@
         <div class="feature-sections-grid">
           <template x-for="(ft, i) in character.features_and_traits.class_features" :key="i">
             <div class="feature-block">
-              <div class="feature-header-row">
+              <div class="feature-header-row feature-header-row--with-source">
                 <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
-                <input type="text" x-model="ft.source" placeholder="Fuente"
-                       style="width:110px;font-size: calc(12px * var(--font-scale))">
+                <input type="text" x-model="ft.source" placeholder="Fuente" class="feat-source-input">
                 <button class="btn-remove" @click="removeFeature('class_features', i)">×</button>
               </div>
               <textarea x-model="ft.description" placeholder="Descripción..." rows="2"
@@ -1058,7 +1081,7 @@
         <div class="section-title">✦ Conjuros ✦</div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">Estadísticas de Lanzamiento</div>
         <div class="spellcasting-main-grid">
           <div class="spellcasting-main-row spellcasting-main-row--top">
@@ -1109,7 +1132,7 @@
         </div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">Espacios de Conjuros</div>
         <div class="spell-slots-compact-grid">
           <template x-for="level in [1,2,3,4,5,6,7,8,9]" :key="level">
@@ -1137,7 +1160,7 @@
         </div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">Lista de Conjuros</div>
         <div class="spell-levels-grid">
           <div class="spell-level-block">
@@ -1180,12 +1203,12 @@
     <!-- ══════════════════════════════════════════════════
          SECCIÓN 6: INVENTARIO
     ══════════════════════════════════════════════════ -->
-    <section id="inventario" class="section-block" data-section="inventario">
+    <section id="inventario" class="section-block multi-col" data-section="inventario">
       <div class="section-header">
         <div class="section-title">✦ Inventario ✦</div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Equipo
           <button class="btn-add-small ml-auto" @click="addItem()">+ Objeto</button>
@@ -1217,7 +1240,7 @@
         </div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">Dinero</div>
         <div class="currency-grid">
           <div class="currency-box pp-box">
@@ -1285,7 +1308,7 @@
         <div class="empty-state" x-show="!character.inventory.gems?.length">Sin gemas ni tesoros</div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card card-full">
         <div class="dnd-card-header">
           Bienes Prestados, Depositados o Alquilados
           <button class="btn-add-small ml-auto" @click="addLoaned()">+ Bien</button>
