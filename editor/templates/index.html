@@ -581,75 +581,6 @@
         </div>
       </div>
 
-      <!-- Movimiento -->
-      <div class="dnd-card">
-        <div class="dnd-card-header">Movimiento</div>
-        <div class="speed-grid">
-          <div class="speed-cell">
-            <label class="field-label">Base (m)</label>
-            <input type="number" x-model.number="character.combat.speed.walking_meters" min="0" @input="updateAll()">
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Nadando (m)</label>
-            <input type="number" x-model.number="character.combat.speed.swim_meters" min="0">
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Volando (m)</label>
-            <input type="number" x-model.number="character.combat.speed.fly_meters" min="0">
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Trepando (m)</label>
-            <input type="number" x-model.number="character.combat.speed.climb_meters" min="0">
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Salto Long. (m)</label>
-            <input type="number" x-model.number="character.combat.speed.jump_long" min="0">
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Salto Alt. (m)</label>
-            <input type="number" x-model.number="character.combat.speed.jump_high" min="0">
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Velocidad hora (km/h)</label>
-            <input type="text" :value="character.combat.speed.hour_text || ''" readonly>
-          </div>
-          <div class="speed-cell">
-            <label class="field-label">Velocidad dia (km/dia)</label>
-            <input type="text" :value="character.combat.speed.day_text || ''" readonly>
-          </div>
-        </div>
-        <div class="trait-group mt12">
-          <div class="trait-header">
-            <span>Sentidos y Movimiento Especiales</span>
-            <button class="btn-add-small" @click="addSpeedSpecialEntry()">+ Entrada</button>
-          </div>
-          <template x-for="(entry, i) in (character.combat.speed.special_entries || [])" :key="`speed-special-${i}`">
-            <div class="trait-row">
-              <input type="text" x-model="character.combat.speed.special_entries[i]"
-                     placeholder="Ej: Visión en la oscuridad 18m">
-              <button class="btn-remove" @click="removeSpeedSpecialEntry(i)">×</button>
-            </div>
-          </template>
-          <div class="empty-state" x-show="!character.combat.speed.special_entries?.length">
-            Sin entradas especiales
-          </div>
-        </div>
-        <div class="hp-extras-row mt12">
-          <span class="field-label" style="min-width:fit-content">Agotamiento:</span>
-          <div class="counter-pips counter-pips--exhaustion">
-            <template x-for="n in [0,1,2,3,4,5]" :key="n">
-              <div class="death-circle counter-pip counter-pip--exhaustion"
-                   :class="{filled: character.combat.exhaustion >= n && n > 0}"
-                   @click="character.combat.exhaustion = (character.combat.exhaustion === n ? n-1 : n)"
-                   x-text="n"
-                   style="cursor:pointer"></div>
-            </template>
-          </div>
-          <span class="mod-zero" style="font-size: calc(13px * var(--font-scale))"
-                x-text="`Nivel ${character.combat.exhaustion}`"></span>
-        </div>
-      </div>
-
       <!-- Puntos de Golpe -->
       <div class="dnd-card">
         <div class="dnd-card-header">Puntos de Golpe</div>
@@ -725,6 +656,75 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Movimiento -->
+      <div class="dnd-card">
+        <div class="dnd-card-header">Movimiento</div>
+        <div class="speed-grid">
+          <div class="speed-cell">
+            <label class="field-label">Base (m)</label>
+            <input type="number" x-model.number="character.combat.speed.walking_meters" min="0" @input="updateAll()">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Nadando (m)</label>
+            <input type="number" x-model.number="character.combat.speed.swim_meters" min="0">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Volando (m)</label>
+            <input type="number" x-model.number="character.combat.speed.fly_meters" min="0">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Trepando (m)</label>
+            <input type="number" x-model.number="character.combat.speed.climb_meters" min="0">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Salto Long. (m)</label>
+            <input type="number" x-model.number="character.combat.speed.jump_long" min="0">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Salto Alt. (m)</label>
+            <input type="number" x-model.number="character.combat.speed.jump_high" min="0">
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Velocidad hora (km/h)</label>
+            <input type="text" :value="character.combat.speed.hour_text || ''" readonly>
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Velocidad dia (km/dia)</label>
+            <input type="text" :value="character.combat.speed.day_text || ''" readonly>
+          </div>
+        </div>
+        <div class="trait-group mt12">
+          <div class="trait-header">
+            <span>Sentidos y Movimiento Especiales</span>
+            <button class="btn-add-small" @click="addSpeedSpecialEntry()">+ Entrada</button>
+          </div>
+          <template x-for="(entry, i) in (character.combat.speed.special_entries || [])" :key="`speed-special-${i}`">
+            <div class="trait-row">
+              <input type="text" x-model="character.combat.speed.special_entries[i]"
+                     placeholder="Ej: Visión en la oscuridad 18m">
+              <button class="btn-remove" @click="removeSpeedSpecialEntry(i)">×</button>
+            </div>
+          </template>
+          <div class="empty-state" x-show="!character.combat.speed.special_entries?.length">
+            Sin entradas especiales
+          </div>
+        </div>
+        <div class="hp-extras-row mt12">
+          <span class="field-label" style="min-width:fit-content">Agotamiento:</span>
+          <div class="counter-pips counter-pips--exhaustion">
+            <template x-for="n in [0,1,2,3,4,5]" :key="n">
+              <div class="death-circle counter-pip counter-pip--exhaustion"
+                   :class="{filled: character.combat.exhaustion >= n && n > 0}"
+                   @click="character.combat.exhaustion = (character.combat.exhaustion === n ? n-1 : n)"
+                   x-text="n"
+                   style="cursor:pointer"></div>
+            </template>
+          </div>
+          <span class="mod-zero" style="font-size: calc(13px * var(--font-scale))"
+                x-text="`Nivel ${character.combat.exhaustion}`"></span>
         </div>
       </div>
 
@@ -878,9 +878,9 @@
         </template>
         <div class="empty-state" x-show="!character.attacks?.length">Sin ataques</div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:8px">
-          <span class="ammo-section-title">Munición</span>
-          <button class="btn-add-small" @click="addAmmo()">+ Munición</button>
+        <div class="dnd-card-header dnd-card-subheader">
+          <span>Munición</span>
+          <button class="btn-add-small ml-auto" @click="addAmmo()">+ Munición</button>
         </div>
         <div class="ammo-grid">
           <template x-for="(ammo, i) in character.combat.ammunition" :key="i">
