@@ -52,7 +52,10 @@
         "Sutil",
         "Versatil",
         "Maestria: Finta"
-      ]
+      ],
+      "range_min": "2 m",
+      "range_max": "",
+      "range": "2 m"
     },
     {
       "attack_bonus": 8,
@@ -69,7 +72,10 @@
         "Carga",
         "Ligera",
         "Distancia"
-      ]
+      ],
+      "range_min": "9 m",
+      "range_max": "36 m",
+      "range": "9 m / 36 m"
     },
     {
       "attack_bonus": 8,
@@ -85,7 +91,10 @@
       "properties": [
         "Ligera",
         "Arrojadiza"
-      ]
+      ],
+      "range_min": "",
+      "range_max": "",
+      "range": ""
     },
     {
       "attack_bonus": 8,
@@ -101,7 +110,10 @@
       "properties": [
         "A distancia",
         "Magico"
-      ]
+      ],
+      "range_min": "",
+      "range_max": "",
+      "range": ""
     },
     {
       "attack_bonus": 7,
@@ -117,7 +129,10 @@
       "properties": [
         "Alcance 4,5 m",
         "Control"
-      ]
+      ],
+      "range_min": "",
+      "range_max": "",
+      "range": ""
     }
   ],
   "background_details": {

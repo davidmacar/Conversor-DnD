@@ -307,6 +307,15 @@ def _item_for_attack(atk_obj: dict, attack_index: int, inventory_items: list[dic
 
 
 def _format_attack_range(atk_obj: dict, item_obj: dict) -> str:
+    range_min = str(atk_obj.get("range_min") or "").strip()
+    range_max = str(atk_obj.get("range_max") or "").strip()
+    if range_min and range_max:
+        return range_min if range_min == range_max else f"{range_min} / {range_max}"
+    if range_min:
+        return range_min
+    if range_max:
+        return range_max
+
     attack_range = str(atk_obj.get("range") or "").strip()
     if attack_range:
         return attack_range
@@ -391,14 +400,12 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     climb_m      = _to_float(speed.get("climb_meters"), 0.0)
     perc_total   = sk.get("percepcion", {}).get("total", 0)
     passive_perc = 10 + perc_total
-    speed_h = walking_m * 600.0 / 1000.0
-    speed_d = speed_h * 8.0
 
     m["Clase-Armadura"]    = str(cb.get("armor_class") or "")
     m["Iniciativa"]        = fmt_mod(cb.get("initiative") or 0)
     m["Velocidad"]         = f"{_fmt_1(walking_m)} m"
-    m["Velocidad-Hora"]    = str(speed.get("hour_text") or "").strip() or f"{_fmt_1(speed_h)} km/h"
-    m["Velocidad-Jornada"] = str(speed.get("day_text") or "").strip() or f"{_fmt_1(speed_d)} km/dia"
+    m["Velocidad-Hora"]    = str(speed.get("hour_text") or "").strip()
+    m["Velocidad-Jornada"] = str(speed.get("day_text") or "").strip()
     m["Velocidad-Especial"] = ""
     jump_long = speed.get("jump_long")
     jump_high = speed.get("jump_high")
@@ -583,6 +590,17 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     m["Check-Competencia-Armas-Marciales"] = bool(pr.get("martial_weapons", False))
 
     comp_lines: list[str] = []
+    for item in (pr.get("other_competencies") or []):
+        if isinstance(item, dict):
+            txt = _join_non_empty([
+                str(item.get("title") or item.get("name") or "").strip(),
+                str(item.get("description") or item.get("note") or "").strip(),
+            ], " - ")
+        else:
+            txt = str(item or "").strip()
+        if txt:
+            comp_lines.append(txt)
+
     for seq in (pr.get("weapons") or [], pr.get("tools") or [], pr.get("raw") or []):
         for raw in seq:
             txt = str(raw or "").strip()
@@ -593,12 +611,12 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     ordered_comp: list[str] = []
     for c in comp_lines:
         key = c.lower().strip()
-        # Evita repetir en texto lo que ya va por checkboxes.
-        if re.search(r"\b(armadura|escudo|ligera|media|pesada)\b", key):
+        # Evita repetir en texto los labels genéricos ya cubiertos por checkboxes.
+        if key in {"armadura ligera", "armadura media", "armadura pesada", "escudo"}:
             continue
-        if bool(pr.get("simple_weapons", False)) and "simple" in key:
+        if bool(pr.get("simple_weapons", False)) and key in {"armas simples", "simple weapons"}:
             continue
-        if bool(pr.get("martial_weapons", False)) and ("marcial" in key or "martial" in key):
+        if bool(pr.get("martial_weapons", False)) and key in {"armas marciales", "martial weapons"}:
             continue
         if key in seen_comp:
             continue
@@ -623,7 +641,8 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     m["Piezas.Electro"] = str(currency.get("EP") or 0)
     m["Piezas.Oro"]     = str(currency.get("GP") or 0)
     m["Piezas.Platino"] = str(currency.get("PP") or 0)
-    other_currency_lines = _split_lines(str(currency.get("other_notes") or ""))
+    other_currency_text = str(currency.get("other_notes") or inv.get("other_possessions") or "")
+    other_currency_lines = _split_lines(other_currency_text)
     m["Piezas.Otros.1"] = other_currency_lines[0] if len(other_currency_lines) > 0 else ""
     m["Piezas.Otros.2"] = other_currency_lines[1] if len(other_currency_lines) > 1 else ""
 
@@ -715,8 +734,8 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
 
     allies_lines  = _split_lines(notes_d.get("allies"))
     enemies_lines = _split_lines(notes_d.get("enemies"))
-    phys_lines = _split_lines(notes_d.get("physical_description"))
-    phys_lines += _split_lines(str(app.get("summary") or ""))
+    appearance_text = str(app.get("summary") or notes_d.get("physical_description") or "")
+    phys_lines = _split_lines(appearance_text)
     for i in range(1, 4):
         m[f"Dato-Personaje.Amigo-Aliado-{i}"] = allies_lines[i-1]  if i-1 < len(allies_lines)  else ""
         m[f"Dato-Personaje.Enemigo-{i}"]      = enemies_lines[i-1] if i-1 < len(enemies_lines) else ""
@@ -725,15 +744,17 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     m["Dato-Personaje.Deidad-Dominio"]     = bg.get("deity") or ""
     m["Dato-Personaje.Descripcion-Deidad"] = bg.get("deity_description") or ""
 
-    other_lines = _split_lines(notes_d.get("other_notes"))
-    m["Dato-Personaje.Trasfondo-Otros-1"] = bg.get("description", "")
-    for i in range(2, 8):
-        m[f"Dato-Personaje.Trasfondo-Otros-{i}"] = other_lines[i-2] if i-2 < len(other_lines) else ""
+    story_text = str(notes_d.get("backstory") or "").strip()
+    story_lines = _split_lines(story_text)
+    if not story_lines:
+        story_lines = _split_lines(str(bg.get("description") or ""))
+        story_lines += _split_lines(notes_d.get("other_notes"))
+    for i in range(1, 8):
+        m[f"Dato-Personaje.Trasfondo-Otros-{i}"] = story_lines[i-1] if i-1 < len(story_lines) else ""
 
     # Notas de texto libres
-    note_lines: list[str] = []
-    note_lines += _split_lines(str(notes_d.get("general") or ""))
-    note_lines += _split_lines(str(notes_d.get("additional_notes") or ""))
+    note_text = str(notes_d.get("general") or notes_d.get("additional_notes") or "")
+    note_lines = _split_lines(note_text)
     _fill_line_fields(m, "Nota", note_lines, 16)
 
     # Otros
@@ -769,8 +790,8 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
                 str(ln.get("to") or ln.get("where") or "").strip(),
                 str(ln.get("name") or "").strip(),
             ])
-            qty_ln = _to_int(ln.get("quantity"), _to_int(ln.get("amount"), 0))
-            m[f"Prestad-Depositado-Recibido-Cantidad.{i}"] = str(qty_ln) if qty_ln else ""
+            qty_raw = str(ln.get("quantity") if ln.get("quantity") not in (None, "") else (ln.get("amount") or "")).strip()
+            m[f"Prestad-Depositado-Recibido-Cantidad.{i}"] = qty_raw
             m[f"Prestad-Depositado-Recibido-Momento.{i}"] = _join_non_empty([
                 str(ln.get("due") or ln.get("when") or "").strip(),
                 str(ln.get("notes") or "").strip(),
@@ -849,8 +870,15 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
                 m[f"Nombre-Conjuro-Nivel-{lvl}.{i}"]          = ""
                 m[f"Check-Preparado-Conjuro-Nivel-{lvl}.{i}"] = False
 
-    m["Conjuros-Concidos"]   = str(total_spells)   if total_spells   else ""  # sic: typo in PDF
-    m["Conjuros-Preparados"] = str(prepared_count) if prepared_count > 0 else ""
+    known_count = _to_int(sp.get("spells_known"), -1)
+    prepared_total = _to_int(sp.get("spells_prepared"), -1)
+    if known_count < 0:
+        known_count = total_spells
+    if prepared_total < 0:
+        prepared_total = prepared_count
+
+    m["Conjuros-Concidos"]   = str(known_count) if known_count > 0 else ""  # sic: typo in PDF
+    m["Conjuros-Preparados"] = str(prepared_total) if prepared_total > 0 else ""
 
     return m
 

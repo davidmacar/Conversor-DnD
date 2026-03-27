@@ -157,27 +157,34 @@ def import_character():
 
 @app.route('/api/export-pdf', methods=['POST'])
 def export_pdf():
-    """Guarda el JSON actual y genera el PDF relleno para descargar."""
+    """Genera el PDF para descargar usando un payload temporal enviado por la web."""
     if not PDF_EXPORT_OK:
         return jsonify({'status': 'error', 'message': f'generate_pdf no disponible: {_PDF_EXPORT_ERR}'}), 500
     if not os.path.exists(TEMPLATE_PDF):
         return jsonify({'status': 'error', 'message': f'Plantilla no encontrada: {TEMPLATE_PDF}'}), 500
 
-    # Persist latest state from frontend before generating
     data = request.get_json()
-    if data:
-        with open(JSON_PATH, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+    if not isinstance(data, dict):
+        return jsonify({'status': 'error', 'message': 'Payload de exportación inválido'}), 400
 
     output_dir = os.path.dirname(OUTPUT_PDF)
     os.makedirs(output_dir, exist_ok=True)
+
+    fd_json, tmp_json_path = tempfile.mkstemp(prefix='personaje_export_payload_', suffix='.json', dir=output_dir)
+    os.close(fd_json)
+    with open(tmp_json_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
     fd, tmp_pdf_path = tempfile.mkstemp(prefix='personaje_export_', suffix='.pdf', dir=output_dir)
     os.close(fd)
 
     try:
-        _generate_pdf(Path(JSON_PATH), Path(TEMPLATE_PDF), Path(tmp_pdf_path))
+        _generate_pdf(Path(tmp_json_path), Path(TEMPLATE_PDF), Path(tmp_pdf_path))
     except Exception as e:
+        try:
+            os.remove(tmp_json_path)
+        except OSError:
+            pass
         try:
             os.remove(tmp_pdf_path)
         except OSError:
@@ -188,6 +195,10 @@ def export_pdf():
         with open(tmp_pdf_path, 'rb') as f:
             pdf_bytes = f.read()
     finally:
+        try:
+            os.remove(tmp_json_path)
+        except OSError:
+            pass
         try:
             os.remove(tmp_pdf_path)
         except OSError:

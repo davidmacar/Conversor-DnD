@@ -37,9 +37,6 @@
 
   <div class="navbar-sep"></div>
 
-  <button class="btn btn-ghost" @click="updateAll(); showToast('Recalculado','success')">
-    ↻ Recalcular
-  </button>
   <button class="btn btn-gold" @click="importModal = true">
     ⇩ Importar
   </button>
@@ -74,10 +71,11 @@
   <!-- ─── SIDEBAR ─────────────────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-char">
-      <template x-if="character.basic_info?.portrait_url">
-        <img class="sidebar-portrait" :src="character.basic_info.portrait_url" :alt="character.basic_info.name">
+      <template x-if="character.basic_info?.portrait_url && !portraitLoadError">
+        <img class="sidebar-portrait" :src="character.basic_info.portrait_url" :alt="character.basic_info.name"
+             @error="portraitLoadError = true">
       </template>
-      <template x-if="!character.basic_info?.portrait_url">
+      <template x-if="!character.basic_info?.portrait_url || portraitLoadError">
         <div class="sidebar-portrait-placeholder">🧙</div>
       </template>
       <div class="sidebar-name" x-text="character.basic_info?.name || 'Sin nombre'"></div>
@@ -212,16 +210,18 @@
         <div class="id-hero-layout">
           <div class="id-portrait-col">
             <div class="id-portrait"
-                 :class="{'portrait-zoomable': character.basic_info?.portrait_url}"
-                 @click="character.basic_info?.portrait_url && (portraitExpanded = true)">
-              <template x-if="character.basic_info?.portrait_url">
-                <img :src="character.basic_info.portrait_url" :alt="character.basic_info.name">
+                :class="{'portrait-zoomable': character.basic_info?.portrait_url && !portraitLoadError}"
+                @click="character.basic_info?.portrait_url && !portraitLoadError && (portraitExpanded = true)">
+              <template x-if="character.basic_info?.portrait_url && !portraitLoadError">
+                <img :src="character.basic_info.portrait_url" :alt="character.basic_info.name"
+                     @error="portraitLoadError = true">
               </template>
-              <template x-if="!character.basic_info?.portrait_url">
+              <template x-if="!character.basic_info?.portrait_url || portraitLoadError">
                 <span>🧙</span>
               </template>
             </div>
             <input type="text" x-model="character.basic_info.portrait_url"
+                   @input="portraitLoadError = false"
                    class="id-portrait-url" placeholder="URL imagen…">
           </div>
           <div class="id-fields-col">
@@ -259,7 +259,7 @@
             </template>
             <div class="field-row-3">
               <div class="field-group">
-                <label class="field-label">Especie</label>
+                <label class="field-label">Raza</label>
                 <input type="text" x-model="character.basic_info.species">
               </div>
               <div class="field-group">
@@ -407,16 +407,16 @@
         </div>
         <div class="field-row-2">
           <div class="field-group">
-            <label class="field-label">Amigos y Aliados</label>
+            <label class="field-label field-label-unified">Amigos y Aliados</label>
             <textarea x-model="character.notes.allies" rows="3" class="notes-textarea"></textarea>
           </div>
           <div class="field-group">
-            <label class="field-label">Enemigos</label>
+            <label class="field-label field-label-unified">Enemigos</label>
             <textarea x-model="character.notes.enemies" rows="3" class="notes-textarea"></textarea>
           </div>
         </div>
         <div class="field-group">
-          <label class="field-label">Historia del Personaje</label>
+          <label class="field-label field-label-unified">Historia de Personaje</label>
           <textarea x-model="character.notes.backstory" rows="5" class="notes-textarea"></textarea>
         </div>
       </div>
@@ -430,7 +430,7 @@
             <input type="text" x-model="character.background_details.deity">
           </div>
           <div class="field-group">
-            <label class="field-label">Descripción de la Deidad</label>
+            <label class="field-label field-label-unified">Descripción de la Deidad</label>
             <input type="text" x-model="character.background_details.deity_description">
           </div>
         </div>
@@ -442,7 +442,7 @@
           Idiomas
           <button class="btn-add-small ml-auto" @click="addLanguage()">+ Idioma</button>
         </div>
-        <div class="lang-list">
+        <div class="lang-list lang-list-grid">
           <template x-for="(lang, i) in character.languages" :key="i">
             <div class="trait-row">
               <input type="text" x-model="character.languages[i]" placeholder="Idioma">
@@ -511,10 +511,9 @@
                   <input type="number" :value="ab.score"
                          @change="onAbilityInput(key, $event.target.value)"
                          min="1" max="30">
-                  <span class="ab-label" x-text="abilityLabel(key)"></span>
                 </div>
                 <div>
-                  <div style="font-size: calc(13px * var(--font-scale));color:var(--text-dim)" x-text="abilityName(key)"></div>
+                  <div class="ability-title-text" x-text="abilityName(key)"></div>
                 </div>
                 <div class="ability-mod-badge" :class="modColor(ab.modifier)"
                      x-text="formatMod(ab.modifier)"></div>
@@ -563,7 +562,7 @@
         <div class="speed-grid">
           <div class="speed-cell">
             <label class="field-label">Base (m)</label>
-            <input type="number" x-model.number="character.combat.speed.walking_meters" min="0">
+            <input type="number" x-model.number="character.combat.speed.walking_meters" min="0" @input="updateAll()">
           </div>
           <div class="speed-cell">
             <label class="field-label">Nadando (m)</label>
@@ -585,11 +584,30 @@
             <label class="field-label">Salto Alt. (m)</label>
             <input type="number" x-model.number="character.combat.speed.jump_high" min="0">
           </div>
+          <div class="speed-cell">
+            <label class="field-label">Velocidad hora (km/h)</label>
+            <input type="text" :value="character.combat.speed.hour_text || ''" readonly>
+          </div>
+          <div class="speed-cell">
+            <label class="field-label">Velocidad dia (km/dia)</label>
+            <input type="text" :value="character.combat.speed.day_text || ''" readonly>
+          </div>
         </div>
-        <div class="field-group mt12">
-          <label class="field-label">Sentidos y Movimiento Especiales</label>
-          <input type="text" x-model="character.combat.speed.special_senses"
-                 placeholder="Ej: Visión en la oscuridad 18m">
+        <div class="trait-group mt12">
+          <div class="trait-header">
+            <span>Sentidos y Movimiento Especiales</span>
+            <button class="btn-add-small" @click="addSpeedSpecialEntry()">+ Entrada</button>
+          </div>
+          <template x-for="(entry, i) in (character.combat.speed.special_entries || [])" :key="`speed-special-${i}`">
+            <div class="trait-row">
+              <input type="text" x-model="character.combat.speed.special_entries[i]"
+                     placeholder="Ej: Visión en la oscuridad 18m">
+              <button class="btn-remove" @click="removeSpeedSpecialEntry(i)">×</button>
+            </div>
+          </template>
+          <div class="empty-state" x-show="!character.combat.speed.special_entries?.length">
+            Sin entradas especiales
+          </div>
         </div>
         <div class="hp-extras-row mt12">
           <span class="field-label" style="min-width:fit-content">Agotamiento:</span>
@@ -808,8 +826,12 @@
                 </select>
               </div>
               <div class="field-group">
-                <label class="field-label">Alcance</label>
-                <input type="text" x-model="atk.range" placeholder="1.5m" style="width:80px">
+                <label class="field-label">Alcance minimo</label>
+                <input type="text" x-model="atk.range_min" @input="syncAttackRangeText(atk)" placeholder="9 m" style="width:90px">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Alcance maximo</label>
+                <input type="text" x-model="atk.range_max" @input="syncAttackRangeText(atk)" placeholder="36 m" style="width:90px">
               </div>
               <div class="field-group">
                 <label class="field-label">Peso (kg)</label>
@@ -827,10 +849,6 @@
               <label class="field-label">Notas</label>
               <input type="text" x-model="atk.notes" placeholder="Propiedades, condiciones…">
             </div>
-            <div class="attack-summary">
-              <span class="atk-roll-badge" x-text="atk.attack_roll || '1d20+0'"></span>
-              <span class="dmg-display" x-text="atk.damage_display || atk.damage || '—'"></span>
-            </div>
           </div>
         </template>
         <div class="empty-state" x-show="!character.attacks?.length">Sin ataques</div>
@@ -839,17 +857,18 @@
           <span class="ammo-section-title">Munición</span>
           <button class="btn-add-small" @click="addAmmo()">+ Munición</button>
         </div>
-        <template x-for="(ammo, i) in character.combat.ammunition" :key="i">
-          <div class="ammo-row">
-            <div class="ammo-header">
-              <input type="text" x-model="ammo.name" placeholder="Tipo de munición">
-              <span style="font-size: calc(12px * var(--font-scale));color:var(--text-dim)">Máx:</span>
-              <input type="number" x-model.number="ammo.max" min="1" @change="onAmmoMaxChange(i)">
-              <button class="btn-remove" @click="removeAmmo(i)">×</button>
+        <div class="ammo-grid">
+          <template x-for="(ammo, i) in character.combat.ammunition" :key="i">
+            <div class="ammo-row">
+              <div class="ammo-header">
+                <input type="text" x-model="ammo.name" placeholder="Tipo de munición">
+                <span class="ammo-max-label">Máx:</span>
+                <input type="number" x-model.number="ammo.max" min="1" @change="onAmmoMaxChange(i)">
+              </div>
             </div>
-          </div>
-        </template>
-        <div class="empty-state" x-show="!character.combat.ammunition?.length">Sin munición</div>
+          </template>
+          <div class="empty-state" x-show="!character.combat.ammunition?.length">Sin munición</div>
+        </div>
       </div>
 
       <!-- Habilidades y Beneficios de Combate -->
@@ -926,18 +945,24 @@
             Armas Marciales
           </label>
         </div>
-        <div class="field-row-2 mt12">
-          <div class="field-group">
-            <label class="field-label">Otras (herramientas, instrumentos…)</label>
-            <textarea :value="(character.proficiencies.tools||[]).join(', ')"
-                      @input="character.proficiencies.tools = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)"
-                      rows="3" class="notes-textarea"></textarea>
+        <div class="trait-group mt12 other-competencies-wrap">
+          <div class="trait-header">
+            <span>Otras Competencias</span>
+            <button class="btn-add-small" @click="addOtherCompetency()">+ Competencia</button>
           </div>
-          <div class="field-group">
-            <label class="field-label">Armas (competencia adicional)</label>
-            <textarea :value="(character.proficiencies.weapons||[]).join(', ')"
-                      @input="character.proficiencies.weapons = $event.target.value.split(',').map(s=>s.trim()).filter(Boolean)"
-                      rows="3" class="notes-textarea"></textarea>
+          <div class="other-competencies-grid" x-show="character.proficiencies.other_competencies?.length">
+            <template x-for="(comp, i) in character.proficiencies.other_competencies" :key="`other-comp-${i}`">
+              <div class="feature-block other-competency-card">
+                <div class="feature-header-row">
+                  <input type="text" x-model="comp.title" placeholder="Título" class="feat-name">
+                  <button class="btn-remove" @click="removeOtherCompetency(i)">×</button>
+                </div>
+                <input type="text" x-model="comp.description" placeholder="Descripción breve">
+              </div>
+            </template>
+          </div>
+          <div class="empty-state" x-show="!character.proficiencies.other_competencies?.length">
+            Sin otras competencias
           </div>
         </div>
       </div>
@@ -956,17 +981,19 @@
           Dotes
           <button class="btn-add-small ml-auto" @click="addFeature('feats')">+ Dote</button>
         </div>
-        <template x-for="(feat, i) in character.features_and_traits.feats" :key="i">
-          <div class="feature-block">
-            <div class="feature-header-row">
-              <input type="text" x-model="feat.name" placeholder="Nombre" class="feat-name">
-              <button class="btn-remove" @click="removeFeature('feats', i)">×</button>
+        <div class="feature-sections-grid">
+          <template x-for="(feat, i) in character.features_and_traits.feats" :key="i">
+            <div class="feature-block">
+              <div class="feature-header-row">
+                <input type="text" x-model="feat.name" placeholder="Nombre" class="feat-name">
+                <button class="btn-remove" @click="removeFeature('feats', i)">×</button>
+              </div>
+              <textarea x-model="feat.description" placeholder="Descripción..." rows="2"
+                        class="notes-textarea"></textarea>
             </div>
-            <textarea x-model="feat.description" placeholder="Descripción…" rows="2"
-                      class="notes-textarea"></textarea>
-          </div>
-        </template>
-        <div class="empty-state" x-show="!character.features_and_traits.feats?.length">Sin dotes</div>
+          </template>
+          <div class="empty-state" x-show="!character.features_and_traits.feats?.length">Sin dotes</div>
+        </div>
       </div>
 
       <div class="dnd-card">
@@ -974,19 +1001,21 @@
           Rasgos de Especie
           <button class="btn-add-small ml-auto" @click="addFeature('species')">+ Rasgo</button>
         </div>
-        <template x-for="(ft, i) in character.features_and_traits.species" :key="i">
-          <div class="feature-block">
-            <div class="feature-header-row">
-              <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
-              <input type="text" x-model="ft.source" placeholder="Fuente"
-                     style="width:110px;font-size: calc(12px * var(--font-scale))">
-              <button class="btn-remove" @click="removeFeature('species', i)">×</button>
+        <div class="feature-sections-grid">
+          <template x-for="(ft, i) in character.features_and_traits.species" :key="i">
+            <div class="feature-block">
+              <div class="feature-header-row">
+                <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
+                <input type="text" x-model="ft.source" placeholder="Fuente"
+                       style="width:110px;font-size: calc(12px * var(--font-scale))">
+                <button class="btn-remove" @click="removeFeature('species', i)">×</button>
+              </div>
+              <textarea x-model="ft.description" placeholder="Descripción..." rows="2"
+                        class="notes-textarea"></textarea>
             </div>
-            <textarea x-model="ft.description" placeholder="Descripción…" rows="2"
-                      class="notes-textarea"></textarea>
-          </div>
-        </template>
-        <div class="empty-state" x-show="!character.features_and_traits.species?.length">Sin rasgos de especie</div>
+          </template>
+          <div class="empty-state" x-show="!character.features_and_traits.species?.length">Sin rasgos de especie</div>
+        </div>
       </div>
 
       <div class="dnd-card">
@@ -994,25 +1023,27 @@
           Rasgos de Clase
           <button class="btn-add-small ml-auto" @click="addFeature('class_features')">+ Rasgo</button>
         </div>
-        <template x-for="(ft, i) in character.features_and_traits.class_features" :key="i">
-          <div class="feature-block">
-            <div class="feature-header-row">
-              <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
-              <input type="text" x-model="ft.source" placeholder="Fuente"
-                     style="width:110px;font-size: calc(12px * var(--font-scale))">
-              <button class="btn-remove" @click="removeFeature('class_features', i)">×</button>
+        <div class="feature-sections-grid">
+          <template x-for="(ft, i) in character.features_and_traits.class_features" :key="i">
+            <div class="feature-block">
+              <div class="feature-header-row">
+                <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
+                <input type="text" x-model="ft.source" placeholder="Fuente"
+                       style="width:110px;font-size: calc(12px * var(--font-scale))">
+                <button class="btn-remove" @click="removeFeature('class_features', i)">×</button>
+              </div>
+              <textarea x-model="ft.description" placeholder="Descripción..." rows="2"
+                        class="notes-textarea"></textarea>
             </div>
-            <textarea x-model="ft.description" placeholder="Descripción…" rows="2"
-                      class="notes-textarea"></textarea>
-          </div>
-        </template>
-        <div class="empty-state" x-show="!character.features_and_traits.class_features?.length">Sin rasgos de clase</div>
+          </template>
+          <div class="empty-state" x-show="!character.features_and_traits.class_features?.length">Sin rasgos de clase</div>
+        </div>
       </div>
 
       <div class="dnd-card">
         <div class="dnd-card-header">Notas</div>
         <div class="field-group">
-          <label class="field-label">Notas Generales</label>
+          <label class="field-label">Notas Adicionales</label>
           <textarea x-model="character.notes.general" rows="6" class="notes-textarea"
                     placeholder="Apuntes varios, efectos activos, recordatorios…"></textarea>
         </div>
@@ -1064,11 +1095,11 @@
                      min="0" @change="onSorceryMaxChange()">
             </div>
             <div class="field-group spellcasting-field spellcasting-counter-field">
-              <label class="field-label">Contador</label>
+              <label class="field-label">Puntos usados</label>
               <div class="sorcery-pips sorcery-pips--inline counter-pips" x-show="character.spellcasting.sorcery_points_max > 0">
                 <template x-for="j in sorceryRange()" :key="j">
                   <div class="sorcery-pip counter-pip counter-pip--sorcery"
-                       :class="{used: !character.spellcasting.sorcery_pips?.[j]}"
+                       :class="{used: character.spellcasting.sorcery_pips?.[j]}"
                        @click="toggleSorceryPip(j)"></div>
                 </template>
               </div>
@@ -1096,7 +1127,7 @@
                 <div class="slot-pips counter-pips">
                   <template x-for="j in slotRange(level)" :key="j">
                     <div class="slot-pip counter-pip counter-pip--slot"
-                         :class="{used: !character.spellcasting.spell_slots?.[`level_${level}`]?.pip_states?.[j]}"
+                         :class="{used: character.spellcasting.spell_slots?.[`level_${level}`]?.pip_states?.[j]}"
                          @click="toggleSlotPip(level, j)"></div>
                   </template>
                 </div>
@@ -1108,41 +1139,41 @@
 
       <div class="dnd-card">
         <div class="dnd-card-header">Lista de Conjuros</div>
-
-        <div class="spell-level-block">
-          <div class="spell-level-header">
-            Trucos (Nivel 0)
-            <button class="btn-add-small" @click="addSpell(0)">+</button>
-          </div>
-          <template x-for="(sp, i) in getSpells(0)" :key="i">
-            <div class="spell-row">
-              <input type="text" x-model="sp.name" placeholder="Nombre del truco" style="flex:2">
-              <input type="text" x-model="sp.casting_time" placeholder="Lanzamiento" style="width:100px">
-              <button class="btn-remove" @click="removeSpell(0, i)">×</button>
-            </div>
-          </template>
-          <div class="empty-state" x-show="!getSpells(0).length">Sin trucos</div>
-        </div>
-
-        <template x-for="level in [1,2,3,4,5,6,7,8,9]" :key="level">
+        <div class="spell-levels-grid">
           <div class="spell-level-block">
             <div class="spell-level-header">
-              <span x-text="`Nivel ${level}`"></span>
-              <button class="btn-add-small" @click="addSpell(level)">+</button>
+              Trucos (Nivel 0)
+              <button class="btn-add-small" @click="addSpell(0)">+</button>
             </div>
-            <template x-for="(sp, i) in getSpells(level)" :key="i">
-              <div class="spell-row">
-                <input type="checkbox" class="ui-checkbox ui-checkbox--circle"
-                       x-model="sp.prepared" title="Preparado" aria-label="Conjuro preparado">
-                <input type="text" x-model="sp.name" placeholder="Nombre" style="flex:2">
-                <input type="text" x-model="sp.casting_time" placeholder="Tiempo" style="width:90px">
-                <button class="btn-remove" @click="removeSpell(level, i)">×</button>
+            <template x-for="(sp, i) in getSpells(0)" :key="i">
+              <div class="spell-row spell-row--cantrip">
+                <input type="text" x-model="sp.name" placeholder="Nombre del truco" style="flex:2">
+                <button class="btn-remove" @click="removeSpell(0, i)">×</button>
               </div>
             </template>
-            <div class="empty-state" x-show="!getSpells(level).length"
-                 x-text="`Sin conjuros de nivel ${level}`"></div>
+            <div class="empty-state" x-show="!getSpells(0).length">Sin trucos</div>
           </div>
-        </template>
+
+          <template x-for="level in [1,2,3,4,5,6,7,8,9]" :key="level">
+            <div class="spell-level-block">
+              <div class="spell-level-header">
+                <span x-text="`Nivel ${level}`"></span>
+                <button class="btn-add-small" @click="addSpell(level)">+</button>
+              </div>
+              <template x-for="(sp, i) in getSpells(level)" :key="i">
+                <div class="spell-row">
+                  <input type="checkbox" class="ui-checkbox ui-checkbox--circle"
+                         x-model="sp.prepared"
+                         title="Preparado" aria-label="Conjuro preparado">
+                  <input type="text" x-model="sp.name" placeholder="Nombre" style="flex:2">
+                  <button class="btn-remove" @click="removeSpell(level, i)">×</button>
+                </div>
+              </template>
+              <div class="empty-state" x-show="!getSpells(level).length"
+                   x-text="`Sin conjuros de nivel ${level}`"></div>
+            </div>
+          </template>
+        </div>
       </div>
     </section>
 
@@ -1216,7 +1247,7 @@
           </div>
         </div>
         <div class="field-group mt12">
-          <label class="field-label">Otros valores / Notas</label>
+          <label class="field-label">Otras Piezas</label>
           <textarea x-model="character.inventory.currency.other_notes" rows="2" class="notes-textarea"
                     placeholder="Joyas sin valorar, deudas, fondos de gremio…"></textarea>
         </div>
@@ -1260,7 +1291,7 @@
           <button class="btn-add-small ml-auto" @click="addLoaned()">+ Bien</button>
         </div>
         <div class="row-head loaned-head-row">
-          <span>Descripción</span><span class="loaned-head-extra">Dónde</span><span class="loaned-head-extra">Cuánto</span><span class="loaned-head-extra">Cuándo</span><span></span>
+          <span>Descripción</span><span class="loaned-head-extra">Dónde</span><span class="loaned-head-extra">Cuánto</span><span class="loaned-head-extra">Cuándo</span><span class="loaned-head-extra">Notas</span><span></span>
         </div>
         <template x-for="(loan, i) in character.inventory.loaned" :key="i">
           <div class="loaned-row">
@@ -1268,6 +1299,7 @@
             <input type="text" x-model="loan.where" placeholder="Dónde" class="loaned-extra">
             <input type="text" x-model="loan.amount" placeholder="Cuánto" class="loaned-extra">
             <input type="text" x-model="loan.when" placeholder="Cuándo" class="loaned-extra">
+            <input type="text" x-model="loan.notes" placeholder="Notas" class="loaned-extra">
             <button class="btn-remove" @click="removeLoaned(i)">×</button>
           </div>
         </template>

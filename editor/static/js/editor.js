@@ -53,6 +53,7 @@ function characterEditor() {
       ]
     },
     portraitExpanded: false,
+    portraitLoadError: false,
     DAMAGE_TYPES: ['contundente','cortante','perforante','ácido','frío','fuego','fuerza','necrótico','psíquico','radiante','rayo','trueno','veneno'],
     DICE_TYPES: ['d4','d6','d8','d10','d12','d20'],
     loading: true,
@@ -86,6 +87,7 @@ function characterEditor() {
 
     _ensureArrays() {
       if (!this.character) return;
+      this.portraitLoadError = false;
       this.character.attacks       ??= [];
       this.character.attacks.forEach(atk => {
         if (atk.damage_dice_type === undefined) {
@@ -101,6 +103,17 @@ function characterEditor() {
             .map(s => s.trim())
             .filter(Boolean);
         }
+        atk.range_min = String(atk.range_min ?? '').trim();
+        atk.range_max = String(atk.range_max ?? '').trim();
+        if (!atk.range_min && !atk.range_max) {
+          const legacyRange = String(atk.range || '').trim();
+          if (legacyRange) {
+            const [minRaw, maxRaw] = legacyRange.split('/').map(s => s.trim());
+            atk.range_min = minRaw || '';
+            atk.range_max = maxRaw && maxRaw !== minRaw ? maxRaw : '';
+          }
+        }
+        this.syncAttackRangeText(atk);
         atk.notes = String(atk.notes || '').trim();
         delete atk.custom_bonuses;
         this.syncDamageDisplay(atk);
@@ -140,6 +153,18 @@ function characterEditor() {
         };
       });
       this.character.inventory.currency ??= {};
+      this.character.attacks.forEach(atk => {
+        if (atk.range_min || atk.range_max) {
+          return;
+        }
+        const inferredRange = this.attackRangeFromInventory(atk);
+        if (!inferredRange.min && !inferredRange.max) {
+          return;
+        }
+        atk.range_min = inferredRange.min;
+        atk.range_max = inferredRange.max;
+        this.syncAttackRangeText(atk);
+      });
       this.character.resources     ??= {};
       this.character.spellcasting  ??= {};
       this.character.spellcasting.spells ??= {};
@@ -214,7 +239,7 @@ function characterEditor() {
       }
 
       // Normalizar proficiencies: array o string → array
-      for (const key of ['weapons', 'armor', 'tools']) {
+      for (const key of ['weapons', 'armor', 'tools', 'raw']) {
         const v = this.character.proficiencies[key];
         if (!Array.isArray(v)) {
           this.character.proficiencies[key] = v
@@ -233,6 +258,46 @@ function characterEditor() {
           shield: arr.some(s => s.includes('escudo')  || s.includes('shield')),
         };
       }
+
+      const legacyCompetencyTexts = [];
+      for (const key of ['tools', 'weapons', 'armor', 'raw']) {
+        for (const entry of this.character.proficiencies[key] || []) {
+          const text = String(entry || '').trim();
+          if (text) legacyCompetencyTexts.push(text);
+        }
+      }
+
+      const normalizedOtherCompetencies = Array.isArray(this.character.proficiencies.other_competencies)
+        ? this.character.proficiencies.other_competencies
+            .map((entry) => {
+              if (typeof entry === 'string') {
+                const raw = String(entry || '').trim();
+                if (!raw) return null;
+                const [title, ...rest] = raw.split(' - ');
+                return {
+                  title: String(title || '').trim(),
+                  description: rest.join(' - ').trim(),
+                };
+              }
+              const src = entry && typeof entry === 'object' ? entry : {};
+              return {
+                title: String(src.title ?? src.name ?? '').trim(),
+                description: String(src.description ?? src.note ?? '').trim(),
+              };
+            })
+            .filter((entry) => entry && (entry.title || entry.description))
+        : [];
+
+      if (!normalizedOtherCompetencies.length && legacyCompetencyTexts.length) {
+        const seen = new Set();
+        for (const text of legacyCompetencyTexts) {
+          const key = text.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          normalizedOtherCompetencies.push({ title: text, description: '' });
+        }
+      }
+      this.character.proficiencies.other_competencies = normalizedOtherCompetencies;
 
       // Normalizar recursos: uses_current/uses_max → current/max
       for (const res of Object.values(this.character.resources || {})) {
@@ -265,10 +330,28 @@ function characterEditor() {
       // ── Nuevos campos secciones v2 ─────────────────────────────────────────
       this.character.combat.protections ??= [];
       this.character.combat.advantages_resistances ??= [];
+      this.character.combat.advantages_resistances = this.character.combat.advantages_resistances
+        .map((adv) => {
+          if (typeof adv === 'string') {
+            return { category: '', description: String(adv || '') };
+          }
+          const source = adv && typeof adv === 'object' ? adv : {};
+          return {
+            category: String(source.category || ''),
+            description: String(source.description || ''),
+          };
+        });
       this.character.combat.ammunition ??= [];
       this.character.combat.speed.jump_long ??= 0;
       this.character.combat.speed.jump_high ??= 0;
       this.character.combat.speed.special_senses ??= '';
+      this.character.combat.speed.hour_text ??= '';
+      this.character.combat.speed.day_text ??= '';
+      if (!Array.isArray(this.character.combat.speed.special_entries)) {
+        this.character.combat.speed.special_entries = this.splitNonEmptyLines(
+          this.character.combat.speed.special_senses,
+        );
+      }
       this.character.proficiencies.simple_weapons ??= false;
       this.character.proficiencies.martial_weapons ??= false;
       this.character.appearance.summary ??= '';
@@ -276,20 +359,75 @@ function characterEditor() {
       this.character.basic_info.next_level_xp ??= 0;
       this.character.background_details.birth_place ??= '';
       this.character.background_details.birth_date ??= '';
+      this.character.background_details.description ??= '';
       this.character.background_details.page_ref ??= '';
       this.character.spellcasting.sorcery_points_max ??= 0;
       this.character.spellcasting.sorcery_points_used ??= 0;
+      this.character.spellcasting.spells_prepared ??= 0;
+      this.character.spellcasting.spells_known ??= 0;
       this.character.spellcasting.sorcery_pips ??= [];
       this.character.inventory.mounts ??= [];
       this.character.inventory.gems ??= [];
+      this.character.inventory.gems = this.character.inventory.gems.map((gem) => {
+        const srcGem = gem && typeof gem === 'object' ? gem : {};
+        const value = srcGem.value ?? srcGem.value_gp ?? '';
+        return {
+          ...srcGem,
+          name: String(srcGem.name || ''),
+          value: String(value || ''),
+          quantity: Math.max(0, parseInt(srcGem.quantity, 10) || 0),
+          note: String(srcGem.note || ''),
+        };
+      });
       this.character.inventory.loaned ??= [];
+      this.character.inventory.loaned = this.character.inventory.loaned.map((loan) => {
+        const srcLoan = loan && typeof loan === 'object' ? loan : {};
+        const rawAmount = srcLoan.amount ?? srcLoan.quantity ?? '';
+        return {
+          name: String(srcLoan.name || ''),
+          where: String(srcLoan.where ?? srcLoan.to ?? ''),
+          amount: String(rawAmount || ''),
+          when: String(srcLoan.when ?? srcLoan.due ?? ''),
+          notes: String(srcLoan.notes || ''),
+        };
+      });
+      this.character.inventory.other_possessions ??= '';
       this.character.inventory.currency.other_notes ??= '';
       this.character.notes.general ??= '';
+      this.character.notes.other_possessions ??= '';
+
+      this.character.appearance.summary = this.mergeUniqueLines(
+        this.character.appearance.summary,
+        this.character.notes.physical_description,
+      );
+      this.character.notes.backstory = this.mergeUniqueLines(
+        this.character.notes.backstory,
+        this.character.background_details.description,
+        this.character.notes.other_notes,
+      );
+      this.character.notes.general = this.mergeUniqueLines(
+        this.character.notes.general,
+        this.character.notes.additional_notes,
+      );
+      this.character.inventory.currency.other_notes = this.mergeUniqueLines(
+        this.character.inventory.currency.other_notes,
+        this.character.inventory.other_possessions,
+      );
+
+      // Sync legacy keys to preserve compatibility on save/export.
+      this.character.notes.physical_description = this.character.appearance.summary;
+      this.character.background_details.description = this.character.notes.backstory;
+      this.character.notes.other_notes = this.character.notes.backstory;
+      this.character.notes.additional_notes = this.character.notes.general;
+      this.character.inventory.other_possessions = this.character.inventory.currency.other_notes;
 
       // Migrar spell slot pip_states
       for (const slot of Object.values(this.character.spellcasting.spell_slots || {})) {
         slot.total = Math.max(0, parseInt(slot.total, 10) || 0);
-        const used = slot.used ?? this.countUsedPips(slot.pip_states);
+        const legacyUsed = Array.isArray(slot.pip_states)
+          ? slot.pip_states.filter((p) => !p).length
+          : 0;
+        const used = slot.used ?? legacyUsed;
         slot.used = Math.max(0, Math.min(slot.total, parseInt(used, 10) || 0));
         slot.pip_states = this.canonicalizePips(slot.pip_states, slot.total, 'used', slot.used);
         slot.used = this.countUsedPips(slot.pip_states);
@@ -302,7 +440,10 @@ function characterEditor() {
       }
       // Migrar sorcery pips
       const max = Math.max(0, parseInt(this.character.spellcasting.sorcery_points_max, 10) || 0);
-      const used = this.character.spellcasting.sorcery_points_used ?? this.countUsedPips(this.character.spellcasting.sorcery_pips);
+      const legacySorceryUsed = Array.isArray(this.character.spellcasting.sorcery_pips)
+        ? this.character.spellcasting.sorcery_pips.filter((p) => !p).length
+        : 0;
+      const used = this.character.spellcasting.sorcery_points_used ?? legacySorceryUsed;
       this.character.spellcasting.sorcery_points_max = max;
       this.character.spellcasting.sorcery_points_used = Math.max(0, Math.min(max, parseInt(used, 10) || 0));
       this.character.spellcasting.sorcery_pips = this.canonicalizePips(
@@ -378,6 +519,27 @@ function characterEditor() {
       return mod >= 0 ? `+${mod}` : String(mod);
     },
 
+    splitNonEmptyLines(value) {
+      return String(value ?? '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+    },
+
+    mergeUniqueLines(...values) {
+      const seen = new Set();
+      const merged = [];
+      for (const value of values) {
+        for (const line of this.splitNonEmptyLines(value)) {
+          const key = line.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          merged.push(line);
+        }
+      }
+      return merged.join('\n');
+    },
+
     modColor(val) {
       const n = parseFloat(val);
       if (isNaN(n) || n === 0) return 'mod-zero';
@@ -405,7 +567,7 @@ function characterEditor() {
       const safeMax = Math.max(0, parseInt(max, 10) || 0);
       const safeCount = Math.max(0, Math.min(safeMax, parseInt(count, 10) || 0));
       if (mode === 'used') {
-        return Array.from({ length: safeMax }, (_, i) => i >= safeCount);
+        return Array.from({ length: safeMax }, (_, i) => i < safeCount);
       }
       return Array.from({ length: safeMax }, (_, i) => i < safeCount);
     },
@@ -422,7 +584,7 @@ function characterEditor() {
     },
 
     countUsedPips(pipStates) {
-      return Array.isArray(pipStates) ? pipStates.filter(p => !p).length : 0;
+      return Array.isArray(pipStates) ? pipStates.filter(Boolean).length : 0;
     },
 
     canonicalizePips(pipStates, max, mode = 'filled', preferredCount = null) {
@@ -445,13 +607,12 @@ function characterEditor() {
       const next = pipStates.slice();
       const i = Math.max(0, Math.min(next.length - 1, parseInt(index, 10) || 0));
 
-      // mode='used' means false is active(used), true is inactive(available).
       if (mode === 'used') {
-        const isActive = !next[i];
+        const isActive = !!next[i];
         if (!isActive) {
-          for (let k = 0; k <= i; k += 1) next[k] = false;
+          for (let k = 0; k <= i; k += 1) next[k] = true;
         } else {
-          for (let k = i; k < next.length; k += 1) next[k] = true;
+          for (let k = i; k < next.length; k += 1) next[k] = false;
         }
         return next;
       }
@@ -495,7 +656,37 @@ function characterEditor() {
         hd.count = Math.max(1, parseInt(hd.count, 10) || 1);
         hd.used = Math.max(0, Math.min(hd.count, parseInt(hd.used, 10) || 0));
         this.character.combat.hit_dice = hd;
+
+        const speed = this.character.combat.speed || {};
+        const walkingMeters = Math.max(0, Number(speed.walking_meters) || 0);
+        const speedHour = (walkingMeters * 600.0) / 1000.0;
+        const speedDay = speedHour * 8.0;
+        speed.hour_text = speedHour.toFixed(1);
+        speed.day_text = speedDay.toFixed(1);
+        speed.special_senses = this.mergeUniqueLines(
+          ...(Array.isArray(speed.special_entries) ? speed.special_entries : []),
+        );
+        this.character.combat.speed = speed;
       }
+
+    },
+
+    updateSpellCounts() {
+      const spellcasting = this.character?.spellcasting || {};
+      const spells = spellcasting.spells || {};
+      let known = 0;
+      let prepared = 0;
+
+      for (const [levelKey, entries] of Object.entries(spells)) {
+        if (!Array.isArray(entries)) continue;
+        known += entries.length;
+        if (levelKey === 'cantrips') continue;
+        prepared += entries.filter((sp) => !!sp?.prepared).length;
+      }
+
+      spellcasting.spells_known = known;
+      spellcasting.spells_prepared = prepared;
+      this.character.spellcasting = spellcasting;
     },
 
     hitDiceRange() {
@@ -527,11 +718,59 @@ function characterEditor() {
       this.character.attacks.push({
         name: '', attack_bonus: 0, attack_roll: '1d20+0',
         damage_dice_count: 1, damage_dice_type: 'd6', damage_bonus: 0,
-        damage_type: '', damage: '1d6', damage_display: '1d6'
+        damage_type: '', range_min: '', range_max: '', range: '',
+        damage: '1d6', damage_display: '1d6'
       });
     },
 
     removeAttack(i) { this.character.attacks.splice(i, 1); },
+
+    formatDistance(rangeData) {
+      if (!rangeData || typeof rangeData !== 'object') return '';
+      const meters = Number(rangeData.meters);
+      if (Number.isFinite(meters) && meters > 0) {
+        return `${meters} m`;
+      }
+      const feet = Number(rangeData.feet);
+      if (Number.isFinite(feet) && feet > 0) {
+        return `${feet} ft`;
+      }
+      return '';
+    },
+
+    attackRangeFromInventory(atk) {
+      const atkName = String(atk?.name || '').trim().toLowerCase();
+      if (!atkName) {
+        return { min: '', max: '' };
+      }
+
+      const items = Array.isArray(this.character?.inventory?.items)
+        ? this.character.inventory.items
+        : [];
+      const item = items.find((it) => String(it?.name || '').trim().toLowerCase() === atkName);
+      if (!item) {
+        return { min: '', max: '' };
+      }
+
+      const normal = this.formatDistance(item.range_normal);
+      const long = this.formatDistance(item.range_long);
+      const min = normal || long || '';
+      const max = long && long !== min ? long : '';
+      return { min, max };
+    },
+
+    syncAttackRangeText(atk) {
+      const min = String(atk?.range_min || '').trim();
+      const max = String(atk?.range_max || '').trim();
+      atk.range_min = min;
+      atk.range_max = max;
+
+      if (min && max) {
+        atk.range = min === max ? min : `${min} / ${max}`;
+      } else {
+        atk.range = min || max || '';
+      }
+    },
 
     syncDamageDisplay(atk) {
       const b = atk.damage_bonus;
@@ -719,6 +958,17 @@ function characterEditor() {
       this.character.features_and_traits[section].splice(i, 1);
     },
 
+    addOtherCompetency() {
+      if (!Array.isArray(this.character.proficiencies.other_competencies)) {
+        this.character.proficiencies.other_competencies = [];
+      }
+      this.character.proficiencies.other_competencies.push({ title: '', description: '' });
+    },
+
+    removeOtherCompetency(i) {
+      this.character.proficiencies.other_competencies.splice(i, 1);
+    },
+
     // ── Proficiency / expertise toggles ──────────────────────────────────────
 
     toggleSTProficiency(key, nextValue = null) {
@@ -748,6 +998,15 @@ function characterEditor() {
       this.updateAll();
     },
 
+    addSpeedSpecialEntry() {
+      this.character.combat.speed.special_entries ??= [];
+      this.character.combat.speed.special_entries.push('');
+    },
+
+    removeSpeedSpecialEntry(i) {
+      this.character.combat.speed.special_entries.splice(i, 1);
+    },
+
     // ── Ability score input ───────────────────────────────────────────────────
 
     onAbilityInput(key, val) {
@@ -775,6 +1034,382 @@ function characterEditor() {
     classesDisplay() {
       return (this.character?.basic_info?.classes || [])
         .map(c => `${c.name} ${c.level}`).join(' / ');
+    },
+
+    buildExportPayload() {
+      const src = this.character || {};
+
+      const classes = (src.basic_info?.classes || []).map((cls) => ({
+        name: String(cls?.name || ''),
+        subclass: String(cls?.subclass || ''),
+        level: Math.max(1, parseInt(cls?.level, 10) || 1),
+      }));
+      const totalLevel = classes.reduce((sum, cls) => sum + (parseInt(cls.level, 10) || 0), 0);
+
+      const ability_scores = {};
+      for (const [key, ab] of Object.entries(src.ability_scores || {})) {
+        ability_scores[key] = {
+          score: parseInt(ab?.score, 10) || 0,
+          modifier: parseInt(ab?.modifier, 10) || 0,
+        };
+      }
+
+      const saving_throws = {};
+      for (const [key, st] of Object.entries(src.saving_throws || {})) {
+        const total = parseInt(st?.total, 10) || 0;
+        saving_throws[key] = {
+          proficient: !!st?.proficient,
+          total,
+          roll: `1d20${total >= 0 ? '+' : ''}${total}`,
+        };
+      }
+
+      const skills = {};
+      for (const [key, skill] of Object.entries(src.skills || {})) {
+        const total = parseInt(skill?.total, 10) || 0;
+        skills[key] = {
+          name: String(skill?.name || ''),
+          ability: String(skill?.ability || ''),
+          proficient: !!skill?.proficient,
+          expertise: !!skill?.expertise,
+          total,
+          roll: `1d20${total >= 0 ? '+' : ''}${total}`,
+        };
+      }
+
+      const attacks = (src.attacks || []).map((atk) => {
+        const attack_bonus = parseInt(atk?.attack_bonus, 10) || 0;
+        const damage_dice_count = Math.max(1, parseInt(atk?.damage_dice_count, 10) || 1);
+        const damage_dice_type = String(atk?.damage_dice_type || 'd6').toLowerCase();
+        const damage_bonus = parseInt(atk?.damage_bonus, 10) || 0;
+        const damage_type = String(atk?.damage_type || '').trim();
+        const range_min = String(atk?.range_min || '').trim();
+        const range_max = String(atk?.range_max || '').trim();
+        let range = '';
+        if (range_min && range_max) {
+          range = range_min === range_max ? range_min : `${range_min} / ${range_max}`;
+        } else {
+          range = range_min || range_max || '';
+        }
+
+        const bonusText = damage_bonus > 0 ? `+${damage_bonus}` : damage_bonus < 0 ? `${damage_bonus}` : '';
+        const damage = `${damage_dice_count}${damage_dice_type}${bonusText}`;
+        const attack_roll = `1d20${attack_bonus >= 0 ? '+' : ''}${attack_bonus}`;
+        const damage_display = [damage, damage_type].filter(Boolean).join(' ');
+
+        return {
+          name: String(atk?.name || ''),
+          attack_bonus,
+          attack_roll,
+          damage_dice_count,
+          damage_dice_type,
+          damage_bonus,
+          damage,
+          damage_type,
+          damage_display,
+          range_min,
+          range_max,
+          range,
+          weight: atk?.weight === null || atk?.weight === undefined || atk?.weight === ''
+            ? null
+            : Number(atk.weight),
+          notes: String(atk?.notes || ''),
+          properties: Array.isArray(atk?.properties)
+            ? atk.properties.map((p) => String(p || '').trim()).filter(Boolean)
+            : [],
+        };
+      });
+
+      const resources = {};
+      for (const [key, res] of Object.entries(src.resources || {})) {
+        const max = Math.max(0, parseInt(res?.max, 10) || 0);
+        const pip_states = this.canonicalizePips(res?.pip_states, max, 'filled', res?.current ?? max);
+        resources[key] = {
+          name: String(res?.name || ''),
+          max,
+          current: this.countFilledPips(pip_states),
+          recharge: String(res?.recharge || ''),
+          note: String(res?.note || ''),
+          pip_states,
+        };
+      }
+
+      const spell_slots = {};
+      for (let level = 1; level <= 9; level += 1) {
+        const key = `level_${level}`;
+        const slot = src.spellcasting?.spell_slots?.[key] || {};
+        const total = Math.max(0, parseInt(slot.total, 10) || 0);
+        const pip_states = this.canonicalizePips(slot.pip_states, total, 'used', slot.used ?? 0);
+        spell_slots[key] = {
+          total,
+          used: this.countUsedPips(pip_states),
+          pip_states,
+        };
+      }
+
+      const spells = { cantrips: [] };
+      spells.cantrips = (src.spellcasting?.spells?.cantrips || []).map((sp) => ({
+        name: String(sp?.name || ''),
+        casting_time: String(sp?.casting_time || ''),
+      }));
+      for (let level = 1; level <= 9; level += 1) {
+        const key = `level_${level}`;
+        spells[key] = (src.spellcasting?.spells?.[key] || []).map((sp) => ({
+          name: String(sp?.name || ''),
+          casting_time: String(sp?.casting_time || ''),
+          prepared: !!sp?.prepared,
+        }));
+      }
+
+      const appearanceSummary = String(src.appearance?.summary || '');
+      const storyText = String(src.notes?.backstory || '');
+      const unifiedNotes = String(src.notes?.general || '');
+      const otherPieces = String(src.inventory?.currency?.other_notes || '');
+
+      const otherCompetencies = [];
+      const seenOtherCompetencies = new Set();
+      const pushOtherCompetency = (line) => {
+        const value = String(line || '').trim();
+        if (!value) return;
+        const key = value.toLowerCase();
+        if (seenOtherCompetencies.has(key)) return;
+        seenOtherCompetencies.add(key);
+        otherCompetencies.push(value);
+      };
+
+      for (const entry of src.proficiencies?.other_competencies || []) {
+        const item = entry && typeof entry === 'object' ? entry : {};
+        const title = String(item.title ?? item.name ?? '').trim();
+        const description = String(item.description ?? item.note ?? '').trim();
+        const line = [title, description].filter(Boolean).join(' - ');
+        pushOtherCompetency(line);
+      }
+
+      if (!otherCompetencies.length) {
+        for (const seq of [
+          src.proficiencies?.tools || [],
+          src.proficiencies?.weapons || [],
+          src.proficiencies?.armor || [],
+          src.proficiencies?.raw || [],
+        ]) {
+          for (const item of seq) {
+            pushOtherCompetency(item);
+          }
+        }
+      }
+
+      return {
+        basic_info: {
+          name: String(src.basic_info?.name || ''),
+          classes,
+          total_level: totalLevel,
+          background: String(src.basic_info?.background || ''),
+          species: String(src.basic_info?.species || ''),
+          alignment: String(src.basic_info?.alignment || ''),
+          experience_points: Math.max(0, parseInt(src.basic_info?.experience_points, 10) || 0),
+          next_level_xp: Math.max(0, parseInt(src.basic_info?.next_level_xp, 10) || 0),
+          player_name: String(src.basic_info?.player_name || ''),
+          vision: String(src.basic_info?.vision || ''),
+          creation_date: String(src.basic_info?.creation_date || ''),
+          inspiration: !!src.basic_info?.inspiration,
+          portrait_url: String(src.basic_info?.portrait_url || ''),
+        },
+        appearance: {
+          age: String(src.appearance?.age || ''),
+          height: String(src.appearance?.height || ''),
+          weight: String(src.appearance?.weight || ''),
+          gender: String(src.appearance?.gender || ''),
+          size: String(src.appearance?.size || ''),
+          eyes: String(src.appearance?.eyes || ''),
+          skin: String(src.appearance?.skin || ''),
+          hair: String(src.appearance?.hair || ''),
+          summary: String(src.appearance?.summary || ''),
+        },
+        background_details: {
+          birth_place: String(src.background_details?.birth_place || ''),
+          birth_date: String(src.background_details?.birth_date || ''),
+          description: storyText,
+          deity: String(src.background_details?.deity || ''),
+          deity_description: String(src.background_details?.deity_description || ''),
+          personality_traits: [...(src.background_details?.personality_traits || [])].map((v) => String(v || '')),
+          ideals: [...(src.background_details?.ideals || [])].map((v) => String(v || '')),
+          bonds: [...(src.background_details?.bonds || [])].map((v) => String(v || '')),
+          flaws: [...(src.background_details?.flaws || [])].map((v) => String(v || '')),
+        },
+        notes: {
+          allies: String(src.notes?.allies || ''),
+          enemies: String(src.notes?.enemies || ''),
+          backstory: storyText,
+          general: unifiedNotes,
+          physical_description: appearanceSummary,
+          other_notes: storyText,
+          additional_notes: unifiedNotes,
+          other_possessions: '',
+        },
+        languages: [...(src.languages || [])].map((v) => String(v || '')).filter(Boolean),
+        proficiency_bonus: Math.max(0, parseInt(src.proficiency_bonus, 10) || 0),
+        ability_scores,
+        saving_throws,
+        skills,
+        combat: {
+          armor_class: Math.max(0, parseInt(src.combat?.armor_class, 10) || 0),
+          initiative: parseInt(src.combat?.initiative, 10) || 0,
+          speed: {
+            walking_meters: Math.max(0, Number(src.combat?.speed?.walking_meters) || 0),
+            swim_meters: Math.max(0, Number(src.combat?.speed?.swim_meters) || 0),
+            fly_meters: Math.max(0, Number(src.combat?.speed?.fly_meters) || 0),
+            climb_meters: Math.max(0, Number(src.combat?.speed?.climb_meters) || 0),
+            jump_long: Math.max(0, Number(src.combat?.speed?.jump_long) || 0),
+            jump_high: Math.max(0, Number(src.combat?.speed?.jump_high) || 0),
+            hour_text: String(src.combat?.speed?.hour_text || ''),
+            day_text: String(src.combat?.speed?.day_text || ''),
+            special_senses: String(src.combat?.speed?.special_senses || ''),
+          },
+          shield_equipped: !!src.combat?.shield_equipped,
+          concentration: {
+            active: !!src.combat?.concentration?.active,
+            spell: String(src.combat?.concentration?.spell || ''),
+          },
+          exhaustion: Math.max(0, Math.min(5, parseInt(src.combat?.exhaustion, 10) || 0)),
+          hit_points: {
+            maximum: Math.max(0, parseInt(src.combat?.hit_points?.maximum, 10) || 0),
+            current: Math.max(0, parseInt(src.combat?.hit_points?.current, 10) || 0),
+            temporary: Math.max(0, parseInt(src.combat?.hit_points?.temporary, 10) || 0),
+          },
+          hit_dice: {
+            count: Math.max(0, parseInt(src.combat?.hit_dice?.count, 10) || 0),
+            type: String(src.combat?.hit_dice?.type || ''),
+            used: Math.max(0, parseInt(src.combat?.hit_dice?.used, 10) || 0),
+            total: String(src.combat?.hit_dice?.total || ''),
+          },
+          death_saves: {
+            successes: Math.max(0, Math.min(3, parseInt(src.combat?.death_saves?.successes, 10) || 0)),
+            failures: Math.max(0, Math.min(3, parseInt(src.combat?.death_saves?.failures, 10) || 0)),
+          },
+          protections: (src.combat?.protections || []).map((prot) => ({
+            name: String(prot?.name || ''),
+            type: String(prot?.type || ''),
+            ac_bonus: parseInt(prot?.ac_bonus, 10) || 0,
+            equipped: !!prot?.equipped,
+            weight_kg: prot?.weight_kg === null || prot?.weight_kg === undefined || prot?.weight_kg === ''
+              ? null
+              : Number(prot.weight_kg),
+          })),
+          advantages_resistances: (src.combat?.advantages_resistances || []).map((adv) => {
+            if (typeof adv === 'string') {
+              return { category: '', description: String(adv || '') };
+            }
+            return {
+              category: String(adv?.category || ''),
+              description: String(adv?.description || ''),
+            };
+          }),
+          ammunition: (src.combat?.ammunition || []).map((ammo) => ({
+            name: String(ammo?.name || ''),
+            max: Math.max(0, parseInt(ammo?.max, 10) || 0),
+            note: '',
+          })),
+        },
+        attacks,
+        proficiencies: {
+          armor_flags: {
+            light: !!src.proficiencies?.armor_flags?.light,
+            medium: !!src.proficiencies?.armor_flags?.medium,
+            heavy: !!src.proficiencies?.armor_flags?.heavy,
+            shield: !!src.proficiencies?.armor_flags?.shield,
+          },
+          simple_weapons: !!src.proficiencies?.simple_weapons,
+          martial_weapons: !!src.proficiencies?.martial_weapons,
+          armor: [],
+          weapons: [],
+          tools: [],
+          raw: otherCompetencies,
+          other_competencies: (src.proficiencies?.other_competencies || []).map((entry) => {
+            const item = entry && typeof entry === 'object' ? entry : {};
+            return {
+              title: String(item.title ?? item.name ?? '').trim(),
+              description: String(item.description ?? item.note ?? '').trim(),
+            };
+          }).filter((entry) => entry.title || entry.description),
+        },
+        features_and_traits: {
+          feats: (src.features_and_traits?.feats || []).map((feat) => ({
+            name: String(feat?.name || ''),
+            description: String(feat?.description || ''),
+          })),
+          species: (src.features_and_traits?.species || []).map((feat) => ({
+            name: String(feat?.name || ''),
+            source: String(feat?.source || ''),
+            description: String(feat?.description || ''),
+          })),
+          class_features: (src.features_and_traits?.class_features || []).map((feat) => ({
+            name: String(feat?.name || ''),
+            source: String(feat?.source || ''),
+            description: String(feat?.description || ''),
+          })),
+        },
+        spellcasting: {
+          spellcasting_ability: String(src.spellcasting?.spellcasting_ability || ''),
+          spell_save_dc: parseInt(src.spellcasting?.spell_save_dc, 10) || 0,
+          spell_attack_bonus: parseInt(src.spellcasting?.spell_attack_bonus, 10) || 0,
+          spells_prepared: Math.max(0, parseInt(src.spellcasting?.spells_prepared, 10) || 0),
+          spells_known: Math.max(0, parseInt(src.spellcasting?.spells_known, 10) || 0),
+          sorcery_points_max: Math.max(0, parseInt(src.spellcasting?.sorcery_points_max, 10) || 0),
+          sorcery_points_used: Math.max(0, parseInt(src.spellcasting?.sorcery_points_used, 10) || 0),
+          sorcery_pips: this.canonicalizePips(
+            src.spellcasting?.sorcery_pips,
+            Math.max(0, parseInt(src.spellcasting?.sorcery_points_max, 10) || 0),
+            'used',
+            Math.max(0, parseInt(src.spellcasting?.sorcery_points_used, 10) || 0),
+          ),
+          spell_slots,
+          spells,
+        },
+        inventory: {
+          items: (src.inventory?.items || []).map((item) => {
+            const qty_equipped = Math.max(0, parseInt(item?.qty_equipped, 10) || 0);
+            const qty_backpack = Math.max(0, parseInt(item?.qty_backpack, 10) || 0);
+            const qty_bag = Math.max(0, parseInt(item?.qty_bag, 10) || 0);
+            return {
+              name: String(item?.name || ''),
+              qty_equipped,
+              qty_backpack,
+              qty_bag,
+              quantity: qty_equipped + qty_backpack + qty_bag,
+              weight_kg: item?.weight_kg === null || item?.weight_kg === undefined || item?.weight_kg === ''
+                ? null
+                : Number(item.weight_kg),
+            };
+          }),
+          currency: {
+            PP: Math.max(0, parseInt(src.inventory?.currency?.PP, 10) || 0),
+            GP: Math.max(0, parseInt(src.inventory?.currency?.GP, 10) || 0),
+            EP: Math.max(0, parseInt(src.inventory?.currency?.EP, 10) || 0),
+            SP: Math.max(0, parseInt(src.inventory?.currency?.SP, 10) || 0),
+            CP: Math.max(0, parseInt(src.inventory?.currency?.CP, 10) || 0),
+            other_notes: otherPieces,
+          },
+          mounts: (src.inventory?.mounts || []).map((mount) => ({
+            name: String(mount?.name || ''),
+            notes: String(mount?.notes || ''),
+          })),
+          gems: (src.inventory?.gems || []).map((gem) => ({
+            name: String(gem?.name || ''),
+            value_gp: String(gem?.value_gp || gem?.value || ''),
+            quantity: Math.max(0, parseInt(gem?.quantity, 10) || 0),
+            note: String(gem?.note || ''),
+          })),
+          loaned: (src.inventory?.loaned || []).map((loan) => ({
+            name: String(loan?.name || ''),
+            to: String(loan?.where ?? loan?.to ?? ''),
+            quantity: String(loan?.amount ?? loan?.quantity ?? ''),
+            due: String(loan?.when ?? loan?.due ?? ''),
+            notes: String(loan?.notes || ''),
+          })),
+          other_possessions: '',
+        },
+        resources,
+      };
     },
 
     // ── Import from Nivel20 ───────────────────────────────────────────────────
@@ -812,10 +1447,11 @@ function characterEditor() {
       this.exportingPdf = true;
       this.updateAll();
       try {
+        const exportPayload = this.buildExportPayload();
         const res = await fetch('/api/export-pdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.character)
+          body: JSON.stringify(exportPayload)
         });
         if (!res.ok) {
           const err = await res.json();
