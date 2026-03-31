@@ -1,8 +1,10 @@
 import io
 import json
 import os
+import re
 import sys
 import tempfile
+import unicodedata
 from pathlib import Path
 
 from flask import Flask, render_template, jsonify, request, send_file
@@ -12,7 +14,7 @@ _PROJECT_ROOT = _EDITOR_FILE.parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from project_paths import (  # noqa: E402
+from project_paths import (  # noqa: E402  # type: ignore[reportMissingImports]
     collect_missing_required_paths,
     ensure_runtime_directories,
     get_paths_status,
@@ -71,6 +73,126 @@ def _load_json(path: Path):
         return None
 
 
+def _extract_character_id(character: dict | None) -> str:
+    if not isinstance(character, dict):
+        return ''
+    meta = character.get('meta') or {}
+    return str(meta.get('character_id') or '').strip()
+
+
+def _sanitize_filename(raw_filename: str | None) -> str | None:
+    if raw_filename is None:
+        return None
+
+    candidate = Path(str(raw_filename)).name.strip()
+    if not candidate:
+        return None
+
+    stem = Path(candidate).stem
+    suffix = Path(candidate).suffix.lower()
+    if suffix not in ('', '.json'):
+        return None
+
+    safe_stem = re.sub(r'[^A-Za-z0-9._-]+', '-', stem).strip(' .-_')
+    if not safe_stem:
+        return None
+    return f'{safe_stem}.json'
+
+
+def _slugify_text(value: str) -> str:
+    normalized = unicodedata.normalize('NFKD', str(value or ''))
+    ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
+    return re.sub(r'[^A-Za-z0-9]+', '-', ascii_text).strip('-').lower()
+
+
+def _default_filename_for_character(character: dict) -> str:
+    char_id = _extract_character_id(character)
+    basic_info = character.get('basic_info') or {}
+    name_slug = _slugify_text(str(basic_info.get('name') or 'personaje')) or 'personaje'
+    if char_id:
+        return f'{char_id}-{name_slug}.json'
+    return f'{name_slug}.json'
+
+
+def _find_character_matches_by_id(char_id: str):
+    matches = []
+    for filename, file_path in _iter_character_json_files() or []:
+        character = _load_json(file_path)
+        if not character:
+            continue
+        if _extract_character_id(character) == char_id:
+            matches.append((filename, file_path, character))
+    return matches
+
+
+def _pick_preferred_match(matches, char_id: str):
+    preferred_prefix = f'{char_id}-'
+    preferred_exact = f'{char_id}.json'
+    default_filename = PATHS.character_json.name.lower()
+
+    def _rank(item):
+        filename = item[0].lower()
+        if filename.startswith(preferred_prefix) or filename == preferred_exact:
+            return (0, filename)
+        if filename == default_filename:
+            return (2, filename)
+        return (1, filename)
+
+    return sorted(matches, key=_rank)[0]
+
+
+def _resolve_target_path(character: dict, requested_filename: str | None, allow_create: bool = True):
+    warnings = []
+
+    if requested_filename:
+        safe_filename = _sanitize_filename(requested_filename)
+        if not safe_filename:
+            raise ValueError('Nombre de archivo inválido para guardado')
+        return PATHS.data_dir / safe_filename, warnings
+
+    char_id = _extract_character_id(character)
+    if char_id:
+        matches = _find_character_matches_by_id(char_id)
+        if len(matches) == 1:
+            return matches[0][1], warnings
+        if len(matches) > 1:
+            selected = _pick_preferred_match(matches, char_id)
+            warnings.append(
+                f'ID duplicado {char_id}: se guardará en {selected[0]} '
+                f'entre {len(matches)} archivos coincidentes.'
+            )
+            return selected[1], warnings
+        if allow_create:
+            return PATHS.data_dir / _default_filename_for_character(character), warnings
+
+    return PATHS.character_json, warnings
+
+
+def _build_character_response(character: dict, filename: str, warnings: list[str] | None = None) -> dict:
+    return {
+        'character': character,
+        'filename': filename,
+        'warnings': warnings or [],
+    }
+
+
+def _duplicate_character_ids() -> dict:
+    by_id = {}
+    for filename, file_path in _iter_character_json_files() or []:
+        character = _load_json(file_path)
+        if not character:
+            continue
+        char_id = _extract_character_id(character)
+        if not char_id:
+            continue
+        by_id.setdefault(char_id, []).append(filename)
+    return {
+        char_id: sorted(files)
+        for char_id, files in by_id.items()
+        if len(files) > 1
+    }
+
+
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
 @app.route('/')
@@ -80,31 +202,60 @@ def index():
 
 @app.route('/api/character', methods=['GET'])
 def get_character():
+    filename = str(request.args.get('filename', '')).strip()
     char_id = str(request.args.get('id', '')).strip()
+
+    if filename:
+        safe_filename = _sanitize_filename(filename)
+        if not safe_filename:
+            return jsonify({'status': 'error', 'message': 'Parámetro filename inválido'}), 400
+
+        file_path = PATHS.data_dir / safe_filename
+        if not file_path.exists():
+            return jsonify({'status': 'error', 'message': f'Archivo no encontrado: {safe_filename}'}), 404
+
+        character = _load_json(file_path)
+        if not character:
+            return jsonify({'status': 'error', 'message': f'JSON inválido en {safe_filename}'}), 500
+
+        return jsonify(_build_character_response(character, safe_filename))
 
     # Keep backward-compatible behavior when no id is requested.
     if not char_id:
-        if not PATHS.character_json.exists():
-            return jsonify({
-                'status': 'error',
-                'message': f'No se encuentra el archivo de personaje: {PATHS.character_json}',
-            }), 404
-        return jsonify(json.loads(PATHS.character_json.read_text(encoding='utf-8')))
+        if PATHS.character_json.exists():
+            character = _load_json(PATHS.character_json)
+            if character:
+                return jsonify(_build_character_response(character, PATHS.character_json.name))
 
-    for _, file_path in _iter_character_json_files() or []:
-        character = _load_json(file_path)
-        if not character:
-            continue
-        current_id = character.get('meta', {}).get('character_id')
-        if str(current_id).strip() == char_id:
-            return jsonify(character)
+        for found_filename, file_path in _iter_character_json_files() or []:
+            character = _load_json(file_path)
+            if character:
+                warnings = ['No se encontró personaje por defecto; se cargó el primer personaje disponible.']
+                return jsonify(_build_character_response(character, found_filename, warnings))
+
+        return jsonify({
+            'status': 'error',
+            'message': f'No se encontró ningún personaje en {PATHS.data_dir}',
+        }), 404
+
+    matches = _find_character_matches_by_id(char_id)
+    if matches:
+        warnings = []
+        if len(matches) > 1:
+            warnings.append(
+                f'ID duplicado {char_id}: se cargó { _pick_preferred_match(matches, char_id)[0] } '
+                f'entre {len(matches)} archivos coincidentes.'
+            )
+        selected = _pick_preferred_match(matches, char_id)
+        return jsonify(_build_character_response(selected[2], selected[0], warnings))
 
     return jsonify({'status': 'error', 'message': f'Personaje no encontrado: {char_id}'}), 404
 
 
 @app.route('/api/characters', methods=['GET'])
 def list_characters():
-    by_id = {}
+    characters = []
+    duplicate_ids = _duplicate_character_ids()
 
     for filename, file_path in _iter_character_json_files() or []:
         character = _load_json(file_path)
@@ -113,38 +264,53 @@ def list_characters():
 
         meta = character.get('meta') or {}
         basic_info = character.get('basic_info') or {}
-        character_id = meta.get('character_id')
-        if character_id in (None, ''):
-            continue
-
-        key = str(character_id).strip()
-        if not key or key in by_id:
-            continue
+        character_id = str(meta.get('character_id') or '').strip()
 
         classes = basic_info.get('classes')
         if not isinstance(classes, list):
             classes = []
 
         name = str(basic_info.get('name') or Path(filename).stem).strip()
-        by_id[key] = {
-            'character_id': character_id,
+        characters.append({
+            'character_id': character_id or None,
             'name': name,
             'classes': classes,
             'filename': filename,
-        }
+            'is_duplicate_id': bool(character_id and character_id in duplicate_ids),
+        })
 
-    characters = sorted(by_id.values(), key=lambda c: c['name'].lower())
+    characters = sorted(characters, key=lambda c: (c['name'].lower(), c['filename'].lower()))
     return jsonify(characters)
 
 
 @app.route('/api/character', methods=['POST'])
 def save_character():
-    data = request.get_json()
-    if data is None:
+    payload = request.get_json()
+    if not isinstance(payload, dict):
         return jsonify({'status': 'error', 'message': 'JSON inválido'}), 400
-    PATHS.character_json.parent.mkdir(parents=True, exist_ok=True)
-    PATHS.character_json.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
-    return jsonify({'status': 'ok'})
+
+    if 'character' in payload:
+        character = payload.get('character')
+        requested_filename = payload.get('filename')
+        if not isinstance(character, dict):
+            return jsonify({'status': 'error', 'message': 'Payload inválido: falta objeto character'}), 400
+    else:
+        character = payload
+        requested_filename = payload.get('filename') if isinstance(payload.get('filename'), str) else None
+
+    try:
+        target_path, warnings = _resolve_target_path(character, requested_filename, allow_create=True)
+    except ValueError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.write_text(json.dumps(character, ensure_ascii=False, indent=2), encoding='utf-8')
+
+    return jsonify({
+        'status': 'ok',
+        'filename': target_path.name,
+        'warnings': warnings,
+    })
 
 
 @app.route('/api/import', methods=['POST'])
@@ -162,13 +328,25 @@ def import_character():
 
     try:
         character = _parse_html(url)
+        requested_filename = data.get('filename') if isinstance(data.get('filename'), str) else None
+
+        try:
+            target_path, warnings = _resolve_target_path(character, requested_filename, allow_create=True)
+        except ValueError as exc:
+            return jsonify({'status': 'error', 'message': str(exc)}), 400
+
         # Persist to disk
-        PATHS.character_json.parent.mkdir(parents=True, exist_ok=True)
-        PATHS.character_json.write_text(
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        target_path.write_text(
             json.dumps(character, ensure_ascii=False, indent=2),
             encoding='utf-8',
         )
-        return jsonify(character)
+        return jsonify({
+            'status': 'ok',
+            'character': character,
+            'filename': target_path.name,
+            'warnings': warnings,
+        })
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -240,12 +418,14 @@ def status():
     """Devuelve qué módulos están disponibles."""
     startup_errors = list(STARTUP_PATH_ERRORS)
     startup_errors.extend(_module_startup_errors())
+    duplicate_ids = _duplicate_character_ids()
     return jsonify({
         'parse_ok': PARSE_OK,
         'generate_ok': PDF_EXPORT_OK,
         'resources_ok': len(STARTUP_PATH_ERRORS) == 0,
         'path_errors': startup_errors,
         'paths': get_paths_status(PATHS),
+        'duplicate_character_ids': duplicate_ids,
     })
 
 

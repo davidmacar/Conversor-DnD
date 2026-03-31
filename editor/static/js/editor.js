@@ -60,6 +60,7 @@ function characterEditor() {
     saving: false,
     error: null,
     toast: null,
+    currentFilename: null,
     characterList: [],
     // Import
     importModal: false,
@@ -73,8 +74,13 @@ function characterEditor() {
       try {
         const res = await fetch('/api/character');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        this.character = await res.json();
+        const payload = this.normalizeCharacterPayload(await res.json());
+        this.character = payload.character;
+        this.currentFilename = payload.filename;
         this._ensureArrays();
+        if (payload.warnings.length) {
+          this.showToast(payload.warnings[0], 'warning');
+        }
       } catch (e) {
         this.error = e.message;
       }
@@ -85,8 +91,31 @@ function characterEditor() {
       this.loadCharacterList();
     },
 
+    normalizeCharacterPayload(rawData) {
+      if (
+        rawData &&
+        typeof rawData === 'object' &&
+        rawData.character &&
+        typeof rawData.character === 'object'
+      ) {
+        return {
+          character: rawData.character,
+          filename: typeof rawData.filename === 'string' ? rawData.filename : null,
+          warnings: Array.isArray(rawData.warnings)
+            ? rawData.warnings.map((w) => String(w || '').trim()).filter(Boolean)
+            : [],
+        };
+      }
+      return {
+        character: rawData,
+        filename: null,
+        warnings: [],
+      };
+    },
+
     _ensureArrays() {
       if (!this.character) return;
+      this.character.meta ??= {};
       this.portraitLoadError = false;
       this.character.attacks       ??= [];
       this.character.attacks.forEach(atk => {
@@ -469,13 +498,22 @@ function characterEditor() {
     async loadCharacter(charId) {
       this.loading = true;
       try {
-        const res = await fetch(`/api/character?id=${charId}`);
+        const rawId = String(charId || '').trim();
+        const query = rawId.toLowerCase().endsWith('.json')
+          ? `filename=${encodeURIComponent(rawId)}`
+          : `id=${encodeURIComponent(rawId)}`;
+        const res = await fetch(`/api/character?${query}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        this.character = await res.json();
+        const payload = this.normalizeCharacterPayload(await res.json());
+        this.character = payload.character;
+        this.currentFilename = payload.filename || (rawId.toLowerCase().endsWith('.json') ? rawId : null);
         this._ensureArrays();
         await this.$nextTick();
         this.setupSubsectionAnchors();
         this.initScrollSpy();
+        if (payload.warnings.length) {
+          this.showToast(payload.warnings[0], 'warning');
+        }
         this.showToast(`Personaje "${this.character.basic_info?.name}" cargado`, 'success');
       } catch (e) {
         this.showToast('Error al cargar: ' + e.message, 'error');
@@ -492,11 +530,33 @@ function characterEditor() {
         const res = await fetch('/api/character', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.character)
+          body: JSON.stringify({
+            character: this.character,
+            filename: this.currentFilename,
+          })
         });
-        await res.json();
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Error al guardar');
+
+        if (typeof data.filename === 'string' && data.filename) {
+          this.currentFilename = data.filename;
+        }
+
+        if (this.currentFilename) {
+          const reloadRes = await fetch(`/api/character?filename=${encodeURIComponent(this.currentFilename)}`);
+          if (reloadRes.ok) {
+            const payload = this.normalizeCharacterPayload(await reloadRes.json());
+            this.character = payload.character;
+            this.currentFilename = payload.filename || this.currentFilename;
+            this._ensureArrays();
+          }
+        }
+
         await this.loadCharacterList();
-        this.showToast('Personaje guardado correctamente', 'success');
+        if (Array.isArray(data.warnings) && data.warnings.length) {
+          this.showToast(data.warnings[0], 'warning');
+        }
+        this.showToast(`Personaje guardado en ${this.currentFilename || 'personaje.json'}`, 'success');
       } catch (e) {
         this.showToast('Error al guardar: ' + e.message, 'error');
       }
@@ -1427,14 +1487,25 @@ function characterEditor() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Error al importar');
-        this.character = data;
+
+        const payload = this.normalizeCharacterPayload(
+          data && typeof data === 'object' && data.character
+            ? data
+            : { character: data, filename: data?.filename, warnings: data?.warnings }
+        );
+
+        this.character = payload.character;
+        this.currentFilename = payload.filename || this.currentFilename;
         this._ensureArrays();
         this.importModal = false;
         this.importUrl   = '';
         await this.$nextTick();
         this.initScrollSpy();
         await this.loadCharacterList();
-        this.showToast(`"${data.basic_info?.name}" importado correctamente`, 'success');
+        if (payload.warnings.length) {
+          this.showToast(payload.warnings[0], 'warning');
+        }
+        this.showToast(`"${this.character.basic_info?.name}" importado en ${this.currentFilename || 'personaje.json'}`, 'success');
       } catch (e) {
         this.importError = e.message;
       }

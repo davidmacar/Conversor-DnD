@@ -26,10 +26,10 @@
   <div class="char-selector" x-show="characterList.length > 1">
     <span>Personaje:</span>
     <select @change="loadCharacter($event.target.value)">
-      <template x-for="c in characterList" :key="c.character_id">
-        <option :value="c.character_id"
-                :selected="c.character_id == character?.meta?.character_id"
-                x-text="`${c.name} (${(c.classes||[]).map(cl=>cl.name+' '+cl.level).join('/')})`">
+      <template x-for="c in characterList" :key="c.filename || c.character_id">
+        <option :value="c.filename || c.character_id"
+                :selected="(c.filename && c.filename === currentFilename) || (!currentFilename && c.character_id == character?.meta?.character_id)"
+                x-text="`${c.name} (${(c.classes||[]).map(cl=>cl.name+' '+cl.level).join('/')}) - ${c.filename || 'sin-archivo'}${c.is_duplicate_id ? ' [ID duplicado]' : ''}`">
         </option>
       </template>
     </select>
