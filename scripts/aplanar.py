@@ -33,7 +33,7 @@ _PROJECT_ROOT_BOOTSTRAP = _SCRIPT_DIR.parent
 if str(_PROJECT_ROOT_BOOTSTRAP) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT_BOOTSTRAP))
 
-from project_paths import get_project_paths
+from scripts.project_paths import get_project_paths
 
 try:
     import pikepdf

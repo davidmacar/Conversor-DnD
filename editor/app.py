@@ -14,7 +14,7 @@ _PROJECT_ROOT = _EDITOR_FILE.parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from project_paths import (  # noqa: E402  # type: ignore[reportMissingImports]
+from scripts.project_paths import (  # noqa: E402  # type: ignore[reportMissingImports]
     collect_missing_required_paths,
     ensure_runtime_directories,
     get_paths_status,
@@ -24,6 +24,86 @@ from project_paths import (  # noqa: E402  # type: ignore[reportMissingImports]
 PATHS = get_project_paths()
 ensure_runtime_directories(PATHS)
 STARTUP_PATH_ERRORS = collect_missing_required_paths(PATHS)
+
+
+def _read_env_int(name: str, default: int) -> int:
+    raw_value = os.environ.get(name, '').strip()
+    if not raw_value:
+        return default
+    try:
+        value = int(raw_value)
+    except ValueError:
+        return default
+    return value if value >= 0 else default
+
+
+DEFAULT_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024
+DEFAULT_EXPORT_TMP_BUDGET_BYTES = 64 * 1024 * 1024
+STORAGE_LIMIT_BYTES = _read_env_int('DND_STORAGE_LIMIT_BYTES', DEFAULT_STORAGE_LIMIT_BYTES)
+EXPORT_TMP_BUDGET_BYTES = _read_env_int('DND_EXPORT_TMP_BUDGET_BYTES', DEFAULT_EXPORT_TMP_BUDGET_BYTES)
+
+
+class StorageQuotaExceeded(RuntimeError):
+    pass
+
+
+def _format_bytes(size_bytes: int) -> str:
+    units = ['B', 'KB', 'MB', 'GB', 'TB']
+    value = float(max(size_bytes, 0))
+    unit = units[0]
+    for candidate in units:
+        unit = candidate
+        if value < 1024.0 or candidate == units[-1]:
+            break
+        value /= 1024.0
+    if unit == 'B':
+        return f'{int(value)} {unit}'
+    return f'{value:.2f} {unit}'
+
+
+def _directory_usage_bytes(directory: Path) -> int:
+    if not directory.exists():
+        return 0
+    total = 0
+    for file_path in directory.rglob('*'):
+        if not file_path.is_file():
+            continue
+        try:
+            total += file_path.stat().st_size
+        except OSError:
+            continue
+    return total
+
+
+def _current_storage_usage_bytes() -> int:
+    unique_dirs = []
+    for directory in (PATHS.data_dir.resolve(), PATHS.output_dir.resolve()):
+        if directory not in unique_dirs:
+            unique_dirs.append(directory)
+    return sum(_directory_usage_bytes(directory) for directory in unique_dirs)
+
+
+def _assert_storage_capacity(required_extra_bytes: int = 0) -> None:
+    if STORAGE_LIMIT_BYTES <= 0:
+        return
+    usage_bytes = _current_storage_usage_bytes()
+    projected_bytes = usage_bytes + max(0, required_extra_bytes)
+    if projected_bytes <= STORAGE_LIMIT_BYTES:
+        return
+    raise StorageQuotaExceeded(
+        'Limite de almacenamiento alcanzado. '
+        f'Uso actual: {_format_bytes(usage_bytes)}; '
+        f'limite: {_format_bytes(STORAGE_LIMIT_BYTES)}.'
+    )
+
+
+def _ensure_writable_directory(directory: Path, label: str) -> None:
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=directory, prefix='.dnd_write_probe_', delete=True):
+            pass
+    except OSError as exc:
+        raise PermissionError(f'No hay permisos de escritura en {label}: {directory}') from exc
 
 app = Flask(
     __name__,
@@ -303,8 +383,17 @@ def save_character():
     except ValueError as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
 
-    target_path.parent.mkdir(parents=True, exist_ok=True)
-    target_path.write_text(json.dumps(character, ensure_ascii=False, indent=2), encoding='utf-8')
+    try:
+        _ensure_writable_directory(target_path.parent, 'data_dir')
+        serialized = json.dumps(character, ensure_ascii=False, indent=2)
+        new_size = len(serialized.encode('utf-8'))
+        current_size = target_path.stat().st_size if target_path.exists() else 0
+        _assert_storage_capacity(max(0, new_size - current_size))
+        target_path.write_text(serialized, encoding='utf-8')
+    except StorageQuotaExceeded as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 507
+    except PermissionError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
 
     return jsonify({
         'status': 'ok',
@@ -336,17 +425,22 @@ def import_character():
             return jsonify({'status': 'error', 'message': str(exc)}), 400
 
         # Persist to disk
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        target_path.write_text(
-            json.dumps(character, ensure_ascii=False, indent=2),
-            encoding='utf-8',
-        )
+        _ensure_writable_directory(target_path.parent, 'data_dir')
+        serialized = json.dumps(character, ensure_ascii=False, indent=2)
+        new_size = len(serialized.encode('utf-8'))
+        current_size = target_path.stat().st_size if target_path.exists() else 0
+        _assert_storage_capacity(max(0, new_size - current_size))
+        target_path.write_text(serialized, encoding='utf-8')
         return jsonify({
             'status': 'ok',
             'character': character,
             'filename': target_path.name,
             'warnings': warnings,
         })
+    except StorageQuotaExceeded as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 507
+    except PermissionError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -365,47 +459,56 @@ def export_pdf():
     if not isinstance(data, dict):
         return jsonify({'status': 'error', 'message': 'Payload de exportación inválido'}), 400
 
-    PATHS.output_dir.mkdir(parents=True, exist_ok=True)
-
-    fd_json, tmp_json_path = tempfile.mkstemp(
-        prefix='personaje_export_payload_',
-        suffix='.json',
-        dir=str(PATHS.output_dir),
-    )
-    os.close(fd_json)
-    Path(tmp_json_path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
-
-    fd, tmp_pdf_path = tempfile.mkstemp(
-        prefix='personaje_export_',
-        suffix='.pdf',
-        dir=str(PATHS.output_dir),
-    )
-    os.close(fd)
+    payload_json = json.dumps(data, ensure_ascii=False, indent=2)
+    payload_size = len(payload_json.encode('utf-8'))
 
     try:
+        _ensure_writable_directory(PATHS.output_dir, 'output_dir')
+        _assert_storage_capacity(payload_size + EXPORT_TMP_BUDGET_BYTES)
+    except StorageQuotaExceeded as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 507
+    except PermissionError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+    tmp_json_path: str | None = None
+    tmp_pdf_path: str | None = None
+
+    try:
+        fd_json, tmp_json_path = tempfile.mkstemp(
+            prefix='personaje_export_payload_',
+            suffix='.json',
+            dir=str(PATHS.output_dir),
+        )
+        os.close(fd_json)
+        Path(tmp_json_path).write_text(payload_json, encoding='utf-8')
+
+        fd, tmp_pdf_path = tempfile.mkstemp(
+            prefix='personaje_export_',
+            suffix='.pdf',
+            dir=str(PATHS.output_dir),
+        )
+        os.close(fd)
+
         _generate_pdf(Path(tmp_json_path), PATHS.template_pdf, Path(tmp_pdf_path))
-    except Exception as e:
-        try:
-            Path(tmp_json_path).unlink(missing_ok=True)
-        except Exception:
-            pass
-        try:
-            Path(tmp_pdf_path).unlink(missing_ok=True)
-        except Exception:
-            pass
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-    try:
+        _assert_storage_capacity(0)
         pdf_bytes = Path(tmp_pdf_path).read_bytes()
+    except StorageQuotaExceeded as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 507
+    except PermissionError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
     finally:
-        try:
-            Path(tmp_json_path).unlink(missing_ok=True)
-        except Exception:
-            pass
-        try:
-            Path(tmp_pdf_path).unlink(missing_ok=True)
-        except Exception:
-            pass
+        if tmp_json_path:
+            try:
+                Path(tmp_json_path).unlink(missing_ok=True)
+            except Exception:
+                pass
+        if tmp_pdf_path:
+            try:
+                Path(tmp_pdf_path).unlink(missing_ok=True)
+            except Exception:
+                pass
 
     char_name = (data or {}).get('basic_info', {}).get('name', 'personaje')
     download_name = f"{char_name}_hoja.pdf"
@@ -416,13 +519,17 @@ def export_pdf():
 @app.route('/api/status', methods=['GET'])
 def status():
     """Devuelve qué módulos están disponibles."""
-    startup_errors = list(STARTUP_PATH_ERRORS)
+    startup_errors = collect_missing_required_paths(PATHS)
     startup_errors.extend(_module_startup_errors())
     duplicate_ids = _duplicate_character_ids()
     return jsonify({
         'parse_ok': PARSE_OK,
         'generate_ok': PDF_EXPORT_OK,
-        'resources_ok': len(STARTUP_PATH_ERRORS) == 0,
+        'resources_ok': len(startup_errors) == 0,
+        'storage_limit_enabled': STORAGE_LIMIT_BYTES > 0,
+        'storage_limit_bytes': STORAGE_LIMIT_BYTES,
+        'storage_usage_bytes': _current_storage_usage_bytes(),
+        'export_tmp_budget_bytes': EXPORT_TMP_BUDGET_BYTES,
         'path_errors': startup_errors,
         'paths': get_paths_status(PATHS),
         'duplicate_character_ids': duplicate_ids,
@@ -449,6 +556,9 @@ def run_dev_server() -> None:
     print(f"  project_root:    {PATHS.project_root}")
     print(f"  data_dir:        {PATHS.data_dir}")
     print(f"  output_dir:      {PATHS.output_dir}")
+    if STORAGE_LIMIT_BYTES > 0:
+        print(f"  storage_limit:   {_format_bytes(STORAGE_LIMIT_BYTES)}")
+        print(f"  storage_usage:   {_format_bytes(_current_storage_usage_bytes())}")
     if startup_errors:
         print("  Advertencias:")
         for err in startup_errors:

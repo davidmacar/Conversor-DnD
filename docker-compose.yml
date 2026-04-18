@@ -13,9 +13,11 @@ services:
       DND_OUTPUT_DIR: /app/output
       DND_TEMPLATES_DIR: /app/templates
       DND_FONTS_DIR: /app/fonts
+      DND_STORAGE_LIMIT_BYTES: ${DND_STORAGE_LIMIT_BYTES:-1073741824}
+      DND_EXPORT_TMP_BUDGET_BYTES: ${DND_EXPORT_TMP_BUDGET_BYTES:-67108864}
     volumes:
-      - ./data:/app/data
-      - ./output:/app/output
+      - ${DND_HOST_STORAGE_ROOT:-/mnt/lv_hdd/dnd-conversor/personajes}/data:/app/data
+      - ${DND_HOST_STORAGE_ROOT:-/mnt/lv_hdd/dnd-conversor/personajes}/output:/app/output
     healthcheck:
       test:
         - CMD-SHELL

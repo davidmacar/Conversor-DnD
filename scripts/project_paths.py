@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def _resolve_env_path(env_name: str, default_path: Path, project_root: Path) -> 
 
 
 def get_project_paths() -> ProjectPaths:
-    project_root = Path(__file__).resolve().parent
+    project_root = Path(__file__).resolve().parent.parent
     editor_dir = _resolve_env_path("DND_EDITOR_DIR", project_root / "editor", project_root)
 
     data_dir = _resolve_env_path("DND_DATA_DIR", project_root / "data", project_root)
@@ -75,6 +76,16 @@ def ensure_runtime_directories(paths: ProjectPaths) -> None:
     paths.output_dir.mkdir(parents=True, exist_ok=True)
 
 
+def _is_directory_writable(directory: Path) -> bool:
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=directory, prefix='.dnd_write_probe_', delete=True):
+            pass
+        return True
+    except OSError:
+        return False
+
+
 def collect_missing_required_paths(paths: ProjectPaths) -> list[str]:
     missing: list[str] = []
     if not paths.editor_templates_dir.exists():
@@ -85,6 +96,10 @@ def collect_missing_required_paths(paths: ProjectPaths) -> list[str]:
         missing.append(f"No existe la plantilla PDF: {paths.template_pdf}")
     if not paths.font_ttf.exists():
         missing.append(f"No existe la fuente TTF: {paths.font_ttf}")
+    if not _is_directory_writable(paths.data_dir):
+        missing.append(f"No hay permisos de escritura en data_dir: {paths.data_dir}")
+    if not _is_directory_writable(paths.output_dir):
+        missing.append(f"No hay permisos de escritura en output_dir: {paths.output_dir}")
     return missing
 
 
@@ -101,6 +116,10 @@ def get_paths_status(paths: ProjectPaths) -> dict:
         "font_ttf": str(paths.font_ttf),
         "editor_templates_exists": paths.editor_templates_dir.exists(),
         "editor_static_exists": paths.editor_static_dir.exists(),
+        "data_dir_exists": paths.data_dir.exists(),
+        "output_dir_exists": paths.output_dir.exists(),
+        "data_dir_writable": _is_directory_writable(paths.data_dir),
+        "output_dir_writable": _is_directory_writable(paths.output_dir),
         "template_pdf_exists": paths.template_pdf.exists(),
         "font_ttf_exists": paths.font_ttf.exists(),
         "character_json_exists": paths.character_json.exists(),
