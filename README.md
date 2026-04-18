@@ -21,6 +21,57 @@ python C:/ruta/al/proyecto/editor/app.py
 
 Tambien puedes usar `editor/start.bat` en Windows.
 
+## Despliegue con Docker
+
+Configuracion incluida en el proyecto:
+
+- `Dockerfile`
+- `docker-compose.yml`
+- `.dockerignore`
+- `.env.example`
+
+### 1) Preparar variables opcionales
+
+Desde la raiz del proyecto:
+
+```bash
+cp .env.example .env
+```
+
+Si quieres usar otro puerto, cambia `DND_PORT` en `.env`.
+
+### 2) Construir y levantar contenedor
+
+```bash
+docker compose up -d --build
+```
+
+La web quedara disponible en:
+
+`http://localhost:${DND_PORT:-5000}`
+
+### 3) Ver logs y estado
+
+```bash
+docker compose logs -f conversor-dnd
+docker compose ps
+```
+
+### 4) Detener servicio
+
+```bash
+docker compose down
+```
+
+### Persistencia de datos
+
+El compose monta volumenes bind para mantener datos entre reinicios:
+
+- `./data -> /app/data`
+- `./output -> /app/output`
+
+Esto conserva personajes JSON y PDFs exportados fuera del contenedor.
+
 ## Scripts CLI
 
 Estos scripts tambien funcionan desde cualquier CWD:

@@ -1,0 +1,26 @@
+services:
+  conversor-dnd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: conversor-dnd-web
+    restart: unless-stopped
+    ports:
+      - "${DND_PORT:-5000}:5000"
+    environment:
+      DND_EDITOR_DIR: /app/editor
+      DND_DATA_DIR: /app/data
+      DND_OUTPUT_DIR: /app/output
+      DND_TEMPLATES_DIR: /app/templates
+      DND_FONTS_DIR: /app/fonts
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/status', timeout=5)" >/dev/null 2>&1 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
