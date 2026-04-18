@@ -5,12 +5,12 @@ Generado automaticamente desde output/validacion_web_pdf/iter_01_reporte.json
 ## Resumen
 - expected_fields: 731
 - template_fields: 920
-- exact: 685
+- exact: 685 
 - mismatch: 0
 - sin_campo_template: 46
 - web_paths_sin_destino_pdf: 382
 - pendientes_reales: 62
-- excluidos_por_politica: 320
+- excluidos_por_politica: 420
 
 ## A) Campos PDF sin correlacion web (sin widget semantico en JSON)
 - Armadura-Escudo-Protecciones.5
