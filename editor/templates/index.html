@@ -380,55 +380,23 @@
           <label class="field-label">Alineamiento</label>
           <input type="text" x-model="character.basic_info.alignment" style="max-width:220px">
         </div>
-        <div class="trait-group">
-          <div class="trait-header">
-            <span>Rasgos de Personalidad</span>
-            <button class="btn-add-small" @click="character.background_details.personality_traits.push('')">+</button>
-          </div>
-          <template x-for="(t, i) in character.background_details.personality_traits" :key="i">
-            <div class="trait-row">
-              <input type="text" x-model="character.background_details.personality_traits[i]">
-              <button class="btn-remove" @click="character.background_details.personality_traits.splice(i,1)">×</button>
-            </div>
-          </template>
+        <div class="field-group">
+          <label class="field-label field-label-unified">Rasgos de Personalidad</label>
+          <textarea x-model="character.background_details.personality_traits" rows="3" class="notes-textarea"></textarea>
         </div>
         <div class="field-row-2">
-          <div class="trait-group">
-            <div class="trait-header">
-              <span>Ideales</span>
-              <button class="btn-add-small" @click="character.background_details.ideals.push('')">+</button>
-            </div>
-            <template x-for="(t, i) in character.background_details.ideals" :key="i">
-              <div class="trait-row">
-                <input type="text" x-model="character.background_details.ideals[i]">
-                <button class="btn-remove" @click="character.background_details.ideals.splice(i,1)">×</button>
-              </div>
-            </template>
+          <div class="field-group">
+            <label class="field-label field-label-unified">Ideales</label>
+            <textarea x-model="character.background_details.ideals" rows="3" class="notes-textarea"></textarea>
           </div>
-          <div class="trait-group">
-            <div class="trait-header">
-              <span>Vínculos</span>
-              <button class="btn-add-small" @click="character.background_details.bonds.push('')">+</button>
-            </div>
-            <template x-for="(t, i) in character.background_details.bonds" :key="i">
-              <div class="trait-row">
-                <input type="text" x-model="character.background_details.bonds[i]">
-                <button class="btn-remove" @click="character.background_details.bonds.splice(i,1)">×</button>
-              </div>
-            </template>
+          <div class="field-group">
+            <label class="field-label field-label-unified">Vínculos</label>
+            <textarea x-model="character.background_details.bonds" rows="3" class="notes-textarea"></textarea>
           </div>
         </div>
-        <div class="trait-group">
-          <div class="trait-header">
-            <span>Defectos</span>
-            <button class="btn-add-small" @click="character.background_details.flaws.push('')">+</button>
-          </div>
-          <template x-for="(t, i) in character.background_details.flaws" :key="i">
-            <div class="trait-row">
-              <input type="text" x-model="character.background_details.flaws[i]">
-              <button class="btn-remove" @click="character.background_details.flaws.splice(i,1)">×</button>
-            </div>
-          </template>
+        <div class="field-group">
+          <label class="field-label field-label-unified">Defectos</label>
+          <textarea x-model="character.background_details.flaws" rows="3" class="notes-textarea"></textarea>
         </div>
         <div class="field-row-2">
           <div class="field-group">
@@ -442,22 +410,32 @@
         </div>
         <div class="field-group">
           <label class="field-label field-label-unified">Historia de Personaje</label>
-          <textarea x-model="character.notes.backstory" rows="5" class="notes-textarea"></textarea>
+          <textarea x-model="character.notes.backstory" rows="5"
+                    :class="['notes-textarea', isOverLimit('backstory') ? 'textarea-over-limit' : '']"></textarea>
+          <div class="char-counter" :class="isOverLimit('backstory') ? 'over-limit' : ''" x-show="fieldLimits.backstory">
+            <span x-text="sectionCharCount('backstory')"></span> / <span x-text="fieldLimits.backstory"></span>
+          </div>
         </div>
       </div>
 
       <!-- Religión -->
       <div class="dnd-card">
-        <div class="dnd-card-header">Religión</div>
-        <div class="field-row-2">
-          <div class="field-group">
-            <label class="field-label">Deidad / Dominio</label>
-            <input type="text" x-model="character.background_details.deity">
-          </div>
-          <div class="field-group">
-            <label class="field-label field-label-unified">Descripción de la Deidad</label>
-            <input type="text" x-model="character.background_details.deity_description">
-          </div>
+        <div class="dnd-card-header">
+          Religión
+          <button class="btn-add-small ml-auto" @click="addDeity()">+ Deidad</button>
+        </div>
+        <div class="feature-sections-grid">
+          <template x-for="(deity, i) in character.background_details.deities" :key="i">
+            <div class="feature-block">
+              <div class="feature-header-row">
+                <input type="text" x-model="deity.name" placeholder="Deidad / Dominio" class="feat-name">
+                <button class="btn-remove" @click="removeDeity(i)">×</button>
+              </div>
+              <textarea x-model="deity.description" placeholder="Descripción de la deidad..." rows="2"
+                        class="notes-textarea"></textarea>
+            </div>
+          </template>
+          <div class="empty-state" x-show="!character.background_details.deities?.length">Sin deidades</div>
         </div>
       </div>
 
@@ -1004,17 +982,21 @@
       <div class="dnd-card">
         <div class="dnd-card-header">
           Dotes
+          <span class="char-counter header-counter" :class="isOverLimit('feats') ? 'over-limit' : ''"
+                x-show="fieldLimits.feats">
+            <span x-text="sectionCharCount('feats')"></span>/<span x-text="fieldLimits.feats"></span>
+          </span>
           <button class="btn-add-small ml-auto" @click="addFeature('feats')">+ Dote</button>
         </div>
         <div class="feature-sections-grid">
           <template x-for="(feat, i) in character.features_and_traits.feats" :key="i">
-            <div class="feature-block">
+            <div class="feature-block" :class="featOverLimit(i) ? 'feature-block--over-limit' : ''">
               <div class="feature-header-row">
                 <input type="text" x-model="feat.name" placeholder="Nombre" class="feat-name">
                 <button class="btn-remove" @click="removeFeature('feats', i)">×</button>
               </div>
               <textarea x-model="feat.description" placeholder="Descripción..." rows="2"
-                        class="notes-textarea"></textarea>
+                        :class="['notes-textarea', featOverLimit(i) ? 'textarea-over-limit' : '']"></textarea>
             </div>
           </template>
           <div class="empty-state" x-show="!character.features_and_traits.feats?.length">Sin dotes</div>
@@ -1045,18 +1027,22 @@
       <div class="dnd-card">
         <div class="dnd-card-header">
           Rasgos de Clase
+          <span class="char-counter header-counter" :class="isOverLimit('class_features') ? 'over-limit' : ''"
+                x-show="fieldLimits.class_features">
+            <span x-text="sectionCharCount('class_features')"></span>/<span x-text="fieldLimits.class_features"></span>
+          </span>
           <button class="btn-add-small ml-auto" @click="addFeature('class_features')">+ Rasgo</button>
         </div>
         <div class="feature-sections-grid">
           <template x-for="(ft, i) in character.features_and_traits.class_features" :key="i">
-            <div class="feature-block">
+            <div class="feature-block" :class="classFeatureOverLimit(i) ? 'feature-block--over-limit' : ''">
               <div class="feature-header-row feature-header-row--with-source">
                 <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
                 <input type="text" x-model="ft.source" placeholder="Fuente" class="feat-source-input">
                 <button class="btn-remove" @click="removeFeature('class_features', i)">×</button>
               </div>
               <textarea x-model="ft.description" placeholder="Descripción..." rows="2"
-                        class="notes-textarea"></textarea>
+                        :class="['notes-textarea', classFeatureOverLimit(i) ? 'textarea-over-limit' : '']"></textarea>
             </div>
           </template>
           <div class="empty-state" x-show="!character.features_and_traits.class_features?.length">Sin rasgos de clase</div>
@@ -1067,8 +1053,12 @@
         <div class="dnd-card-header">Notas</div>
         <div class="field-group">
           <label class="field-label">Notas Adicionales</label>
-          <textarea x-model="character.notes.general" rows="6" class="notes-textarea"
+          <textarea x-model="character.notes.general" rows="6"
+                    :class="['notes-textarea', isOverLimit('notes') ? 'textarea-over-limit' : '']"
                     placeholder="Apuntes varios, efectos activos, recordatorios…"></textarea>
+          <div class="char-counter" :class="isOverLimit('notes') ? 'over-limit' : ''" x-show="fieldLimits.notes">
+            <span x-text="sectionCharCount('notes')"></span> / <span x-text="fieldLimits.notes"></span>
+          </div>
         </div>
       </div>
     </section>
@@ -1370,7 +1360,10 @@
 <!-- ═══════════════════════════════════════════ TOAST -->
 <div class="toast-container">
   <template x-if="toast">
-    <div class="toast" :class="toast.type" x-text="toast.msg"></div>
+    <div class="toast" :class="toast.type">
+      <button class="toast-close" @click="toast = null" x-show="toast.type === 'error'" title="Cerrar">×</button>
+      <span x-text="toast.msg"></span>
+    </div>
   </template>
 </div>
 

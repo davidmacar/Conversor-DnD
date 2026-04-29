@@ -69,6 +69,8 @@ function characterEditor() {
     importError: null,
     // Export PDF
     exportingPdf: false,
+    // Límites de campos PDF
+    fieldLimits: {},
 
     async init() {
       try {
@@ -89,6 +91,68 @@ function characterEditor() {
       this.setupSubsectionAnchors();
       this.initScrollSpy();
       this.loadCharacterList();
+      this.loadFieldLimits();
+    },
+
+    async loadFieldLimits() {
+      try {
+        const res = await fetch('/api/field-limits');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === 'ok') this.fieldLimits = data.limits;
+      } catch (_) {}
+    },
+
+    // ── Contadores de caracteres por sección ─────────────────────────────────
+
+    sectionCharCount(section) {
+      const ft  = this.character?.features_and_traits || {};
+      const bg  = this.character?.background_details  || {};
+      const n   = this.character?.notes               || {};
+      switch (section) {
+        case 'feats':
+          return (ft.feats || [])
+            .map(f => [f.name, f.description].filter(x => x?.trim()).join('\n'))
+            .filter(x => x).join('\n').length;
+        case 'class_features':
+          return (ft.class_features || []).reduce((acc, f) => {
+            const t = [f.name, f.description].filter(x => x?.trim()).join('\n');
+            return acc + t.length;
+          }, 0);
+        case 'backstory':
+          return (n.backstory || '').length;
+        case 'notes':
+          return (n.general || n.additional_notes || '').length;
+        case 'deity_domain':
+          return (bg.deities || []).map(d => d.name || '').filter(x => x).join(' / ').length;
+        case 'deity_description':
+          return (bg.deities || []).map(d => d.description || '').filter(x => x).join('\n').length;
+        default: return 0;
+      }
+    },
+
+    isOverLimit(section) {
+      const limit = this.fieldLimits[section];
+      if (!limit) return false;
+      return this.sectionCharCount(section) > limit;
+    },
+
+    classFeatureOverLimit(i) {
+      const limit = this.fieldLimits.class_features_per_entry;
+      if (!limit || !this.character?.features_and_traits?.class_features) return false;
+      const f = this.character.features_and_traits.class_features[i];
+      if (!f) return false;
+      const text = [f.name, f.description].filter(x => x?.trim()).join('\n');
+      return text.length > limit;
+    },
+
+    featOverLimit(i) {
+      const limit = this.fieldLimits.class_features_per_entry;
+      if (!limit || !this.character?.features_and_traits?.feats) return false;
+      const f = this.character.features_and_traits.feats[i];
+      if (!f) return false;
+      const text = [f.name, f.description].filter(x => x?.trim()).join('\n');
+      return text.length > limit;
     },
 
     normalizeCharacterPayload(rawData) {
@@ -199,10 +263,18 @@ function characterEditor() {
       this.character.spellcasting.spells ??= {};
       this.character.spellcasting.spell_slots ??= {};
       this.character.background_details ??= {};
-      this.character.background_details.personality_traits ??= [];
-      this.character.background_details.ideals ??= [];
-      this.character.background_details.bonds  ??= [];
-      this.character.background_details.flaws  ??= [];
+      this.character.background_details.personality_traits = this.mergeUniqueLines(
+        this.character.background_details.personality_traits,
+      );
+      this.character.background_details.ideals = this.mergeUniqueLines(
+        this.character.background_details.ideals,
+      );
+      this.character.background_details.bonds = this.mergeUniqueLines(
+        this.character.background_details.bonds,
+      );
+      this.character.background_details.flaws = this.mergeUniqueLines(
+        this.character.background_details.flaws,
+      );
       this.character.notes ??= {};
       this.character.combat ??= {};
       this.character.combat.hit_points  ??= {};
@@ -252,8 +324,14 @@ function characterEditor() {
       this.character.notes.physical_description ??= '';
       this.character.notes.other_notes          ??= '';
       this.character.notes.additional_notes     ??= '';
-      this.character.background_details.deity             ??= '';
-      this.character.background_details.deity_description ??= '';
+      // Migrar datos legacy (strings) al nuevo modelo array
+      if (!Array.isArray(this.character.background_details.deities)) {
+        const legacyName = this.character.background_details.deity || '';
+        const legacyDesc = this.character.background_details.deity_description || '';
+        this.character.background_details.deities = legacyName || legacyDesc
+          ? [{ name: legacyName, description: legacyDesc }]
+          : [];
+      }
       this.character.features_and_traits         ??= {};
       this.character.features_and_traits.class_features ??= [];
       this.character.features_and_traits.feats          ??= [];
@@ -565,7 +643,9 @@ function characterEditor() {
 
     showToast(msg, type = 'success') {
       this.toast = { msg, type };
-      setTimeout(() => { this.toast = null; }, 3000);
+      if (type !== 'error') {
+        setTimeout(() => { this.toast = null; }, 3000);
+      }
     },
 
     // ── Modifier maths ───────────────────────────────────────────────────────
@@ -580,6 +660,11 @@ function characterEditor() {
     },
 
     splitNonEmptyLines(value) {
+      if (Array.isArray(value)) {
+        return value
+          .map((entry) => String(entry ?? '').trim())
+          .filter(Boolean);
+      }
       return String(value ?? '')
         .split(/\r?\n/)
         .map((line) => line.trim())
@@ -1008,6 +1093,16 @@ function characterEditor() {
 
     // ── Feature / trait helpers ───────────────────────────────────────────────
 
+    addDeity() {
+      if (!Array.isArray(this.character.background_details.deities))
+        this.character.background_details.deities = [];
+      this.character.background_details.deities.push({ name: '', description: '' });
+    },
+
+    removeDeity(i) {
+      this.character.background_details.deities.splice(i, 1);
+    },
+
     addFeature(section) {
       if (!this.character.features_and_traits[section])
         this.character.features_and_traits[section] = [];
@@ -1291,10 +1386,10 @@ function characterEditor() {
           description: storyText,
           deity: String(src.background_details?.deity || ''),
           deity_description: String(src.background_details?.deity_description || ''),
-          personality_traits: [...(src.background_details?.personality_traits || [])].map((v) => String(v || '')),
-          ideals: [...(src.background_details?.ideals || [])].map((v) => String(v || '')),
-          bonds: [...(src.background_details?.bonds || [])].map((v) => String(v || '')),
-          flaws: [...(src.background_details?.flaws || [])].map((v) => String(v || '')),
+          personality_traits: this.mergeUniqueLines(src.background_details?.personality_traits),
+          ideals: this.mergeUniqueLines(src.background_details?.ideals),
+          bonds: this.mergeUniqueLines(src.background_details?.bonds),
+          flaws: this.mergeUniqueLines(src.background_details?.flaws),
         },
         notes: {
           allies: String(src.notes?.allies || ''),

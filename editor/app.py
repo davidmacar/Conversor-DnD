@@ -122,12 +122,13 @@ except Exception as _e:
     _PARSE_ERR = str(_e)
 
 try:
-    from scripts.generate_pdf import generate as _generate_pdf
+    from scripts.generate_pdf import PdfCapacityError, generate as _generate_pdf
 
     PDF_EXPORT_OK = True
 except Exception as _e:
     PDF_EXPORT_OK = False
     _PDF_EXPORT_ERR = str(_e)
+    PdfCapacityError = RuntimeError
 
 
 def _iter_character_json_files():
@@ -437,6 +438,8 @@ def import_character():
             'filename': target_path.name,
             'warnings': warnings,
         })
+    except PdfCapacityError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 422
     except StorageQuotaExceeded as e:
         return jsonify({'status': 'error', 'message': str(e)}), 507
     except PermissionError as e:
@@ -514,6 +517,19 @@ def export_pdf():
     download_name = f"{char_name}_hoja.pdf"
     return send_file(io.BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf',
                      download_name=download_name)
+
+
+@app.route('/api/field-limits', methods=['GET'])
+def field_limits():
+    """Devuelve los límites aproximados de caracteres por sección del PDF."""
+    if not PDF_EXPORT_OK:
+        return jsonify({'status': 'error', 'message': 'PDF export no disponible'}), 503
+    try:
+        from scripts.generate_pdf import compute_field_limits, FONT_PATH
+        limits = compute_field_limits(PATHS.template_pdf, FONT_PATH)
+        return jsonify({'status': 'ok', 'limits': limits})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @app.route('/api/status', methods=['GET'])

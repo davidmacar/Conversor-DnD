@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
 """
-scripts/generate_pdf.py — Generador híbrido D&D 2024 (PyMuPDF + CaslonAntique).
+scripts/generate_pdf.py — Generador híbrido D&D 2024 (PyMuPDF + Helvetica).
 
 Preserva los AP originales del template (círculos teal ZaDb, fondos azules de
-conjuros, estrella ☆ de inspiración) e inyecta CaslonAntique para los campos
-de texto — fidelidad visual + tipografía medieval coherente.
-
-Los campos quedan editables con CaslonAntique en cualquier visor que soporte
-la fuente embebida (Acrobat Reader, Chrome, Foxit, etc.).
+conjuros, estrella ☆ de inspiración) e inyecta Helvetica (fuente estándar PDF)
+para los campos de texto — compatible con cualquier visor PDF sin embedding.
 
 Uso:
     venv/Scripts/python scripts/generate_pdf.py
     venv/Scripts/python scripts/generate_pdf.py data/personaje.json output/salida.pdf
     venv/Scripts/python scripts/generate_pdf.py -v --verify
 
-Requiere: PyMuPDF >= 1.27.2 + fonttools (ambos en venv)
+Requiere: PyMuPDF >= 1.27.2
 """
 
 from __future__ import annotations
@@ -39,10 +36,6 @@ try:
 except ImportError as exc:
     raise ImportError("Error: instala PyMuPDF con:  pip install pymupdf") from exc
 
-try:
-    from fontTools.ttLib import TTFont as _TTFont
-except ImportError as exc:
-    raise ImportError("Error: instala fonttools con:  pip install fonttools") from exc
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -53,7 +46,10 @@ ensure_runtime_directories(PATHS)
 
 PROJECT_ROOT  = PATHS.project_root
 TEMPLATE_PATH = PATHS.template_pdf
-FONT_PATH     = PATHS.font_ttf
+FONT_PATH      = PATHS.font_ttf
+FONT_PATH_BOLD = PATHS.fonts_dir / "CaslonAntique-Bold.ttf"  # mantenido; no se usa en generación
+
+
 DEFAULT_JSON  = PATHS.character_json
 DEFAULT_OUT   = PATHS.output_dir / "personaje_output.pdf"
 
@@ -76,6 +72,9 @@ KEY_STATS: set[str] = {
     "Clase-Armadura", "Iniciativa", "Velocidad", "Percepcion-Pasiva",
     "Puntos-Golpe-Actuales", "Puntos-Golpe-Maximo",
     "Bonificador-Competencia",
+    "Salto-Horizontal", "Salto-Altura",
+    "Velocidad-Hora", "Velocidad-Jornada", "Velocidad-Especial",
+    "Velocidad-Volando", "Velocidad-Trepando", "Velocidad-Nadando",
 }
 
 # Importancia alta — tamaño 8
@@ -218,6 +217,56 @@ MAX_SPELLS_PER_LEVEL: dict[int, int] = {
 }
 
 
+@dataclass(frozen=True)
+class ContinuousBlockSpec:
+    key: str
+    label: str
+    field_names: list[str]
+
+
+@dataclass(frozen=True)
+class FieldLayout:
+    field_name: str
+    width: float
+    height: float
+    fsize: int
+    is_multiline: bool
+
+
+class PdfCapacityError(RuntimeError):
+    def __init__(self, section: str, field_names: list[str], detail: str = "") -> None:
+        message = f"El apartado '{section}' supera la capacidad disponible en el PDF."
+        if detail:
+            message = f"{message} {detail}"
+        super().__init__(message)
+        self.section = section
+        self.field_names = field_names
+        self.detail = detail
+
+
+CONTINUOUS_BLOCK_SPECS: list[ContinuousBlockSpec] = [
+    ContinuousBlockSpec("appearance", "Apariencia", [f"Dato-Personaje.Apariencia-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("personality", "Rasgo de personalidad", [f"Dato-Personaje.Rasgo-Personalidad-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("ideals", "Ideales", [f"Dato-Personaje.Ideal-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("bonds", "Vinculos", [f"Dato-Personaje.Vinculo-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("flaws", "Defectos", [f"Dato-Personaje.Defecto-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("allies", "Amigos y aliados", [f"Dato-Personaje.Amigo-Aliado-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("enemies", "Enemigos", [f"Dato-Personaje.Enemigo-{i}" for i in range(1, 4)]),
+    ContinuousBlockSpec("backstory", "Trasfondo/otros", [f"Dato-Personaje.Trasfondo-Otros-{i}" for i in range(1, 8)]),
+    ContinuousBlockSpec("notes", "Notas", ["Notas"]),
+    ContinuousBlockSpec("deity_domain", "Deidad y dominio", ["Dato-Personaje.Deidad-Dominio"]),
+    ContinuousBlockSpec("deity_description", "Descripcion de la deidad", ["Dato-Personaje.Descripcion-Deidad"]),
+    ContinuousBlockSpec("traits", "Características de Raza y Clase", ["Rasgos"]),
+    ContinuousBlockSpec("feats", "Dotes", ["Dotes"]),
+]
+
+CONTINUOUS_FIELDS: set[str] = {
+    field_name
+    for spec in CONTINUOUS_BLOCK_SPECS
+    for field_name in spec.field_names
+}
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -289,20 +338,302 @@ def _fill_line_fields(m: dict[str, str | bool], prefix: str, lines: list[str], m
 
 def _feature_lines(traits: list[dict]) -> list[str]:
     def _clean(text: str) -> str:
-        cleaned = str(text or "").strip()
-        cleaned = re.sub(r"\s+", " ", cleaned)
-        # Quita coletillas de uso por descanso que ensucian la ficha.
-        cleaned = re.sub(r"\s*[\(\[]?\d+\s*(?:/|por)\s*descanso(?:\s+(?:corto|largo))?[\)\]]?\.?$", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s+", " ", str(text or "").strip())
+        cleaned = re.sub(
+            r"\s*[\(\[]?\d+\s*(?:/|por)\s*descanso(?:\s+(?:corto|largo))?[\)\]]?\.?$",
+            "", cleaned, flags=re.IGNORECASE,
+        )
         return cleaned.strip(" -|,;")
-
     lines: list[str] = []
     for t in traits:
         name = _clean(str((t or {}).get("name") or ""))
         desc = _clean(str((t or {}).get("description") or ""))
-        line = _join_non_empty([name, desc], " - ")
-        if line:
-            lines.append(line)
+        if name and desc:
+            # Formato con asteriscos para negrita: *Nombre*: descripción
+            lines.append(f"*{name}*: {desc}")
+        elif name:
+            lines.append(name)
+        elif desc:
+            lines.append(desc)
     return lines
+
+
+def _feature_lines_sourced(traits: list[dict]) -> list[str]:
+    def _clean(text: str) -> str:
+        cleaned = re.sub(r"\s+", " ", str(text or "").strip())
+        cleaned = re.sub(
+            r"\s*[\(\[]?\d+\s*(?:/|por)\s*descanso(?:\s+(?:corto|largo))?[\)\]]?\.?$",
+            "", cleaned, flags=re.IGNORECASE,
+        )
+        return cleaned.strip(" -|,;")
+    lines: list[str] = []
+    for t in traits:
+        name   = _clean(str((t or {}).get("name") or ""))
+        source = _clean(str((t or {}).get("source") or ""))
+        desc   = _clean(str((t or {}).get("description") or ""))
+        if name and source and desc:
+            # Formato con asteriscos para negrita: *Nombre - Fuente*: descripción
+            lines.append(f"*{name} - {source}*: {desc}")
+        elif name and source:
+            lines.append(f"*{name} - {source}*")
+        elif name and desc:
+            lines.append(f"*{name}*: {desc}")
+        elif name:
+            lines.append(name)
+    return lines
+
+
+def _lines_from_any(value: object) -> list[str]:
+    if isinstance(value, list):
+        lines: list[str] = []
+        for item in value:
+            if isinstance(item, dict):
+                txt = _join_non_empty([
+                    str(item.get("name") or item.get("title") or "").strip(),
+                    str(item.get("description") or item.get("note") or "").strip(),
+                ], " - ")
+                if txt:
+                    lines.append(txt)
+                continue
+            txt = str(item or "").strip()
+            if txt:
+                lines.append(txt)
+        return lines
+    return _split_lines(str(value or ""))
+
+
+def _deity_combined_text(bg: dict, field: str) -> str:
+    """Extrae texto de deidades del nuevo modelo array o del modelo legacy string."""
+    deities = bg.get("deities")
+    if isinstance(deities, list) and deities:
+        if field == "domain":
+            return " / ".join(d.get("name", "") for d in deities if d.get("name"))
+        else:
+            return "\n".join(d.get("description", "") for d in deities if d.get("description"))
+    # Fallback legacy
+    if field == "domain":
+        return " ".join(str(bg.get("deity") or "").split())
+    return " ".join(str(bg.get("deity_description") or "").split())
+
+
+def _continuous_text_sections(d: dict) -> dict[str, str]:
+    bg    = d.get("background_details", {})
+    app   = d.get("appearance", {})
+    notes = d.get("notes", {})
+    ft    = d.get("features_and_traits", {})
+
+    appearance_text = str(app.get("summary") or notes.get("physical_description") or "")
+    backstory_text = str(notes.get("backstory") or "").strip()
+    if not backstory_text:
+        fallback_parts = _lines_from_any(bg.get("description")) + _lines_from_any(notes.get("other_notes"))
+        backstory_text = "\n".join(fallback_parts)
+
+    species_traits = (ft.get("species") or [])
+    class_features = (ft.get("class_features") or [])
+    feats = (ft.get("feats") or [])
+
+    return {
+        "appearance": "\n".join(_lines_from_any(appearance_text)),
+        "personality": "\n".join(_lines_from_any(bg.get("personality_traits"))),
+        "ideals": "\n".join(_lines_from_any(bg.get("ideals"))),
+        "bonds": "\n".join(_lines_from_any(bg.get("bonds"))),
+        "flaws": "\n".join(_lines_from_any(bg.get("flaws"))),
+        "allies": "\n".join(_lines_from_any(notes.get("allies"))),
+        "enemies": "\n".join(_lines_from_any(notes.get("enemies"))),
+        "backstory": "\n".join(_lines_from_any(backstory_text)),
+        "notes": "\n".join(_lines_from_any(notes.get("general") or notes.get("additional_notes"))),
+        "deity_domain": _deity_combined_text(bg, "domain"),
+        "deity_description": _deity_combined_text(bg, "description"),
+        "traits": "\n\n".join(_feature_lines_sourced(species_traits) + _feature_lines_sourced(class_features)),
+        "feats": "\n\n".join(_feature_lines(feats)),
+    }
+
+
+def _multiline_capacity_lines(font_info: "FontInfo", fsize: int, height: float) -> int:
+    margin_y = 2.0
+    leading = fsize * 1.2
+    asc_pts = font_info.ascent_pts(fsize)
+    y_start = height - margin_y - asc_pts
+    if y_start < margin_y:
+        return 0
+    return int((y_start - margin_y) // leading) + 1
+
+
+def _split_long_word(word: str, avail_w: float, fsize: int, font_info: "FontInfo") -> list[str]:
+    if not word:
+        return []
+    if font_info.string_width(word, fsize) <= avail_w:
+        return [word]
+    parts: list[str] = []
+    current = ""
+    for ch in word:
+        candidate = current + ch
+        if current and font_info.string_width(candidate, fsize) > avail_w:
+            parts.append(current)
+            current = ch
+        else:
+            current = candidate
+    if current:
+        parts.append(current)
+    return parts
+
+
+def _wrap_text_to_lines(text: str, fsize: int, avail_w: float, font_info: "FontInfo") -> list[str]:
+    lines: list[str] = []
+    for raw_paragraph in str(text or "").replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        paragraph = " ".join(raw_paragraph.split())
+        if not paragraph:
+            lines.append("")
+            continue
+        words = paragraph.split(" ")
+        current = ""
+        for word in words:
+            chunks = _split_long_word(word, avail_w, fsize, font_info)
+            for chunk in chunks:
+                candidate = (current + " " + chunk).strip() if current else chunk
+                if current and font_info.string_width(candidate, fsize) > avail_w:
+                    lines.append(current)
+                    current = chunk
+                else:
+                    current = candidate
+        lines.append(current)
+
+    while lines and not lines[0]:
+        lines.pop(0)
+    while lines and not lines[-1]:
+        lines.pop()
+    return lines
+
+
+def _consume_multiline_text(
+    text: str,
+    layout: FieldLayout,
+    font_info: "FontInfo",
+) -> tuple[str, str]:
+    raw_text = str(text or "").strip()
+    if not raw_text:
+        return "", ""
+    avail_w = max(1.0, layout.width - 4.0)
+    wrapped_lines = _wrap_text_to_lines(raw_text, layout.fsize, avail_w, font_info)
+    max_lines = _multiline_capacity_lines(font_info, layout.fsize, layout.height)
+    if max_lines <= 0:
+        return "", raw_text
+    used = wrapped_lines[:max_lines]
+    rest = wrapped_lines[max_lines:]
+    return "\n".join(used).strip(), "\n".join(rest).strip()
+
+
+def _singleline_can_fit(text: str, layout: FieldLayout, font_info: "FontInfo") -> bool:
+    clean = " ".join(str(text or "").split())
+    if not clean:
+        return True
+    avail_w = max(1.0, layout.width - 4.0)
+    if font_info.string_width(clean, layout.fsize) <= avail_w:
+        return True
+    return font_info.string_width(clean, 4.0) <= avail_w + 0.01
+
+
+def _consume_singleline_text(
+    text: str,
+    layout: FieldLayout,
+    font_info: "FontInfo",
+) -> tuple[str, str]:
+    clean = " ".join(str(text or "").split())
+    if not clean:
+        return "", ""
+    if _singleline_can_fit(clean, layout, font_info):
+        return clean, ""
+
+    words = clean.split(" ")
+    best = ""
+    current: list[str] = []
+    for word in words:
+        candidate = " ".join(current + [word]) if current else word
+        if _singleline_can_fit(candidate, layout, font_info):
+            current.append(word)
+            best = candidate
+            continue
+        break
+
+    if not best:
+        return "", clean
+
+    remaining = clean[len(best):].strip()
+    return best, remaining
+
+
+def _widget_is_multiline(pdf: fitz.Document, widget: fitz.Widget) -> bool:
+    try:
+        _, ff_raw = pdf.xref_get_key(widget.xref, "Ff")
+        ff_val = int(ff_raw)
+    except (ValueError, TypeError):
+        ff_val = 0
+    return bool(ff_val & 4096)
+
+
+def _compute_continuous_field_values(
+    data: dict,
+    pdf: fitz.Document,
+    font_info: "FontInfo",
+) -> dict[str, str]:
+    section_texts = _continuous_text_sections(data)
+    layout_by_field: dict[str, FieldLayout] = {}
+
+    for page in pdf:
+        for widget in page.widgets():
+            if widget.field_name not in CONTINUOUS_FIELDS:
+                continue
+            if widget.field_type_string in {"CheckBox", "Button"}:
+                continue
+            rect = widget.rect
+            if rect.width < 1 or rect.height < 1:
+                continue
+            layout_by_field[widget.field_name] = FieldLayout(
+                field_name=widget.field_name,
+                width=rect.width,
+                height=rect.height,
+                fsize=_field_size(widget.field_name),
+                is_multiline=_widget_is_multiline(pdf, widget),
+            )
+
+    assigned_values: dict[str, str] = {}
+
+    for spec in CONTINUOUS_BLOCK_SPECS:
+        remaining = str(section_texts.get(spec.key, "") or "").strip()
+
+        available_layouts = [
+            layout_by_field[name]
+            for name in spec.field_names
+            if name in layout_by_field
+        ]
+
+        for field_name in spec.field_names:
+            assigned_values[field_name] = ""
+
+        if not available_layouts:
+            if remaining:
+                raise PdfCapacityError(spec.label, spec.field_names, "No se encontraron campos de destino en la plantilla.")
+            continue
+
+        for layout in available_layouts:
+            if not remaining:
+                break
+            if layout.is_multiline:
+                chunk, remaining = _consume_multiline_text(remaining, layout, font_info)
+            else:
+                chunk, remaining = _consume_singleline_text(remaining, layout, font_info)
+            assigned_values[layout.field_name] = chunk
+
+        if remaining:
+            preview = remaining[:120]
+            ellipsis = "..." if len(remaining) > 120 else ""
+            raise PdfCapacityError(
+                spec.label,
+                spec.field_names,
+                f"Texto sobrante: '{preview}{ellipsis}'",
+            )
+
+    return assigned_values
 
 
 def _item_for_attack(atk_obj: dict, attack_index: int, inventory_items: list[dict]) -> dict:
@@ -635,15 +966,6 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
     for i in range(1, 15):
         m[f"Competencia.{i}"] = ordered_comp[i - 1] if i - 1 < len(ordered_comp) else ""
 
-    # ── Rasgos y características ─────────────────────────────────────────────
-    species_traits = ft.get("species", [])
-    feat_traits    = ft.get("feats", [])
-    class_features = ft.get("class_features", [])
-    feat_lines = _feature_lines(feat_traits)
-    trait_lines = _feature_lines(species_traits) + _feature_lines(class_features)
-    _fill_line_fields(m, "Dotes", feat_lines, 16)
-    _fill_line_fields(m, "Rasgo", trait_lines, 20)
-
     # ── Monedas (jerárquico Piezas.Oro etc.) ────────────────────────────────
     currency = inv.get("currency", {})
     m["Piezas.Cobre"]   = str(currency.get("CP") or 0)
@@ -751,8 +1073,8 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
         m[f"Dato-Personaje.Enemigo-{i}"]      = enemies_lines[i-1] if i-1 < len(enemies_lines) else ""
         m[f"Dato-Personaje.Apariencia-{i}"]   = phys_lines[i-1]    if i-1 < len(phys_lines)    else ""
 
-    m["Dato-Personaje.Deidad-Dominio"]     = bg.get("deity") or ""
-    m["Dato-Personaje.Descripcion-Deidad"] = bg.get("deity_description") or ""
+    m["Dato-Personaje.Deidad-Dominio"]     = _deity_combined_text(bg, "domain")
+    m["Dato-Personaje.Descripcion-Deidad"] = _deity_combined_text(bg, "description")
 
     story_text = str(notes_d.get("backstory") or "").strip()
     story_lines = _split_lines(story_text)
@@ -897,72 +1219,28 @@ def build_field_map(d: dict) -> dict[str, str | bool]:
 # FontInfo — métricas tipográficas del TTF (para layout de AP streams)
 # ---------------------------------------------------------------------------
 
-@dataclass
 class FontInfo:
-    path:         str
-    upm:          int
-    ascent:       int
-    descent:      int
-    cap_height:   int
-    italic_angle: float
-    bbox:         list
-    stemv:        int
-    widths:       list
+    """Métricas de Helvetica vía PyMuPDF (sin TTF externo)."""
+
+    def __init__(self, bold: bool = False) -> None:
+        self._font = fitz.Font("hebo" if bold else "helv")
 
     @classmethod
-    def load(cls, path: Path) -> "FontInfo":
-        font = _TTFont(str(path))
-        upm  = font["head"].unitsPerEm
-        try:
-            os2     = font["OS/2"]
-            ascent  = os2.sTypoAscender
-            descent = os2.sTypoDescender
-            cap_h   = getattr(os2, "sCapHeight", 0) or round(ascent * 0.72)
-            weight  = getattr(os2, "usWeightClass", 400)
-        except KeyError:
-            hhea    = font["hhea"]
-            ascent  = hhea.ascent
-            descent = hhea.descent
-            cap_h   = round(ascent * 0.72)
-            weight  = 400
+    def load(cls, _path: Path) -> "FontInfo":
+        return cls(bold=False)
 
-        italic = float(font["post"].italicAngle)
-        head   = font["head"]
-        bbox   = [
-            round(head.xMin * 1000 / upm),
-            round(head.yMin * 1000 / upm),
-            round(head.xMax * 1000 / upm),
-            round(head.yMax * 1000 / upm),
-        ]
-        stemv  = max(50, round(10 + 220 * max(0, weight - 400) / 600))
-        cmap   = font.getBestCmap() or {}
-        hmtx   = font["hmtx"].metrics
-        widths = []
-        for cp in range(32, 256):
-            gname = cmap.get(cp)
-            aw    = hmtx.get(gname, (500, 0))[0] if gname else 500
-            widths.append(round(aw * 1000 / upm))
-
-        return cls(
-            path=str(path), upm=upm, ascent=ascent, descent=descent,
-            cap_height=cap_h, italic_angle=italic, bbox=bbox,
-            stemv=stemv, widths=widths,
-        )
+    @classmethod
+    def load_bold(cls) -> "FontInfo":
+        return cls(bold=True)
 
     def ascent_pts(self, fsize: float) -> float:
-        return self.ascent * fsize / self.upm
+        return self._font.ascender * fsize
 
     def descent_pts(self, fsize: float) -> float:
-        return self.descent * fsize / self.upm   # negativo
+        return self._font.descender * fsize
 
     def string_width(self, text: str, fsize: float) -> float:
-        total = 0.0
-        for ch in text:
-            cp  = ord(ch)
-            idx = cp - 32
-            w1k = self.widths[idx] if 0 <= idx < 224 else 500
-            total += w1k * fsize / 1000.0
-        return total
+        return self._font.text_length(text, fontsize=fsize)
 
 # ---------------------------------------------------------------------------
 # Helpers compartidos del generador
@@ -1032,61 +1310,35 @@ def _checkbox_on_state(pdf: fitz.Document, xref: int, raw: str | None = None) ->
 
 
 # ---------------------------------------------------------------------------
-# Inyección de CaslonAntique en AcroForm /DR con la API xref de PyMuPDF
+# Registro de Helvetica en AcroForm /DR (fuente estándar PDF, sin embedding)
 # ---------------------------------------------------------------------------
 
-def _embed_caslon_fitz(pdf: fitz.Document, font_info: FontInfo) -> str:
-    """
-    Inyecta CaslonAntique TrueType en AcroForm /DR/Font usando la API xref de PyMuPDF.
-    Devuelve la referencia indirecta ("N 0 R") para los /Resources de los AP streams.
-
-    Estructura PDF creada:
-        FontFile2 stream  ← bytes TTF en crudo (compress=False, Length1 obligatorio)
-        FontDescriptor    ← métricas escaladas a espacio 1000-unit
-        Font dict         ← TrueType, WinAnsiEncoding, FirstChar 32, LastChar 255
-    """
-    upm = font_info.upm
-
-    # ── 1. Stream FontFile2 (bytes TTF sin comprimir) ────────────────────────
-    with open(FONT_PATH, "rb") as f:
-        ttf_bytes = f.read()
-    ff2_xref = pdf.get_new_xref()
-    pdf.update_object(ff2_xref, "<<>>")   # inicializar como dict antes de añadir stream
-    pdf.update_stream(ff2_xref, ttf_bytes, new=True, compress=False)
-    pdf.xref_set_key(ff2_xref, "Length1", str(len(ttf_bytes)))
-
-    # ── 2. FontDescriptor ────────────────────────────────────────────────────
-    b    = font_info.bbox   # ya en espacio 1000-unit (calculado en FontInfo.load)
-    asc  = round(font_info.ascent     * 1000 / upm)
-    desc = round(font_info.descent    * 1000 / upm)
-    caph = round(font_info.cap_height * 1000 / upm)
-    fd_xref = pdf.get_new_xref()
-    pdf.update_object(fd_xref, (
-        f"<</Type/FontDescriptor/FontName/CaslonAntique/Flags 32"
-        f"/FontBBox[{b[0]} {b[1]} {b[2]} {b[3]}]"
-        f"/ItalicAngle {font_info.italic_angle}"
-        f"/Ascent {asc}/Descent {desc}/CapHeight {caph}/StemV {font_info.stemv}"
-        f"/FontFile2 {ff2_xref} 0 R>>"
-    ))
-
-    # ── 3. Font dict TrueType ────────────────────────────────────────────────
-    widths_str = " ".join(str(w) for w in font_info.widths)
+def _register_helv_font(pdf: fitz.Document) -> str:
+    """Registra Helvetica como fuente estándar Type1 en AcroForm /DR/Font."""
     fo_xref = pdf.get_new_xref()
     pdf.update_object(fo_xref, (
-        f"<</Type/Font/Subtype/TrueType/BaseFont/CaslonAntique"
-        f"/Encoding/WinAnsiEncoding/FirstChar 32/LastChar 255"
-        f"/Widths[{widths_str}]/FontDescriptor {fd_xref} 0 R>>"
+        "<</Type/Font/Subtype/Type1/BaseFont/Helvetica"
+        "/Encoding/WinAnsiEncoding>>"
     ))
+    if "Helvetica" not in pdf.FormFonts:
+        pdf._addFormFont("Helvetica", f"{fo_xref} 0 R")
+    return f"{fo_xref} 0 R"
 
-    # ── 4. Registrar en AcroForm /DR/Font ────────────────────────────────────
-    if "CaslonAntique" not in pdf.FormFonts:
-        pdf._addFormFont("CaslonAntique", f"{fo_xref} 0 R")
 
+def _register_helv_bold_font(pdf: fitz.Document) -> str:
+    """Registra Helvetica-Bold como fuente estándar Type1 en AcroForm /DR/Font."""
+    fo_xref = pdf.get_new_xref()
+    pdf.update_object(fo_xref, (
+        "<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold"
+        "/Encoding/WinAnsiEncoding>>"
+    ))
+    if "Helvetica-Bold" not in pdf.FormFonts:
+        pdf._addFormFont("Helvetica-Bold", f"{fo_xref} 0 R")
     return f"{fo_xref} 0 R"
 
 
 # ---------------------------------------------------------------------------
-# Constructores de AP streams con CaslonAntique
+# Constructores de AP streams con Helvetica
 # ---------------------------------------------------------------------------
 
 def _make_xobject(pdf: fitz.Document, content: bytes,
@@ -1094,7 +1346,7 @@ def _make_xobject(pdf: fitz.Document, content: bytes,
     """
     Empaqueta bytes de contenido PDF en un Form XObject (AP stream).
     Devuelve el xref del objeto creado.
-    El /Resources referencia solo CaslonAntique — auto-contenido.
+    El /Resources referencia solo Helvetica — auto-contenido.
     """
     ap_xref = pdf.get_new_xref()
     pdf.update_object(ap_xref, "<<>>")   # inicializar como dict antes de añadir stream
@@ -1105,7 +1357,7 @@ def _make_xobject(pdf: fitz.Document, content: bytes,
     pdf.xref_set_key(ap_xref, "BBox",      f"[0 0 {w:.3f} {h:.3f}]")
     pdf.xref_set_key(ap_xref, "Matrix",    "[1 0 0 1 0 0]")
     pdf.xref_set_key(ap_xref, "Resources",
-        f"<</Font<</CaslonAntique {font_ref}>>/ProcSet[/PDF/Text]>>")
+        f"<</Font<</Helvetica {font_ref}>>/ProcSet[/PDF/Text]>>")
     return ap_xref
 
 
@@ -1113,7 +1365,7 @@ def _make_text_ap_xobj(pdf: fitz.Document, font_ref: str, font_info: FontInfo,
                        text: str, fsize: int, align: int,
                        w: float, h: float) -> int:
     """
-    Form XObject de una línea con CaslonAntique.
+    Form XObject de una línea con Helvetica.
     Shrink-to-fit si el texto es más ancho que el campo (mínimo 4pt).
     align: 0=izquierda, 1=centrado.
     """
@@ -1133,7 +1385,7 @@ def _make_text_ap_xobj(pdf: fitz.Document, font_ref: str, font_info: FontInfo,
 
     content = (
         b"q\nBT\n"
-        + f"/CaslonAntique {fs:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+        + f"/Helvetica {fs:.2f} Tf\n0 0 0 rg\n".encode("ascii")
         + f"{x_start:.3f} {y_base:.3f} Td\n(".encode("ascii")
         + _pdf_escape(text)
         + b") Tj\nET\nQ\n"
@@ -1145,7 +1397,7 @@ def _make_multiline_ap_xobj(pdf: fitz.Document, font_ref: str, font_info: FontIn
                              text: str, fsize: int,
                              w: float, h: float) -> int:
     """
-    Form XObject multilínea con word-wrap y CaslonAntique.
+    Form XObject multilínea con word-wrap y Helvetica.
     Alineación izquierda, anclado arriba. Leading = fsize × 1.2.
     """
     MARGIN_X = 2.0
@@ -1169,7 +1421,7 @@ def _make_multiline_ap_xobj(pdf: fitz.Document, font_ref: str, font_info: FontIn
 
     y_start = h - MARGIN_Y - asc_pts
     buf  = b"q\nBT\n"
-    buf += f"/CaslonAntique {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+    buf += f"/Helvetica {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
     buf += f"{leading:.2f} TL\n{MARGIN_X:.2f} {y_start:.3f} Td\n".encode("ascii")
     for i, line in enumerate(render_lines):
         if y_start - i * leading < MARGIN_Y:
@@ -1179,6 +1431,92 @@ def _make_multiline_ap_xobj(pdf: fitz.Document, font_ref: str, font_info: FontIn
         buf += b"(" + _pdf_escape(line) + b") Tj\n"
     buf += b"ET\nQ\n"
     return _make_xobject(pdf, buf, font_ref, w, h)
+
+
+def _make_mixed_feature_ap_xobj(
+    pdf: "fitz.Document",
+    font_ref: str, font_ref_bold: str,
+    font_info: "FontInfo", font_info_bold: "FontInfo",
+    text: str, fsize: int,
+    w: float, h: float,
+) -> int:
+    """
+    AP stream donde cada habilidad se renderiza con su nombre en Helvetica-Bold
+    y su descripción en Helvetica normal.
+    Las habilidades están separadas por '\n\n' y cada una tiene formato '*título*: descripción'.
+    """
+    MARGIN_X = 2.0
+    MARGIN_Y = 2.0
+    avail_w  = max(1.0, w - 2 * MARGIN_X)
+    leading  = fsize * 1.2
+    asc_pts  = font_info.ascent_pts(fsize)
+
+    # Dividir en habilidades individuales (separadas por \n\n)
+    features = [f.strip() for f in text.split("\n\n") if f.strip()]
+
+    # Lista de (línea, es_negrita)
+    render_lines: list[tuple[str, bool]] = []
+
+    for idx, feature in enumerate(features):
+        # Añadir línea en blanco entre habilidades (excepto antes de la primera)
+        if idx > 0:
+            render_lines.append(("", False))
+
+        # Buscar patrón *título*: descripción
+        if feature.startswith("*"):
+            # Encontrar el cierre del asterisco
+            close_idx = feature.find("*: ")
+            if close_idx > 0:
+                title = feature[1:close_idx]  # Sin los asteriscos
+                desc = feature[close_idx + 3:]  # Después de "*: "
+
+                # Título en negrita (sin los asteriscos en el renderizado)
+                if title:
+                    for ln in _wrap_text_to_lines(title + ":", fsize, avail_w, font_info_bold):
+                        render_lines.append((ln, True))
+
+                # Descripción en texto normal
+                if desc:
+                    for ln in _wrap_text_to_lines(desc, fsize, avail_w, font_info):
+                        render_lines.append((ln, False))
+            else:
+                # No tiene el formato esperado, renderizar todo en normal
+                for ln in _wrap_text_to_lines(feature, fsize, avail_w, font_info):
+                    render_lines.append((ln, False))
+        else:
+            # No empieza con asterisco, renderizar todo en normal
+            for ln in _wrap_text_to_lines(feature, fsize, avail_w, font_info):
+                render_lines.append((ln, False))
+
+    y_start      = h - MARGIN_Y - asc_pts
+    buf          = b"q\nBT\n"
+    buf         += f"{leading:.2f} TL\n{MARGIN_X:.2f} {y_start:.3f} Td\n".encode("ascii")
+    current_bold = None
+
+    for i, (line, is_bold) in enumerate(render_lines):
+        if y_start - i * leading < MARGIN_Y:
+            break
+        if current_bold != is_bold:
+            font_name    = "Helvetica-Bold" if is_bold else "Helvetica"
+            buf         += f"/{font_name} {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+            current_bold = is_bold
+        if i > 0:
+            buf += b"T*\n"
+        buf += b"(" + _pdf_escape(line) + b") Tj\n"
+    buf += b"ET\nQ\n"
+
+    ap_xref = pdf.get_new_xref()
+    pdf.update_object(ap_xref, "<<>>")
+    pdf.update_stream(ap_xref, buf, new=True)
+    pdf.xref_set_key(ap_xref, "Type",     "/XObject")
+    pdf.xref_set_key(ap_xref, "Subtype",  "/Form")
+    pdf.xref_set_key(ap_xref, "FormType", "1")
+    pdf.xref_set_key(ap_xref, "BBox",     f"[0 0 {w:.3f} {h:.3f}]")
+    pdf.xref_set_key(ap_xref, "Matrix",   "[1 0 0 1 0 0]")
+    pdf.xref_set_key(ap_xref, "Resources",
+        f"<</Font<</Helvetica {font_ref}/Helvetica-Bold {font_ref_bold}>>"
+        f"/ProcSet[/PDF/Text]>>")
+    return ap_xref
 
 
 # ---------------------------------------------------------------------------
@@ -1277,9 +1615,9 @@ def _render_verify(doc: fitz.Document, output_path: Path) -> list[str]:
     """
     Genera 4 capturas PNG a 2.5× zoom de áreas clave del PDF generado.
     Permite verificar visualmente:
-      verify2_name.png        — Nombre/Clase/Especie en CaslonAntique
+      verify2_name.png        — Nombre/Clase/Especie en Helvetica
       verify2_proficiency.png — Habilidades + círculos teal preservados
-      verify2_features.png    — Rasgos de clase (texto multilínea CaslonAntique)
+      verify2_features.png    — Rasgos de clase (texto multilínea Helvetica)
       verify2_spells.png      — Espacios de conjuro (círculo azul + "1")
     """
     out_dir = output_path.parent
@@ -1313,9 +1651,9 @@ def generate(
     verify:        bool = False,
 ) -> None:
     """
-    Genera el PDF rellenando campos con CaslonAntique, preservando AP originales.
+    Genera el PDF rellenando campos con Helvetica, preservando AP originales.
 
-    Campos de texto    → AP manual CaslonAntique + /DA CaslonAntique (editable)
+    Campos de texto    → AP manual Helvetica + /DA Helvetica (editable)
     CheckBox           → /V y /AS directos, SIN tocar el AP original (teal, ZaDb)
     Espacios conjuro   → _set_spell_slot_value (Helv, preserva fondo azul)
     Stamps ☆ y sin mapeo → conservados intactos desde la plantilla
@@ -1324,12 +1662,6 @@ def generate(
         raise FileNotFoundError(f"JSON no encontrado: {json_path}")
     if not template_path.exists():
         raise FileNotFoundError(f"Plantilla PDF no encontrada: {template_path}")
-    if not FONT_PATH.exists():
-        raise FileNotFoundError(
-            f"Fuente no encontrada: {FONT_PATH}. "
-            "Coloca CaslonAntique-Regular.ttf en la carpeta fonts/ o configura DND_FONT_TTF."
-        )
-
     with open(json_path, encoding="utf-8") as f:
         data = json.load(f)
     if not data.get("proficiency_bonus"):
@@ -1353,11 +1685,14 @@ def generate(
     if not last.get_text().strip() and not list(last.widgets()):
         out.delete_page(-1)
 
-    # Inyectar CaslonAntique en AcroForm /DR/Font
-    font_ref = _embed_caslon_fitz(out, font_info)
+    font_ref      = _register_helv_font(out)
+    font_info_bold: FontInfo = FontInfo.load_bold()
+    font_ref_bold:  str     = _register_helv_bold_font(out)
 
     # Corregir 7 checkboxes ZaDb sin color teal en la plantilla
     _patch_checkbox_ap_color(out)
+
+    continuous_field_values = _compute_continuous_field_values(data, out, font_info)
 
     counters = {"total": 0, "filled": 0, "no_map": 0, "skipped": 0}
 
@@ -1389,7 +1724,9 @@ def generate(
             if widget.rect.width < 1 or widget.rect.height < 1:
                 counters["skipped"] += 1
                 continue
-            if field_name in field_map:
+            if field_name in continuous_field_values:
+                value = continuous_field_values[field_name]
+            elif field_name in field_map:
                 value = field_map[field_name]
             else:
                 value = canonical_field_map.get(_canonical_name(field_name))
@@ -1399,25 +1736,29 @@ def generate(
 
             # ── CheckBox: preservar AP original ─────────────────────────────
             if field_type == "CheckBox":
-                if value:
-                    on_state = _checkbox_on_state(out, widget.xref)
-                    v_val, as_val = f"/{on_state}", f"/{on_state}"
-                else:
-                    v_val, as_val = "/Off", "/Off"
-                out.xref_set_key(widget.xref, "V",  v_val)
-                out.xref_set_key(widget.xref, "AS", as_val)
-                # Propagar al nodo padre en el árbol AcroForm.
-                # Algunos checkboxes son widgets-hijo que heredan /FT del padre:
-                # si solo actualizamos el hijo, los visores leen el estado /V del
-                # padre (que sigue en /Off) y necesitan dos clics para sincronizar.
-                try:
-                    _, parent_ref = out.xref_get_key(widget.xref, "Parent")
-                    if parent_ref not in ("null", ""):
-                        parent_xref = int(parent_ref.split()[0])
-                        out.xref_set_key(parent_xref, "V",  v_val)
-                        out.xref_set_key(parent_xref, "AS", as_val)
-                except Exception:
-                    pass
+                # Los checkboxes de salvación contra muerte son independientes y no deben
+                # modificarse para preservar su comportamiento nativo interactivo.
+                is_death_save = "Salvacion-Muerte" in field_name
+                
+                if not is_death_save:
+                    if value:
+                        on_state = _checkbox_on_state(out, widget.xref)
+                        v_val, as_val = f"/{on_state}", f"/{on_state}"
+                    else:
+                        v_val, as_val = "/Off", "/Off"
+                    out.xref_set_key(widget.xref, "V",  v_val)
+                    out.xref_set_key(widget.xref, "AS", as_val)
+                    # Propagar al nodo padre para checkboxes de radio (exclusivos)
+                    try:
+                        _, parent_ref = out.xref_get_key(widget.xref, "Parent")
+                        if parent_ref not in ("null", ""):
+                            parent_xref = int(parent_ref.split()[0])
+                            out.xref_set_key(parent_xref, "V",  v_val)
+                            out.xref_set_key(parent_xref, "AS", as_val)
+                    except Exception:
+                        pass
+                # Para checkboxes de salvación contra muerte: no modificar nada,
+                # preservar el comportamiento nativo del template
                 counters["filled"] += 1
                 continue
 
@@ -1434,7 +1775,7 @@ def generate(
                 counters["filled"] += 1
                 continue
 
-            # ── Campo de texto: AP manual con CaslonAntique ─────────────────
+            # ── Campo de texto: AP manual con Helvetica ─────────────────────
             fsize = _field_size(field_name)
             align = _align(field_name)
             r     = widget.rect
@@ -1448,7 +1789,15 @@ def generate(
                 ff_val = 0
             is_multiline = bool(ff_val & 4096) or "\n" in text
 
-            if is_multiline:
+            # Campos con formato especial de título + descripción (Rich Text)
+            rich_text_fields = {"Rasgos", "Dotes"}
+            is_rich_text_field = field_name in rich_text_fields
+            if is_rich_text_field and "\n" in text and font_info_bold and font_ref_bold:
+                ap_xref = _make_mixed_feature_ap_xobj(
+                    out, font_ref, font_ref_bold,
+                    font_info, font_info_bold,
+                    text, fsize, rw, rh)
+            elif is_multiline:
                 ap_xref = _make_multiline_ap_xobj(
                     out, font_ref, font_info, text, fsize, rw, rh)
             else:
@@ -1457,7 +1806,7 @@ def generate(
 
             # Adjuntar AP + /DA (para editabilidad) + /V (valor del campo)
             out.xref_set_key(widget.xref, "AP", f"<</N {ap_xref} 0 R>>")
-            out.xref_set_key(widget.xref, "DA", f"(/CaslonAntique {fsize} Tf 0 g)")
+            out.xref_set_key(widget.xref, "DA", f"(/Helvetica {fsize} Tf 0 g)")
             out.xref_set_key(widget.xref, "V",  _pdf_str_value(text))
 
             counters["filled"] += 1
@@ -1489,12 +1838,61 @@ def generate(
 
 
 # ---------------------------------------------------------------------------
+# Cálculo de límites de campos para el editor web
+# ---------------------------------------------------------------------------
+
+def compute_field_limits(template_path: Path, font_path: Path) -> dict:
+    """
+    Calcula límites aproximados de caracteres por sección del PDF.
+    Utilizado por el editor web para mostrar indicadores en tiempo real.
+    Devuelve un dict: {clave_sección: total_caracteres, ...}
+    """
+    font_info = FontInfo.load(font_path)
+
+    # Muestra equilibrada para estimar ancho promedio de carácter
+    SAMPLE = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ,.;'\"!?"
+
+    def _cap(field_name: str, width: float, height: float) -> int:
+        fsize   = _field_size(field_name)
+        n_lines = _multiline_capacity_lines(font_info, fsize, height)
+        avail_w = max(1.0, width - 4.0)
+        avg_w   = font_info.string_width(SAMPLE, fsize) / len(SAMPLE)
+        cpl     = max(1, int(avail_w / avg_w))
+        return n_lines * cpl
+
+    pdf = fitz.open(str(template_path))
+    layout_by_field: dict[str, tuple[float, float]] = {}
+    for page in pdf:
+        for widget in page.widgets():
+            if widget.field_type_string in {"CheckBox", "Button"}:
+                continue
+            rect = widget.rect
+            if rect.width >= 1 and rect.height >= 1:
+                layout_by_field[widget.field_name] = (rect.width, rect.height)
+    pdf.close()
+
+    limits: dict[str, int] = {}
+
+    # Bloques continuos: suma de capacidad de todos sus campos
+    for spec in CONTINUOUS_BLOCK_SPECS:
+        total = sum(
+            _cap(fn, *layout_by_field[fn])
+            for fn in spec.field_names
+            if fn in layout_by_field
+        )
+        if total > 0:
+            limits[spec.key] = total
+
+    return limits
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Genera PDF D&D 2024 — CaslonAntique + AP originales preservados."
+        description="Genera PDF D&D 2024 — Helvetica + AP originales preservados."
     )
     parser.add_argument("json",   nargs="?", type=Path, default=DEFAULT_JSON,
                         help=f"JSON del personaje (default: {DEFAULT_JSON.name})")

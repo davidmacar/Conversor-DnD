@@ -20,7 +20,7 @@ RUN pip install --upgrade pip \
 
 COPY . /app
 
-RUN useradd --create-home --uid 10001 appuser \
+RUN useradd --create-home --uid 1000 appuser \
     && chown -R appuser:appuser /app
 
 USER appuser
