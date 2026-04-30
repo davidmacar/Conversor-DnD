@@ -1454,13 +1454,14 @@ def _make_mixed_feature_ap_xobj(
     # Dividir en habilidades individuales (separadas por \n\n)
     features = [f.strip() for f in text.split("\n\n") if f.strip()]
 
-    # Lista de (línea, es_negrita)
-    render_lines: list[tuple[str, bool]] = []
+    # Lista de (línea, es_negrita, ancho_titulo_mixed)
+    # ancho_titulo_mixed es el ancho del título en puntos cuando es_negrita="mixed"
+    render_lines: list[tuple[str, bool | str, float | None]] = []
 
     for idx, feature in enumerate(features):
         # Añadir línea en blanco entre habilidades (excepto antes de la primera)
         if idx > 0:
-            render_lines.append(("", False))
+            render_lines.append(("", False, None))
 
         # Buscar patrón *título*: descripción
         if feature.startswith("*"):
@@ -1470,39 +1471,95 @@ def _make_mixed_feature_ap_xobj(
                 title = feature[1:close_idx]  # Sin los asteriscos
                 desc = feature[close_idx + 3:]  # Después de "*: "
 
-                # Título en negrita (sin los asteriscos en el renderizado)
-                if title:
+                if title and desc:
+                    # Intentar poner título y descripción en la misma línea
+                    title_with_colon = title + ": "
+                    title_width = font_info_bold.string_width(title_with_colon, fsize)
+                    
+                    # Calcular cuánto espacio queda para la descripción en la primera línea
+                    remaining_width = avail_w - title_width
+                    
+                    # Buscar palabras de la descripción que quepan en el espacio restante
+                    desc_words = desc.split()
+                    first_line_desc = ""
+                    for word in desc_words:
+                        candidate = (first_line_desc + " " + word).strip() if first_line_desc else word
+                        if font_info.string_width(candidate, fsize) <= remaining_width:
+                            first_line_desc = candidate
+                        else:
+                            break
+                    
+                    if first_line_desc:
+                        # Título y primera parte de descripción en la misma línea
+                        render_lines.append((title_with_colon + first_line_desc, "mixed", title_width))
+                        # Resto de la descripción en líneas siguientes
+                        remaining_desc = desc[len(first_line_desc):].strip()
+                        if remaining_desc:
+                            for ln in _wrap_text_to_lines(remaining_desc, fsize, avail_w, font_info):
+                                render_lines.append((ln, False, None))
+                    else:
+                        # No cabe nada de la descripción, título solo en su línea
+                        for ln in _wrap_text_to_lines(title_with_colon, fsize, avail_w, font_info_bold):
+                            render_lines.append((ln, True, None))
+                        for ln in _wrap_text_to_lines(desc, fsize, avail_w, font_info):
+                            render_lines.append((ln, False, None))
+                elif title:
+                    # Solo título, sin descripción
                     for ln in _wrap_text_to_lines(title + ":", fsize, avail_w, font_info_bold):
-                        render_lines.append((ln, True))
-
-                # Descripción en texto normal
-                if desc:
+                        render_lines.append((ln, True, None))
+                elif desc:
+                    # Solo descripción, sin título
                     for ln in _wrap_text_to_lines(desc, fsize, avail_w, font_info):
-                        render_lines.append((ln, False))
+                        render_lines.append((ln, False, None))
             else:
                 # No tiene el formato esperado, renderizar todo en normal
                 for ln in _wrap_text_to_lines(feature, fsize, avail_w, font_info):
-                    render_lines.append((ln, False))
+                    render_lines.append((ln, False, None))
         else:
             # No empieza con asterisco, renderizar todo en normal
             for ln in _wrap_text_to_lines(feature, fsize, avail_w, font_info):
-                render_lines.append((ln, False))
+                render_lines.append((ln, False, None))
 
     y_start      = h - MARGIN_Y - asc_pts
     buf          = b"q\nBT\n"
     buf         += f"{leading:.2f} TL\n{MARGIN_X:.2f} {y_start:.3f} Td\n".encode("ascii")
     current_bold = None
 
-    for i, (line, is_bold) in enumerate(render_lines):
+    for i, (line, is_bold, title_width) in enumerate(render_lines):
         if y_start - i * leading < MARGIN_Y:
             break
-        if current_bold != is_bold:
-            font_name    = "Helvetica-Bold" if is_bold else "Helvetica"
-            buf         += f"/{font_name} {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
-            current_bold = is_bold
         if i > 0:
             buf += b"T*\n"
-        buf += b"(" + _pdf_escape(line) + b") Tj\n"
+        
+        if is_bold == "mixed" and title_width:
+            # Línea mixta: título en negrita + descripción en normal
+            # Encontrar dónde termina el título (después de ": ")
+            colon_idx = line.find(": ")
+            if colon_idx > 0:
+                title_part = line[:colon_idx + 2]  # Incluye ": "
+                desc_part = line[colon_idx + 2:]
+                
+                # Renderizar título en negrita
+                buf += f"/Helvetica-Bold {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+                buf += b"(" + _pdf_escape(title_part) + b") Tj\n"
+                
+                # Renderizar descripción en normal (sin salto de línea)
+                if desc_part:
+                    buf += f"/Helvetica {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+                    buf += b"(" + _pdf_escape(desc_part) + b") Tj\n"
+                current_bold = False
+            else:
+                # Fallback: renderizar todo en normal
+                buf += f"/Helvetica {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+                buf += b"(" + _pdf_escape(line) + b") Tj\n"
+                current_bold = False
+        else:
+            # Línea normal (solo negrita o solo normal)
+            if current_bold != is_bold:
+                font_name    = "Helvetica-Bold" if is_bold else "Helvetica"
+                buf         += f"/{font_name} {fsize:.2f} Tf\n0 0 0 rg\n".encode("ascii")
+                current_bold = is_bold
+            buf += b"(" + _pdf_escape(line) + b") Tj\n"
     buf += b"ET\nQ\n"
 
     ap_xref = pdf.get_new_xref()
