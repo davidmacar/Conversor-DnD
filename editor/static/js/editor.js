@@ -982,6 +982,16 @@ function characterEditor() {
         const speedDay = speedHour * 8.0;
         speed.hour_text = speedHour.toFixed(1);
         speed.day_text = speedDay.toFixed(1);
+
+        const strScore = this.character.ability_scores?.strength?.score || 10;
+        const strMod = this.modifier(strScore);
+        const METERS_PER_FOOT = 0.3048;
+        speed.swim_meters = walkingMeters;
+        speed.fly_meters = walkingMeters;
+        speed.climb_meters = walkingMeters;
+        speed.jump_long = Number((strScore * METERS_PER_FOOT).toFixed(1));
+        speed.jump_high = Number(((3 + strMod) * METERS_PER_FOOT).toFixed(1));
+
         speed.special_senses = this.mergeUniqueLines(
           ...(Array.isArray(speed.special_entries) ? speed.special_entries : []),
         );

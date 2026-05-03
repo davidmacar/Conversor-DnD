@@ -700,23 +700,23 @@
           </div>
           <div class="speed-cell">
             <label class="field-label">Nadando (m)</label>
-            <input type="number" x-model.number="character.combat.speed.swim_meters" min="0">
+            <input type="number" :value="character.combat.speed.swim_meters || 0" readonly>
           </div>
           <div class="speed-cell">
             <label class="field-label">Volando (m)</label>
-            <input type="number" x-model.number="character.combat.speed.fly_meters" min="0">
+            <input type="number" :value="character.combat.speed.fly_meters || 0" readonly>
           </div>
           <div class="speed-cell">
             <label class="field-label">Trepando (m)</label>
-            <input type="number" x-model.number="character.combat.speed.climb_meters" min="0">
+            <input type="number" :value="character.combat.speed.climb_meters || 0" readonly>
           </div>
           <div class="speed-cell">
             <label class="field-label">Salto Long. (m)</label>
-            <input type="number" x-model.number="character.combat.speed.jump_long" min="0">
+            <input type="number" :value="character.combat.speed.jump_long || 0" readonly>
           </div>
           <div class="speed-cell">
             <label class="field-label">Salto Alt. (m)</label>
-            <input type="number" x-model.number="character.combat.speed.jump_high" min="0">
+            <input type="number" :value="character.combat.speed.jump_high || 0" readonly>
           </div>
           <div class="speed-cell">
             <label class="field-label">Velocidad hora (km/h)</label>

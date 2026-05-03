@@ -114,7 +114,9 @@ MEDIUM: set[str] = {
     "Idiomas",
 } | {f"Total-Espacios-Conjuro.{i}" for i in range(1, 10)}
 
-# Campos de trasfondo y datos del personaje — tamaño fijo 6pt
+# Campos de trasfondo y datos del personaje — tamaño fijo e INMUTABLE de 6pt.
+# Estos campos NUNCA deben usar otro tamaño; si se añaden campos nuevos de
+# trasfondo/apariencia/notas, deben incluirse aquí para forzar 6pt.
 SIZE_6PT: set[str] = (
     {f"Dato-Personaje.Rasgo-Personalidad-{i}" for i in range(1, 4)} |
     {f"Dato-Personaje.Ideal-{i}" for i in range(1, 4)} |
