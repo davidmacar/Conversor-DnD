@@ -336,8 +336,14 @@
       </div>
 
       <!-- Apariencia Física -->
-      <div class="dnd-card">
-        <div class="dnd-card-header">Apariencia Física</div>
+      <div class="dnd-card" :class="isOverLimit('appearance') ? 'card-over-limit' : ''">
+        <div class="dnd-card-header">
+          Apariencia Física
+          <span class="char-counter header-counter" :class="isOverLimit('appearance') ? 'over-limit' : ''"
+                x-show="fieldLimits.appearance">
+            <span x-text="sectionCharCount('appearance')"></span>/<span x-text="fieldLimits.appearance"></span>
+          </span>
+        </div>
         <div class="field-row-4">
           <div class="field-group">
             <label class="field-label">Edad</label>
@@ -401,32 +407,58 @@
           <label class="field-label">Alineamiento</label>
           <input type="text" x-model="character.basic_info.alignment" style="max-width:220px">
         </div>
-        <div class="field-group">
-          <label class="field-label field-label-unified">Rasgos de Personalidad</label>
-          <textarea x-model="character.background_details.personality_traits" rows="3" class="notes-textarea"></textarea>
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label field-label-unified">Rasgos de Personalidad</label>
+            <textarea x-model="character.background_details.personality_traits" rows="3"
+                      :class="['notes-textarea', isOverLimit('personality') ? 'textarea-over-limit' : '']"></textarea>
+            <div class="char-counter" :class="isOverLimit('personality') ? 'over-limit' : ''" x-show="fieldLimits.personality">
+              <span x-text="sectionCharCount('personality')"></span>/<span x-text="fieldLimits.personality"></span>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label field-label-unified">Defectos</label>
+            <textarea x-model="character.background_details.flaws" rows="3"
+                      :class="['notes-textarea', isOverLimit('flaws') ? 'textarea-over-limit' : '']"></textarea>
+            <div class="char-counter" :class="isOverLimit('flaws') ? 'over-limit' : ''" x-show="fieldLimits.flaws">
+              <span x-text="sectionCharCount('flaws')"></span>/<span x-text="fieldLimits.flaws"></span>
+            </div>
+          </div>
         </div>
         <div class="field-row-2">
           <div class="field-group">
             <label class="field-label field-label-unified">Ideales</label>
-            <textarea x-model="character.background_details.ideals" rows="3" class="notes-textarea"></textarea>
+            <textarea x-model="character.background_details.ideals" rows="3"
+                      :class="['notes-textarea', isOverLimit('ideals') ? 'textarea-over-limit' : '']"></textarea>
+            <div class="char-counter" :class="isOverLimit('ideals') ? 'over-limit' : ''" x-show="fieldLimits.ideals">
+              <span x-text="sectionCharCount('ideals')"></span>/<span x-text="fieldLimits.ideals"></span>
+            </div>
           </div>
           <div class="field-group">
             <label class="field-label field-label-unified">Vínculos</label>
-            <textarea x-model="character.background_details.bonds" rows="3" class="notes-textarea"></textarea>
+            <textarea x-model="character.background_details.bonds" rows="3"
+                      :class="['notes-textarea', isOverLimit('bonds') ? 'textarea-over-limit' : '']"></textarea>
+            <div class="char-counter" :class="isOverLimit('bonds') ? 'over-limit' : ''" x-show="fieldLimits.bonds">
+              <span x-text="sectionCharCount('bonds')"></span>/<span x-text="fieldLimits.bonds"></span>
+            </div>
           </div>
-        </div>
-        <div class="field-group">
-          <label class="field-label field-label-unified">Defectos</label>
-          <textarea x-model="character.background_details.flaws" rows="3" class="notes-textarea"></textarea>
         </div>
         <div class="field-row-2">
           <div class="field-group">
             <label class="field-label field-label-unified">Amigos y Aliados</label>
-            <textarea x-model="character.notes.allies" rows="3" class="notes-textarea"></textarea>
+            <textarea x-model="character.notes.allies" rows="3"
+                      :class="['notes-textarea', isOverLimit('allies') ? 'textarea-over-limit' : '']"></textarea>
+            <div class="char-counter" :class="isOverLimit('allies') ? 'over-limit' : ''" x-show="fieldLimits.allies">
+              <span x-text="sectionCharCount('allies')"></span>/<span x-text="fieldLimits.allies"></span>
+            </div>
           </div>
           <div class="field-group">
             <label class="field-label field-label-unified">Enemigos</label>
-            <textarea x-model="character.notes.enemies" rows="3" class="notes-textarea"></textarea>
+            <textarea x-model="character.notes.enemies" rows="3"
+                      :class="['notes-textarea', isOverLimit('enemies') ? 'textarea-over-limit' : '']"></textarea>
+            <div class="char-counter" :class="isOverLimit('enemies') ? 'over-limit' : ''" x-show="fieldLimits.enemies">
+              <span x-text="sectionCharCount('enemies')"></span>/<span x-text="fieldLimits.enemies"></span>
+            </div>
           </div>
         </div>
         <div class="field-group">
@@ -434,7 +466,7 @@
           <textarea x-model="character.notes.backstory" rows="5"
                     :class="['notes-textarea', isOverLimit('backstory') ? 'textarea-over-limit' : '']"></textarea>
           <div class="char-counter" :class="isOverLimit('backstory') ? 'over-limit' : ''" x-show="fieldLimits.backstory">
-            <span x-text="sectionCharCount('backstory')"></span> / <span x-text="fieldLimits.backstory"></span>
+            <span x-text="sectionCharCount('backstory')"></span>/<span x-text="fieldLimits.backstory"></span>
           </div>
         </div>
       </div>
@@ -998,33 +1030,13 @@
         <div class="section-title">✦ Otras Habilidades ✦</div>
       </div>
 
-      <div class="dnd-card">
-        <div class="dnd-card-header">
-          Dotes
-          <span class="char-counter header-counter" :class="isOverLimit('feats') ? 'over-limit' : ''"
-                x-show="fieldLimits.feats">
-            <span x-text="sectionCharCount('feats')"></span>/<span x-text="fieldLimits.feats"></span>
-          </span>
-          <button class="btn-add-small ml-auto" @click="addFeature('feats')">+ Dote</button>
-        </div>
-        <div class="feature-sections-grid">
-          <template x-for="(feat, i) in character.features_and_traits.feats" :key="i">
-            <div class="feature-block" :class="featOverLimit(i) ? 'feature-block--over-limit' : ''">
-              <div class="feature-header-row">
-                <input type="text" x-model="feat.name" placeholder="Nombre" class="feat-name">
-                <button class="btn-remove" @click="removeFeature('feats', i)">×</button>
-              </div>
-              <textarea x-model="feat.description" placeholder="Descripción..." rows="2"
-                        :class="['notes-textarea', featOverLimit(i) ? 'textarea-over-limit' : '']"></textarea>
-            </div>
-          </template>
-          <div class="empty-state" x-show="!character.features_and_traits.feats?.length">Sin dotes</div>
-        </div>
-      </div>
-
-      <div class="dnd-card">
+      <div class="dnd-card" :class="isOverLimit('combined_class_species') ? 'card-over-limit' : ''">
         <div class="dnd-card-header">
           Rasgos de Especie
+          <span class="char-counter header-counter" :class="isOverLimit('combined_class_species') ? 'over-limit' : ''"
+                x-show="fieldLimits.combined_class_species">
+            <span x-text="sectionCharCount('combined_class_species')"></span>/<span x-text="fieldLimits.combined_class_species"></span>
+          </span>
           <button class="btn-add-small ml-auto" @click="addFeature('species')">+ Rasgo</button>
         </div>
         <div class="feature-sections-grid">
@@ -1043,41 +1055,68 @@
         </div>
       </div>
 
-      <div class="dnd-card">
+      <div class="dnd-card" :class="isOverLimit('combined_class_species') ? 'card-over-limit' : ''">
         <div class="dnd-card-header">
           Rasgos de Clase
-          <span class="char-counter header-counter" :class="isOverLimit('class_features') ? 'over-limit' : ''"
-                x-show="fieldLimits.class_features">
-            <span x-text="sectionCharCount('class_features')"></span>/<span x-text="fieldLimits.class_features"></span>
+          <span class="char-counter header-counter" :class="isOverLimit('combined_class_species') ? 'over-limit' : ''"
+                x-show="fieldLimits.combined_class_species">
+            <span x-text="sectionCharCount('combined_class_species')"></span>/<span x-text="fieldLimits.combined_class_species"></span>
           </span>
           <button class="btn-add-small ml-auto" @click="addFeature('class_features')">+ Rasgo</button>
         </div>
         <div class="feature-sections-grid">
           <template x-for="(ft, i) in character.features_and_traits.class_features" :key="i">
-            <div class="feature-block" :class="classFeatureOverLimit(i) ? 'feature-block--over-limit' : ''">
+            <div class="feature-block">
               <div class="feature-header-row feature-header-row--with-source">
                 <input type="text" x-model="ft.name" placeholder="Nombre" class="feat-name">
                 <input type="text" x-model="ft.source" placeholder="Fuente" class="feat-source-input">
                 <button class="btn-remove" @click="removeFeature('class_features', i)">×</button>
               </div>
               <textarea x-model="ft.description" placeholder="Descripción..." rows="2"
-                        :class="['notes-textarea', classFeatureOverLimit(i) ? 'textarea-over-limit' : '']"></textarea>
+                        class="notes-textarea"></textarea>
             </div>
           </template>
           <div class="empty-state" x-show="!character.features_and_traits.class_features?.length">Sin rasgos de clase</div>
         </div>
       </div>
 
-      <div class="dnd-card">
-        <div class="dnd-card-header">Notas</div>
+      <div class="dnd-card" :class="isOverLimit('feats') ? 'card-over-limit' : ''">
+        <div class="dnd-card-header">
+          Dotes
+          <span class="char-counter header-counter" :class="isOverLimit('feats') ? 'over-limit' : ''"
+                x-show="fieldLimits.feats">
+            <span x-text="sectionCharCount('feats')"></span>/<span x-text="fieldLimits.feats"></span>
+          </span>
+          <button class="btn-add-small ml-auto" @click="addFeature('feats')">+ Dote</button>
+        </div>
+        <div class="feature-sections-grid">
+          <template x-for="(feat, i) in character.features_and_traits.feats" :key="i">
+            <div class="feature-block">
+              <div class="feature-header-row">
+                <input type="text" x-model="feat.name" placeholder="Nombre" class="feat-name">
+                <button class="btn-remove" @click="removeFeature('feats', i)">×</button>
+              </div>
+              <textarea x-model="feat.description" placeholder="Descripción..." rows="2"
+                        class="notes-textarea"></textarea>
+            </div>
+          </template>
+          <div class="empty-state" x-show="!character.features_and_traits.feats?.length">Sin dotes</div>
+        </div>
+      </div>
+
+      <div class="dnd-card" :class="isOverLimit('notes') ? 'card-over-limit' : ''">
+        <div class="dnd-card-header">
+          Notas
+          <span class="char-counter header-counter" :class="isOverLimit('notes') ? 'over-limit' : ''"
+                x-show="fieldLimits.notes">
+            <span x-text="sectionCharCount('notes')"></span>/<span x-text="fieldLimits.notes"></span>
+          </span>
+        </div>
         <div class="field-group">
           <label class="field-label">Notas Adicionales</label>
           <textarea x-model="character.notes.general" rows="6"
                     :class="['notes-textarea', isOverLimit('notes') ? 'textarea-over-limit' : '']"
                     placeholder="Apuntes varios, efectos activos, recordatorios…"></textarea>
-          <div class="char-counter" :class="isOverLimit('notes') ? 'over-limit' : ''" x-show="fieldLimits.notes">
-            <span x-text="sectionCharCount('notes')"></span> / <span x-text="fieldLimits.notes"></span>
-          </div>
         </div>
       </div>
     </section>

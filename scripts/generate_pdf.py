@@ -251,17 +251,6 @@ class FieldLayout:
     is_multiline: bool
 
 
-class PdfCapacityError(RuntimeError):
-    def __init__(self, section: str, field_names: list[str], detail: str = "") -> None:
-        message = f"El apartado '{section}' supera la capacidad disponible en el PDF."
-        if detail:
-            message = f"{message} {detail}"
-        super().__init__(message)
-        self.section = section
-        self.field_names = field_names
-        self.detail = detail
-
-
 CONTINUOUS_BLOCK_SPECS: list[ContinuousBlockSpec] = [
     ContinuousBlockSpec("appearance", "Apariencia", [f"Dato-Personaje.Apariencia-{i}" for i in range(1, 4)]),
     ContinuousBlockSpec("personality", "Rasgo de personalidad", [f"Dato-Personaje.Rasgo-Personalidad-{i}" for i in range(1, 4)]),
@@ -629,8 +618,6 @@ def _compute_continuous_field_values(
             assigned_values[field_name] = ""
 
         if not available_layouts:
-            if remaining:
-                raise PdfCapacityError(spec.label, spec.field_names, "No se encontraron campos de destino en la plantilla.")
             continue
 
         for layout in available_layouts:
@@ -641,15 +628,6 @@ def _compute_continuous_field_values(
             else:
                 chunk, remaining = _consume_singleline_text(remaining, layout, font_info)
             assigned_values[layout.field_name] = chunk
-
-        if remaining:
-            preview = remaining[:120]
-            ellipsis = "..." if len(remaining) > 120 else ""
-            raise PdfCapacityError(
-                spec.label,
-                spec.field_names,
-                f"Texto sobrante: '{preview}{ellipsis}'",
-            )
 
     return assigned_values
 
@@ -1916,49 +1894,19 @@ def generate(
 # Cálculo de límites de campos para el editor web
 # ---------------------------------------------------------------------------
 
-def compute_field_limits(template_path: Path, font_path: Path) -> dict:
-    """
-    Calcula límites aproximados de caracteres por sección del PDF.
-    Utilizado por el editor web para mostrar indicadores en tiempo real.
-    Devuelve un dict: {clave_sección: total_caracteres, ...}
-    """
-    font_info = FontInfo.load(font_path)
-
-    # Muestra equilibrada para estimar ancho promedio de carácter
-    SAMPLE = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ,.;'\"!?"
-
-    def _cap(field_name: str, width: float, height: float) -> int:
-        fsize   = _field_size(field_name)
-        n_lines = _multiline_capacity_lines(font_info, fsize, height)
-        avail_w = max(1.0, width - 4.0)
-        avg_w   = font_info.string_width(SAMPLE, fsize) / len(SAMPLE)
-        cpl     = max(1, int(avail_w / avg_w))
-        return n_lines * cpl
-
-    pdf = fitz.open(str(template_path))
-    layout_by_field: dict[str, tuple[float, float]] = {}
-    for page in pdf:
-        for widget in page.widgets():
-            if widget.field_type_string in {"CheckBox", "Button"}:
-                continue
-            rect = widget.rect
-            if rect.width >= 1 and rect.height >= 1:
-                layout_by_field[widget.field_name] = (rect.width, rect.height)
-    pdf.close()
-
-    limits: dict[str, int] = {}
-
-    # Bloques continuos: suma de capacidad de todos sus campos
-    for spec in CONTINUOUS_BLOCK_SPECS:
-        total = sum(
-            _cap(fn, *layout_by_field[fn])
-            for fn in spec.field_names
-            if fn in layout_by_field
-        )
-        if total > 0:
-            limits[spec.key] = total
-
-    return limits
+FIELD_LIMITS: dict[str, int] = {
+    "appearance":       550,
+    "personality":      550,
+    "ideals":           550,
+    "bonds":            550,
+    "flaws":            550,
+    "allies":           550,
+    "enemies":          550,
+    "backstory":        1250,
+    "combined_class_species": 1450,
+    "feats":            1400,
+    "notes":            1500,
+}
 
 
 # ---------------------------------------------------------------------------

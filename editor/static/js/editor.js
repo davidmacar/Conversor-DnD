@@ -103,6 +103,13 @@ function characterEditor() {
       this.initScrollSpy();
       this.loadCharacterList();
       this.loadFieldLimits();
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+          e.preventDefault();
+          this.save();
+        }
+      });
     },
 
     async loadFieldLimits() {
@@ -120,24 +127,40 @@ function characterEditor() {
       const ft  = this.character?.features_and_traits || {};
       const bg  = this.character?.background_details  || {};
       const n   = this.character?.notes               || {};
+      const a   = this.character?.appearance          || {};
       switch (section) {
+        case 'appearance':
+          return (a.summary || '').length;
+        case 'personality':
+          return (bg.personality_traits || '').length;
+        case 'ideals':
+          return (bg.ideals || '').length;
+        case 'bonds':
+          return (bg.bonds || '').length;
+        case 'flaws':
+          return (bg.flaws || '').length;
+        case 'allies':
+          return (n.allies || '').length;
+        case 'enemies':
+          return (n.enemies || '').length;
+        case 'backstory':
+          return (n.backstory || '').length;
+        case 'combined_class_species':
+          const classTotal = (ft.class_features || []).reduce((acc, f) => {
+            const t = [f.name, f.description].filter(x => x?.trim()).join('\n');
+            return acc + t.length;
+          }, 0);
+          const speciesTotal = (ft.species || []).reduce((acc, f) => {
+            const t = [f.name, f.description].filter(x => x?.trim()).join('\n');
+            return acc + t.length;
+          }, 0);
+          return classTotal + speciesTotal;
         case 'feats':
           return (ft.feats || [])
             .map(f => [f.name, f.description].filter(x => x?.trim()).join('\n'))
             .filter(x => x).join('\n').length;
-        case 'class_features':
-          return (ft.class_features || []).reduce((acc, f) => {
-            const t = [f.name, f.description].filter(x => x?.trim()).join('\n');
-            return acc + t.length;
-          }, 0);
-        case 'backstory':
-          return (n.backstory || '').length;
         case 'notes':
           return (n.general || n.additional_notes || '').length;
-        case 'deity_domain':
-          return (bg.deities || []).map(d => d.name || '').filter(x => x).join(' / ').length;
-        case 'deity_description':
-          return (bg.deities || []).map(d => d.description || '').filter(x => x).join('\n').length;
         default: return 0;
       }
     },
@@ -146,24 +169,6 @@ function characterEditor() {
       const limit = this.fieldLimits[section];
       if (!limit) return false;
       return this.sectionCharCount(section) > limit;
-    },
-
-    classFeatureOverLimit(i) {
-      const limit = this.fieldLimits.class_features_per_entry;
-      if (!limit || !this.character?.features_and_traits?.class_features) return false;
-      const f = this.character.features_and_traits.class_features[i];
-      if (!f) return false;
-      const text = [f.name, f.description].filter(x => x?.trim()).join('\n');
-      return text.length > limit;
-    },
-
-    featOverLimit(i) {
-      const limit = this.fieldLimits.class_features_per_entry;
-      if (!limit || !this.character?.features_and_traits?.feats) return false;
-      const f = this.character.features_and_traits.feats[i];
-      if (!f) return false;
-      const text = [f.name, f.description].filter(x => x?.trim()).join('\n');
-      return text.length > limit;
     },
 
     normalizeCharacterPayload(rawData) {
@@ -518,11 +523,6 @@ function characterEditor() {
         this.character.appearance.summary,
         this.character.notes.physical_description,
       );
-      this.character.notes.backstory = this.mergeUniqueLines(
-        this.character.notes.backstory,
-        this.character.background_details.description,
-        this.character.notes.other_notes,
-      );
       this.character.notes.general = this.mergeUniqueLines(
         this.character.notes.general,
         this.character.notes.additional_notes,
@@ -531,6 +531,8 @@ function characterEditor() {
         this.character.inventory.currency.other_notes,
         this.character.inventory.other_possessions,
       );
+
+      this.character.notes.backstory ??= '';
 
       // Sync legacy keys to preserve compatibility on save/export.
       this.character.notes.physical_description = this.character.appearance.summary;
