@@ -336,13 +336,9 @@
       </div>
 
       <!-- Apariencia Física -->
-      <div class="dnd-card" :class="isOverLimit('appearance') ? 'card-over-limit' : ''">
+      <div class="dnd-card">
         <div class="dnd-card-header">
           Apariencia Física
-          <span class="char-counter header-counter" :class="isOverLimit('appearance') ? 'over-limit' : ''"
-                x-show="fieldLimits.appearance">
-            <span x-text="sectionCharCount('appearance')"></span>/<span x-text="fieldLimits.appearance"></span>
-          </span>
         </div>
         <div class="field-row-4">
           <div class="field-group">
@@ -381,8 +377,13 @@
           </div>
         </div>
         <div class="field-group">
-          <label class="field-label">Descripción / Resumen de apariencia</label>
-          <textarea x-model="character.appearance.summary" rows="2" class="notes-textarea"></textarea>
+          <label class="field-label">Descripción / Resumen de apariencia
+            <span class="char-counter" :class="isOverLimit('appearance') ? 'over-limit' : ''"
+                  x-show="fieldLimits.appearance">
+              <span x-text="sectionCharCount('appearance')"></span>/<span x-text="fieldLimits.appearance"></span>
+            </span>
+          </label>
+          <textarea x-model="character.appearance.summary" rows="2" class="notes-textarea" :class="isOverLimit('appearance') ? 'textarea-over-limit' : ''"></textarea>
         </div>
       </div>
 
