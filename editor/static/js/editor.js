@@ -67,6 +67,17 @@ function characterEditor() {
     importUrl: '',
     importing: false,
     importError: null,
+    // JSON Load
+    jsonLoadModal: false,
+    jsonLoadText: '',
+    jsonLoadFileName: '',
+    jsonLoadDragOver: false,
+    jsonLoadError: null,
+    jsonLoadLoading: false,
+    jsonLoadFileData: null,
+    // New character
+    newCharModal: false,
+    newCharFilename: '',
     // Export PDF
     exportingPdf: false,
     // Límites de campos PDF
@@ -597,6 +608,167 @@ function characterEditor() {
         this.showToast('Error al cargar: ' + e.message, 'error');
       }
       this.loading = false;
+    },
+
+    // ── New character ────────────────────────────────────────────────────────
+
+    confirmNewCharacter() {
+      this.newCharFilename = '';
+      this.newCharModal = true;
+    },
+
+    async createNewCharacter() {
+      try {
+        this.newCharModal = false;
+        this.currentFilename = this.newCharFilename.trim() || null;
+        this.character = this.buildEmptyCharacter();
+        this._ensureArrays();
+        this.activeSection = 'identidad';
+        this.activeSubsection = '';
+        this.portraitExpanded = false;
+        this.portraitLoadError = false;
+        
+        const newCharEntry = {
+          character_id: this.character.meta.character_id || 'nuevo-' + Date.now(),
+          name: this.character.basic_info.name || 'Nuevo Personaje',
+          filename: this.currentFilename || 'sin-guardar',
+          classes: this.character.basic_info.classes || [{ name: '', level: 1 }],
+          is_unsaved: true
+        };
+        this.characterList.push(newCharEntry);
+        
+        await this.$nextTick();
+        this.setupSubsectionAnchors();
+        this.initScrollSpy();
+        this.showToast('Nuevo personaje creado. Ahora puedes editar y guardar.', 'success');
+      } catch (error) {
+        console.error('Error creating new character:', error);
+        this.showToast('Error al crear personaje: ' + error.message, 'error');
+      }
+    },
+
+    buildEmptyCharacter() {
+      return {
+        meta: { character_id: '' },
+        basic_info: {
+          name: '',
+          species: '',
+          background: '',
+          alignment: '',
+          player_name: '',
+          vision: '',
+          creation_date: '',
+          experience_points: 0,
+          next_level_xp: 300,
+          inspiration: false,
+          portrait_url: '',
+          classes: [{ name: '', subclass: '', level: 1 }],
+        },
+        appearance: {
+          age: '', height: '', weight: '', gender: '',
+          size: '', eyes: '', skin: '', hair: '', summary: '',
+        },
+        background_details: {
+          birth_place: '', birth_date: '', description: '',
+          deity: '', deity_description: '',
+          personality_traits: '', ideals: '', bonds: '', flaws: '',
+          deities: [],
+        },
+        notes: {
+          allies: '', enemies: '', backstory: '',
+          general: '', physical_description: '',
+          other_notes: '', additional_notes: '', other_possessions: '',
+        },
+        languages: [],
+        proficiency_bonus: 2,
+        ability_scores: {
+          strength:     { score: 10, modifier: 0 },
+          dexterity:    { score: 10, modifier: 0 },
+          constitution: { score: 10, modifier: 0 },
+          intelligence: { score: 10, modifier: 0 },
+          wisdom:       { score: 10, modifier: 0 },
+          charisma:     { score: 10, modifier: 0 },
+        },
+        saving_throws: {
+          strength:     { proficient: false, total: 0, roll: '1d20+0' },
+          dexterity:    { proficient: false, total: 0, roll: '1d20+0' },
+          constitution: { proficient: false, total: 0, roll: '1d20+0' },
+          intelligence: { proficient: false, total: 0, roll: '1d20+0' },
+          wisdom:       { proficient: false, total: 0, roll: '1d20+0' },
+          charisma:     { proficient: false, total: 0, roll: '1d20+0' },
+        },
+        skills: {
+          acrobacia:       { name: 'Acrobacia',       ability: 'dexterity',    proficient: false, expertise: false, total: 0 },
+          arcanismo:       { name: 'Arcanismo',       ability: 'intelligence', proficient: false, expertise: false, total: 0 },
+          atletismo:       { name: 'Atletismo',       ability: 'strength',     proficient: false, expertise: false, total: 0 },
+          engaño:          { name: 'Engaño',          ability: 'charisma',     proficient: false, expertise: false, total: 0 },
+          furtividad:      { name: 'Furtividad',      ability: 'dexterity',    proficient: false, expertise: false, total: 0 },
+          historia:        { name: 'Historia',        ability: 'intelligence', proficient: false, expertise: false, total: 0 },
+          intimidacion:    { name: 'Intimidación',    ability: 'charisma',     proficient: false, expertise: false, total: 0 },
+          investigacion:   { name: 'Investigación',   ability: 'intelligence', proficient: false, expertise: false, total: 0 },
+          medicina:        { name: 'Medicina',        ability: 'wisdom',       proficient: false, expertise: false, total: 0 },
+          naturaleza:      { name: 'Naturaleza',      ability: 'intelligence', proficient: false, expertise: false, total: 0 },
+          percepcion:      { name: 'Percepción',      ability: 'wisdom',       proficient: false, expertise: false, total: 0 },
+          interpretacion:  { name: 'Interpretación',  ability: 'charisma',     proficient: false, expertise: false, total: 0 },
+          persuasion:      { name: 'Persuasión',      ability: 'charisma',     proficient: false, expertise: false, total: 0 },
+          religion:        { name: 'Religión',        ability: 'wisdom',       proficient: false, expertise: false, total: 0 },
+          sigilo:          { name: 'Sigilo',          ability: 'dexterity',    proficient: false, expertise: false, total: 0 },
+          supervivencia:   { name: 'Supervivencia',   ability: 'wisdom',       proficient: false, expertise: false, total: 0 },
+          trato_animales:  { name: 'Trato con Animales', ability: 'wisdom',    proficient: false, expertise: false, total: 0 },
+        },
+        combat: {
+          armor_class: 0,
+          initiative: 0,
+          speed: {
+            walking_meters: 0, swim_meters: 0, fly_meters: 0, climb_meters: 0,
+            jump_long: 0, jump_high: 0, hour_text: '', day_text: '',
+            special_senses: '', special_entries: [],
+          },
+          shield_equipped: false,
+          concentration: { active: false, spell: '' },
+          exhaustion: 0,
+          hit_points: { maximum: 0, current: 0, temporary: 0 },
+          hit_dice: { count: 1, type: 'd8', used: 0, total: '' },
+          death_saves: { successes: 0, failures: 0 },
+          protections: [],
+          advantages_resistances: [],
+          ammunition: [],
+        },
+        attacks: [],
+        proficiencies: {
+          armor_flags: { light: false, medium: false, heavy: false, shield: false },
+          simple_weapons: false,
+          martial_weapons: false,
+          armor: [], weapons: [], tools: [], raw: [],
+          other_competencies: [],
+        },
+        features_and_traits: {
+          feats: [],
+          species: [],
+          class_features: [],
+        },
+        spellcasting: {
+          spellcasting_ability: '',
+          spell_save_dc: 0,
+          spell_attack_bonus: 0,
+          spells_prepared: 0,
+          spells_known: 0,
+          sorcery_points_max: 0,
+          sorcery_points_used: 0,
+          sorcery_pips: [],
+          spell_slots: {},
+          spells: { cantrips: [] },
+        },
+        inventory: {
+          items: [],
+          currency: { PP: 0, GP: 0, EP: 0, SP: 0, CP: 0, other_notes: '' },
+          mounts: [],
+          gems: [],
+          loaned: [],
+          other_possessions: '',
+        },
+        resources: {},
+      };
     },
 
     // ── Save ─────────────────────────────────────────────────────────────────
@@ -1607,6 +1779,107 @@ function characterEditor() {
       this.importing = false;
     },
 
+    // ── Load from JSON ────────────────────────────────────────────────────────
+
+    closeJsonLoadModal() {
+      this.jsonLoadModal = false;
+      this.jsonLoadText = '';
+      this.jsonLoadFileName = '';
+      this.jsonLoadDragOver = false;
+      this.jsonLoadError = null;
+      this.jsonLoadLoading = false;
+      this.jsonLoadFileData = null;
+      const input = document.getElementById('jsonFileInput');
+      if (input) input.value = '';
+    },
+
+    onJsonFileSelect(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      this.jsonLoadFileName = file.name;
+      this.jsonLoadError = null;
+      const reader = new FileReader();
+      reader.onload = (e) => { this.jsonLoadFileData = e.target.result; };
+      reader.onerror = () => { this.jsonLoadError = 'Error al leer el archivo'; };
+      reader.readAsText(file);
+    },
+
+    onJsonFileDrop(event) {
+      this.jsonLoadDragOver = false;
+      const file = event.dataTransfer?.files?.[0];
+      if (!file) return;
+      if (!file.name.toLowerCase().endsWith('.json')) {
+        this.jsonLoadError = 'El archivo debe tener extensión .json';
+        return;
+      }
+      this.jsonLoadFileName = file.name;
+      this.jsonLoadError = null;
+      const reader = new FileReader();
+      reader.onload = (e) => { this.jsonLoadFileData = e.target.result; };
+      reader.onerror = () => { this.jsonLoadError = 'Error al leer el archivo'; };
+      reader.readAsText(file);
+    },
+
+    validateCharacterStructure(data) {
+      if (!data || typeof data !== 'object') {
+        return 'El JSON no es un objeto válido';
+      }
+      const hasBasicInfo = data.basic_info && typeof data.basic_info === 'object';
+      const hasAbilityScores = data.ability_scores && typeof data.ability_scores === 'object';
+      const hasCombat = data.combat && typeof data.combat === 'object';
+      if (!hasBasicInfo && !hasAbilityScores && !hasCombat) {
+        return 'Estructura de personaje no reconocida. El JSON debe contener al menos "basic_info", "ability_scores" o "combat".';
+      }
+      return null;
+    },
+
+    async processJsonLoad() {
+      this.jsonLoadError = null;
+      this.jsonLoadLoading = true;
+
+      await this.$nextTick();
+
+      let rawText = this.jsonLoadText.trim() || this.jsonLoadFileData;
+      if (!rawText) {
+        this.jsonLoadError = 'Selecciona un archivo o pega contenido JSON';
+        this.jsonLoadLoading = false;
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (e) {
+        this.jsonLoadError = `JSON inválido: ${e.message}`;
+        this.jsonLoadLoading = false;
+        return;
+      }
+
+      const validationError = this.validateCharacterStructure(data);
+      if (validationError) {
+        this.jsonLoadError = validationError;
+        this.jsonLoadLoading = false;
+        return;
+      }
+
+      try {
+        const payload = this.normalizeCharacterPayload(data);
+        this.character = payload.character;
+        this.currentFilename = this.jsonLoadFileName || payload.filename || null;
+        this._ensureArrays();
+        this.closeJsonLoadModal();
+        await this.$nextTick();
+        this.setupSubsectionAnchors();
+        this.initScrollSpy();
+        await this.loadCharacterList();
+        const charName = this.character.basic_info?.name || 'Personaje';
+        this.showToast(`"${charName}" cargado desde JSON`, 'success');
+      } catch (e) {
+        this.jsonLoadError = `Error al cargar: ${e.message}`;
+      }
+      this.jsonLoadLoading = false;
+    },
+
     // ── Export PDF ────────────────────────────────────────────────────────────
 
     async exportPdf() {
@@ -1637,6 +1910,26 @@ function characterEditor() {
         this.showToast('Error PDF: ' + e.message, 'error');
       }
       this.exportingPdf = false;
+    },
+
+    // ── Export JSON ────────────────────────────────────────────────────────────
+
+    exportJson() {
+      this.updateAll();
+      const exportPayload = this.buildExportPayload();
+      const jsonStr = JSON.stringify(exportPayload, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      const charName = this.character.basic_info?.name || 'personaje';
+      const safeName = charName.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s-]/g, '').trim().replace(/\s+/g, '_');
+      a.download = `${safeName}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objUrl);
+      this.showToast('JSON exportado y descargado', 'success');
     },
 
     // ── Scroll-spy ────────────────────────────────────────────────────────────

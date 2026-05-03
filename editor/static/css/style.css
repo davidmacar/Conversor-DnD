@@ -174,6 +174,26 @@ textarea { resize: vertical; line-height: 1.5; }
   box-shadow: 0 2px 8px rgba(139,26,26,.3);
 }
 .btn-primary:hover { filter: brightness(1.15); }
+.btn-export-pdf .pdf-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color .15s;
+}
+.btn-export-pdf:hover .pdf-icon {
+  color: var(--gold3);
+}
+.btn-export-json .json-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--gold2);
+  transition: color .15s;
+}
+.btn-export-json:hover .json-icon {
+  color: var(--gold);
+}
 .btn-gold {
   background: linear-gradient(135deg, #3a2a08, #5a4010);
   color: var(--gold2);
@@ -1175,6 +1195,36 @@ textarea { resize: vertical; line-height: 1.5; }
 .modal-box input { width: 100%; padding: 10px 15px; font-size: 16px; margin-bottom: 10px; }
 .modal-error { color: var(--crimson2); font-size: 15px; margin-bottom: 10px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+.modal-box--wide { max-width: 640px; }
+
+/* ── JSON Load Modal ────────────────────────────────────── */
+.json-load-section { margin-bottom: 16px; }
+.json-file-drop {
+  border: 2px dashed var(--border-gold); border-radius: var(--radius);
+  padding: 20px; text-align: center; transition: border-color .2s, background .2s;
+  background: rgba(255,255,255,.02);
+}
+.json-file-drop--drag { border-color: var(--gold2); background: rgba(212,175,55,.08); }
+.json-file-input { display: none; }
+.json-file-label {
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 15px; color: var(--text-dim);
+}
+.json-file-icon { font-size: 24px; }
+.json-load-separator {
+  display: flex; align-items: center; gap: 12px; margin: 18px 0;
+  color: var(--text-dim); font-size: 13px;
+}
+.json-load-separator::before, .json-load-separator::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-gold); opacity: .4;
+}
+.json-textarea {
+  width: 100%; padding: 12px 15px; font-size: 14px; font-family: 'Courier New', monospace;
+  background: var(--bg1); border: 1px solid var(--border-gold); border-radius: var(--radius);
+  color: var(--text-primary); resize: vertical; line-height: 1.5;
+}
+.json-textarea:focus { outline: none; border-color: var(--gold2); box-shadow: 0 0 0 2px rgba(212,175,55,.15); }
+.json-textarea::placeholder { color: var(--text-dim); opacity: .5; }
 
 /* ── Responsive ─────────────────────────────────────────── */
 [x-cloak] { display: none !important; }
@@ -1415,8 +1465,8 @@ textarea { resize: vertical; line-height: 1.5; }
 .res-rest-btn { font-size: 13px; padding: 6px 14px; font-family: var(--font-title); letter-spacing: 1px; }
 
 .res-recharge-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-.res-recharge-select { flex: 1; font-size: 12px; padding: 2px 6px; color: var(--text-dim); background: var(--bg4); border-color: var(--border); }
-.res-recharge-select:focus { border-color: var(--gold); color: var(--text); }
+.res-recharge-input { flex: 1; font-size: 12px; padding: 2px 6px; color: var(--text-dim); background: var(--bg4); border: 1px solid var(--border); border-radius: 3px; }
+.res-recharge-input:focus { border-color: var(--gold); color: var(--text); outline: none; }
 
 /* ══════════════════════════════════════════════════════════
    FEATURE EDITING
@@ -2209,25 +2259,47 @@ textarea { resize: vertical; line-height: 1.5; }
 .trait-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
 .trait-row input { flex: 1; }
 
-/* Attack card */
 .attack-card {
   border: 1px solid var(--border); border-radius: var(--radius); padding: 12px;
   margin-bottom: 10px; background: var(--bg2);
+  position: relative;
 }
-.attack-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.atk-name { flex: 1; font-size: 16px !important; font-weight: 600; color: var(--text-bright) !important; }
+.attack-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.attack-name-input {
+  font-family: var(--font-title);
+  font-size: 15px;
+  color: var(--gold2);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+  width: 100%;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+.attack-name-input:focus { border-bottom-color: var(--gold); outline: none; }
 .attack-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; align-items: flex-end; }
-.attack-summary {
-  display: flex; gap: 12px; align-items: center; margin-top: 8px;
-  padding-top: 8px; border-top: 1px dashed var(--border);
+
+/* Fila de Propiedades */
+.attack-name-props-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  align-items: flex-end;
 }
-.atk-roll-badge, .dmg-display {
-  font-family: var(--font-title); font-size: 13px; background: var(--bg4);
-  border: 1px solid var(--border-gold); border-radius: var(--radius);
-  padding: 3px 12px; color: var(--gold3); letter-spacing: .5px;
+.atk-props-field {
+  flex: 1;
+  min-width: 0;
 }
-.atk-bonuses { margin-top: 6px; display: flex; flex-direction: column; gap: 5px; }
-.bonus-row { display: flex; align-items: center; gap: 6px; }
+.atk-props-field input {
+  width: 100%;
+}
 
 /* Resource card */
 .resource-card {
@@ -2264,7 +2336,7 @@ textarea { resize: vertical; line-height: 1.5; }
 }
 
 .res-max-input,
-.res-recharge-select {
+.res-recharge-input {
   width: 100%;
 }
 

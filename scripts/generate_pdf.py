@@ -114,6 +114,19 @@ MEDIUM: set[str] = {
     "Idiomas",
 } | {f"Total-Espacios-Conjuro.{i}" for i in range(1, 10)}
 
+# Campos de trasfondo y datos del personaje — tamaño fijo 6pt
+SIZE_6PT: set[str] = (
+    {f"Dato-Personaje.Rasgo-Personalidad-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Ideal-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Vinculo-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Defecto-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Apariencia-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Amigo-Aliado-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Enemigo-{i}" for i in range(1, 4)} |
+    {f"Dato-Personaje.Trasfondo-Otros-{i}" for i in range(1, 8)} |
+    {"Dato-Personaje.Deidad-Dominio", "Dato-Personaje.Descripcion-Deidad", "Notas"}
+)
+
 SIZE_XLARGE = 10
 SIZE_HIGH   = 8
 SIZE_MEDIUM = 7
@@ -146,12 +159,17 @@ CENTERED: set[str] = {
     "Cobre", "Plata", "Electro", "Oro", "Platino",
     "Piezas.Cobre", "Piezas.Plata", "Piezas.Electro", "Piezas.Oro", "Piezas.Platino",
     "CD-Salvacion-Conjuros", "Modificador-Aptitud-Magica",  # campos fantasma (no existen en template)
+    # Campos de velocidad (sección Velocidad)
+    "Velocidad-Hora", "Velocidad-Jornada", "Velocidad-Especial",
+    "Velocidad-Volando", "Velocidad-Trepando", "Velocidad-Nadando",
+    "Salto-Horizontal", "Salto-Altura",
 } | {f"Total-Espacios-Conjuro.{i}" for i in range(1, 10)} \
     | {f"Arma-{i}-Ataque" for i in range(1, 6)}
 
 
 def _field_size(name: str) -> int:
     """Devuelve el tamaño de fuente para el campo dado."""
+    if name in SIZE_6PT:  return 6
     if name in KEY_STATS: return SIZE_XLARGE
     if name in HIGH:      return SIZE_HIGH
     if name in MEDIUM:    return SIZE_MEDIUM

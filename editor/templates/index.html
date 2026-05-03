@@ -23,13 +23,13 @@
   </div>
 
   <!-- Selector multi-personaje -->
-  <div class="char-selector" x-show="characterList.length > 1">
+  <div class="char-selector" x-show="characterList.length > 0">
     <span>Personaje:</span>
     <select @change="loadCharacter($event.target.value)">
       <template x-for="c in characterList" :key="c.filename || c.character_id">
         <option :value="c.filename || c.character_id"
                 :selected="(c.filename && c.filename === currentFilename) || (!currentFilename && c.character_id == character?.meta?.character_id)"
-                x-text="`${c.name} (${(c.classes||[]).map(cl=>cl.name+' '+cl.level).join('/')}) - ${c.filename || 'sin-archivo'}${c.is_duplicate_id ? ' [ID duplicado]' : ''}`">
+                x-text="c.is_unsaved ? `${c.filename.replace('.json','')} (${(c.classes||[]).map(cl=>cl.name||'Sin clase').join('/') || 'Sin clase'} 1) [SIN GUARDAR]` : `${c.name} (${(c.classes||[]).map(cl=>cl.name+' '+cl.level).join('/')}) - ${c.filename || 'sin-archivo'}${c.is_duplicate_id ? ' [ID duplicado]' : ''}`">
         </option>
       </template>
     </select>
@@ -37,11 +37,32 @@
 
   <div class="navbar-sep"></div>
 
+  <button class="btn btn-gold" @click="confirmNewCharacter()">
+    ✦ Nuevo
+  </button>
   <button class="btn btn-gold" @click="importModal = true">
     ⇩ Importar
   </button>
-  <button class="btn btn-primary" :disabled="exportingPdf" @click="exportPdf()">
-    <span x-text="exportingPdf ? 'Generando…' : '⬇ Exportar PDF'"></span>
+  <button class="btn btn-gold" @click="jsonLoadModal = true">
+    📂 Cargar JSON
+  </button>
+  <button class="btn btn-primary btn-export-pdf" :disabled="exportingPdf" @click="exportPdf()">
+    <svg class="pdf-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-6-6H7z"
+            stroke="currentColor" stroke-width="1.5" fill="rgba(255,255,255,0.08)"/>
+      <path d="M13 2v6h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="12" y="17" text-anchor="middle" font-size="5" font-weight="700"
+            font-family="Cinzel, serif" fill="currentColor">PDF</text>
+    </svg>
+    <span x-text="exportingPdf ? 'Generando…' : 'Exportar PDF'"></span>
+  </button>
+  <button class="btn btn-gold btn-export-json" @click="exportJson()">
+    <svg class="json-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M8 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M16 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M10 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <span>Exportar JSON</span>
   </button>
   <button class="btn btn-ghost" :disabled="saving" @click="save()">
     <span x-text="saving ? 'Guardando…' : '💾 Guardar'"></span>
@@ -794,9 +815,18 @@
         </div>
         <template x-for="(atk, i) in character.attacks" :key="i">
           <div class="attack-card">
-            <div class="attack-top">
-              <input type="text" x-model="atk.name" placeholder="Nombre del ataque" class="atk-name">
+            <div class="attack-title-row">
+              <input type="text" x-model="atk.name" placeholder="Nombre del arma" class="attack-name-input">
               <button class="btn-remove" @click="removeAttack(i)">×</button>
+            </div>
+            <div class="attack-name-props-row">
+              <div class="field-group atk-props-field">
+                <label class="field-label">Propiedades (coma separadas)</label>
+                <input type="text"
+                       :value="attackPropertiesText(atk)"
+                       @input="onAttackPropertiesInput(atk, $event.target.value)"
+                       placeholder="Ligera, Finesse, Maestria...">
+              </div>
             </div>
             <div class="attack-row">
               <div class="field-group">
@@ -840,13 +870,6 @@
                 <label class="field-label">Peso (kg)</label>
                 <input type="number" x-model.number="atk.weight" min="0" step="0.1" style="width:70px">
               </div>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Propiedades (coma separadas)</label>
-              <input type="text"
-                     :value="attackPropertiesText(atk)"
-                     @input="onAttackPropertiesInput(atk, $event.target.value)"
-                     placeholder="Ligera, Finesse, Maestria...">
             </div>
             <div class="field-group">
               <label class="field-label">Notas</label>
@@ -894,11 +917,7 @@
               </div>
               <div class="res-recharge-field">
                 <span class="res-field-label">Descanso</span>
-                <select x-model="res.recharge" class="res-recharge-select">
-                  <option value="">—</option>
-                  <option value="turno">Por Turno</option>
-                  <option value="otro">Otro</option>
-                </select>
+                <input type="text" x-model="res.recharge" class="res-recharge-input" placeholder="Corto, Largo, etc.">
               </div>
               <div class="res-counter-field">
                 <span class="res-field-label">Contador</span>
@@ -1339,6 +1358,30 @@
 </div><!-- /.app-layout -->
 </template>
 
+<!-- ═══════════════════════════════════════════ MODAL CONFIRMAR NUEVO PERSONAJE -->
+<div class="modal-overlay" x-show="newCharModal" x-cloak @click.self="newCharModal = false">
+  <div class="modal-box" @click.stop>
+    <div class="modal-title">✦ Crear Nuevo Personaje</div>
+    <p style="color:var(--text-dim);margin:12px 0 12px;font-size:calc(14px * var(--font-scale))">
+      ¿Estás seguro? Se perderán los cambios no guardados del personaje actual.
+    </p>
+    <div class="field-group" style="margin-bottom:16px">
+      <label class="field-label">Nombre del archivo (opcional)</label>
+      <input type="text" x-model="newCharFilename" placeholder="mi_personaje.json"
+             @keydown.enter="createNewCharacter()">
+      <small style="color:var(--text-dim);display:block;margin-top:4px">
+        Si se deja vacío, se generará automáticamente desde el nombre del personaje.
+      </small>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" @click="newCharModal = false">Cancelar</button>
+      <button class="btn btn-primary" @click="createNewCharacter()">
+        Crear Nuevo
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════ MODAL IMPORTAR -->
 <div class="modal-overlay" x-show="importModal" x-cloak @click.self="importModal = false">
   <div class="modal-box" @click.stop>
@@ -1352,6 +1395,51 @@
       <button class="btn btn-ghost" @click="importModal = false">Cancelar</button>
       <button class="btn btn-primary" :disabled="importing" @click="importCharacter()">
         <span x-text="importing ? 'Importando…' : 'Importar'"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ MODAL CARGAR JSON -->
+<div class="modal-overlay" x-show="jsonLoadModal" x-cloak @click.self="jsonLoadModal = false">
+  <div class="modal-box modal-box--wide" @click.stop>
+    <div class="modal-title">📂 Cargar Personaje desde JSON</div>
+
+    <!-- Opción 1: Subir archivo -->
+    <div class="json-load-section">
+      <label class="field-label">Opción 1 — Subir archivo JSON</label>
+      <div class="json-file-drop" :class="{ 'json-file-drop--drag': jsonLoadDragOver }"
+           @dragover.prevent="jsonLoadDragOver = true"
+           @dragleave.prevent="jsonLoadDragOver = false"
+           @drop.prevent="onJsonFileDrop($event)">
+        <input type="file" id="jsonFileInput" accept=".json" class="json-file-input"
+               @change="onJsonFileSelect($event)">
+        <label for="jsonFileInput" class="json-file-label">
+          <span class="json-file-icon">📄</span>
+          <span x-text="jsonLoadFileName || 'Seleccionar archivo .json'"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Separador -->
+    <div class="json-load-separator">
+      <span>o pega el JSON directamente</span>
+    </div>
+
+    <!-- Opción 2: Pegar JSON -->
+    <div class="json-load-section">
+      <label class="field-label">Opción 2 — Pegar contenido JSON</label>
+      <textarea class="json-textarea" x-model="jsonLoadText"
+                placeholder='{"basic_info": {"name": "Mi Personaje"}, ...}'
+                rows="8"></textarea>
+    </div>
+
+    <div class="modal-error" x-show="jsonLoadError" x-text="jsonLoadError"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" @click="closeJsonLoadModal()">Cancelar</button>
+      <button class="btn btn-primary" :disabled="jsonLoadLoading" @click="processJsonLoad()">
+        <span x-text="jsonLoadLoading ? 'Cargando…' : 'Cargar Personaje'"></span>
       </button>
     </div>
   </div>
