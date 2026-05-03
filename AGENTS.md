@@ -1,8 +1,7 @@
 # PROJECT KNOWLEDGE BASE: Conversor-DnD
 
-**Generated:** 2026-04-29  
-**Commit:** 53a3f36  
-**Branch:** main  
+**Generated:** 2026-05-03
+**Branch:** main
 
 ## OVERVIEW
 
@@ -13,17 +12,19 @@ D&D 5.5 (2024) character sheet converter/editor. Parses HTML from Nivel20.com, s
 ```
 .
 ├── app.py                    # Entry point (wrapper → editor.app)
+├── docker-compose.yml        # Container orchestration
+├── Dockerfile                # Container build
 ├── editor/                   # Flask web application
-│   ├── app.py               # Main Flask app (588 lines, ~15 routes)
+│   ├── app.py               # Main Flask app (~600 lines, ~20 routes)
 │   ├── static/              # Frontend assets
-│   │   ├── js/editor.js     # Alpine.js app (1400+ lines)
-│   │   ├── css/style.css    # Styles
+│   │   ├── js/editor.js     # Alpine.js app (~2200 lines)
+│   │   ├── css/style.css    # Styles (~2400 lines)
 │   │   └── img/             # Character portraits
 │   └── templates/           # Jinja2 templates
-│       └── index.html       # Single-page editor
+│       └── index.html       # Single-page editor (~1500 lines)
 ├── scripts/                  # Core business logic
 │   ├── parse_character.py   # HTML→JSON parser (1757 lines)
-│   ├── generate_pdf.py      # JSON→PDF generator (1893 lines)
+│   ├── generate_pdf.py      # JSON→PDF generator (~1940 lines)
 │   ├── aplanar.py           # PDF flattener (421 lines)
 │   └── project_paths.py     # Path resolution & validation
 ├── data/                     # Character JSON storage
@@ -43,6 +44,8 @@ D&D 5.5 (2024) character sheet converter/editor. Parses HTML from Nivel20.com, s
 | Add font support | `templates/` + `fonts/` | TTF files referenced by path resolution |
 | Storage limits | `editor/app.py` lines 40-43 | DND_STORAGE_LIMIT_BYTES env var |
 | Path configuration | `scripts/project_paths.py` | All paths centralized via dataclass |
+| Field limits | `scripts/generate_pdf.py:FIELD_LIMITS` | Hardcoded char limits for PDF fields |
+| Speed calculations | `editor/static/js/editor.js:updateAll()` | Auto-calculates swim/fly/climb/jump from walking speed |
 
 ## CODE MAP
 
@@ -55,6 +58,10 @@ D&D 5.5 (2024) character sheet converter/editor. Parses HTML from Nivel20.com, s
 | `characterEditor()` | function | `editor/static/js/editor.js` | Alpine.js data/methods |
 | `generate_pdf()` | function | `scripts/generate_pdf.py` | Main PDF generation entry |
 | `parse_character()` | function | `scripts/parse_character.py` | HTML parser entry |
+| `FIELD_LIMITS` | dict | `scripts/generate_pdf.py` | Hardcoded field char limits |
+| `updateAll()` | method | `editor/static/js/editor.js:950` | Auto-calculates derived fields |
+| `sectionCharCount()` | method | `editor/static/js/editor.js` | Calculates chars per section |
+| `isOverLimit()` | method | `editor/static/js/editor.js` | Checks if section exceeds limit |
 
 ## CONVENTIONS
 
@@ -67,7 +74,7 @@ D&D 5.5 (2024) character sheet converter/editor. Parses HTML from Nivel20.com, s
 
 ## ANTI-PATTERNS (THIS PROJECT)
 
-- **No modular frontend**: `editor.js` is 1400+ lines with no code splitting
+- **No modular frontend**: `editor.js` is 2200+ lines with no code splitting
 - **No Flask Blueprints**: All routes in single `editor/app.py`
 - **Module-level side effects**: `editor/app.py` lines 24-26 run at import time
 - **Broad exception catching**: Several routes catch bare `Exception`
@@ -79,6 +86,7 @@ D&D 5.5 (2024) character sheet converter/editor. Parses HTML from Nivel20.com, s
 - **Field naming**: PDF fields use Spanish names ("Dotes", "Rasgo", "Puntuacion-Fuerza")
 - **Continuous text blocks**: Custom field-filling system for multi-line text (see `ContinuousBlockSpec`)
 - **PDF widget manipulation**: Direct xref manipulation for AcroForm fields
+- **Theme**: Dark parchment medieval theme with gold accents
 
 ## COMMANDS
 
@@ -101,6 +109,31 @@ python scripts/aplanar.py input.pdf output.pdf
 docker-compose build
 docker-compose up -d
 ```
+
+## FEATURES IMPLEMENTED
+
+### PDF Generation
+- **Text flow fix**: Race/class feature titles render on same line as description when space allows
+- **Flattened PDFs**: Text rendered statically (not editable), checkboxes remain interactive
+- **Font sizes**: Dynamic sizing (10pt/8pt/7pt/6pt) based on field importance; background fields fixed at 6pt
+- **Centered fields**: Speed/movement fields (Velocidad, Salto, etc.) centered in PDF text boxes
+- **Field limits**: Hardcoded `FIELD_LIMITS` dict with char limits per section
+
+### Web Editor
+- **Character counters**: Real-time char counters with red borders when exceeding PDF limits
+- **Field limits enforced**: 
+  - 550 chars: appearance summary, personality traits, ideals, bonds, flaws, allies, enemies
+  - 1250 chars: backstory
+  - 1450 chars: combined class + species features
+  - 1400 chars: feats
+  - 1500 chars: notes
+- **Auto-calculation**: Speed/movement fields auto-calculated from base walking speed
+- **Create character**: "✦ Nuevo" button with empty character template
+- **Load JSON**: Drag & drop or paste JSON to load character
+- **Export JSON**: Client-side JSON generation with pretty-print
+- **Export PDF**: Inline SVG document icon with gold hover effect
+- **Attacks & Weapons**: Reformatted with title, properties, stats, and notes rows
+- **Keyboard shortcuts**: Ctrl+S to save
 
 ## NOTES
 
