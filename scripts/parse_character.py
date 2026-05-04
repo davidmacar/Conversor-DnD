@@ -56,46 +56,54 @@ ABILITY_MAP: dict[str, str] = {
     "car": "charisma",
 }
 
+NIVEL20_SKILL_KEY_MAP: dict[str, str] = {
+    "acrobacias":         "acrobacia",
+    "arcanos":            "arcanismo",
+    "enganar":            "engano",
+    "intimidar":          "intimidacion",
+    "trato_con_animales": "trato_animales",
+}
+
 SKILL_ABILITY_MAP: dict[str, str] = {
-    "acrobacias":        "dexterity",
-    "atletismo":         "strength",
-    "arcanos":           "intelligence",
-    "enganar":           "charisma",
-    "historia":          "intelligence",
-    "interpretacion":    "charisma",
-    "intimidar":         "charisma",
-    "investigacion":     "intelligence",
-    "juego_de_manos":    "dexterity",
-    "medicina":          "wisdom",
-    "naturaleza":        "intelligence",
-    "percepcion":        "wisdom",
-    "perspicacia":       "wisdom",
-    "persuasion":        "charisma",
-    "religion":          "intelligence",
-    "sigilo":            "dexterity",
-    "supervivencia":     "wisdom",
-    "trato_con_animales":"wisdom",
+    "acrobacia":       "dexterity",
+    "arcanismo":       "intelligence",
+    "atletismo":       "strength",
+    "engano":          "charisma",
+    "historia":        "intelligence",
+    "interpretacion":  "charisma",
+    "intimidacion":    "charisma",
+    "investigacion":   "intelligence",
+    "juego_de_manos":  "dexterity",
+    "medicina":        "wisdom",
+    "naturaleza":      "intelligence",
+    "percepcion":      "wisdom",
+    "perspicacia":     "wisdom",
+    "persuasion":      "charisma",
+    "religion":        "intelligence",
+    "sigilo":          "dexterity",
+    "supervivencia":   "wisdom",
+    "trato_animales":  "wisdom",
 }
 
 SKILL_NAME_MAP: dict[str, str] = {
-    "acrobacias":        "Acrobacias",
-    "atletismo":         "Atletismo",
-    "arcanos":           "Conocimiento arcano",
-    "enganar":           "Engaño",
-    "historia":          "Historia",
-    "interpretacion":    "Interpretación",
-    "intimidar":         "Intimidación",
-    "investigacion":     "Investigación",
-    "juego_de_manos":    "Juego de Manos",
-    "medicina":          "Medicina",
-    "naturaleza":        "Naturaleza",
-    "percepcion":        "Percepción",
-    "perspicacia":       "Perspicacia",
-    "persuasion":        "Persuasión",
-    "religion":          "Religión",
-    "sigilo":            "Sigilo",
-    "supervivencia":     "Supervivencia",
-    "trato_con_animales":"Trato con Animales",
+    "acrobacia":       "Acrobacia",
+    "arcanismo":       "Arcanismo",
+    "atletismo":       "Atletismo",
+    "engano":          "Engaño",
+    "historia":        "Historia",
+    "interpretacion":  "Interpretación",
+    "intimidacion":    "Intimidación",
+    "investigacion":   "Investigación",
+    "juego_de_manos":  "Juego de Manos",
+    "medicina":        "Medicina",
+    "naturaleza":      "Naturaleza",
+    "percepcion":      "Percepción",
+    "perspicacia":     "Perspicacia",
+    "persuasion":      "Persuasión",
+    "religion":        "Religión",
+    "sigilo":          "Sigilo",
+    "supervivencia":   "Supervivencia",
+    "trato_animales":  "Trato con Animales",
 }
 
 # Dado de golpe por clase (D&D 2024)
@@ -406,6 +414,12 @@ def parse_basic_info(soup: BeautifulSoup) -> dict:
         if panel_bg:
             alignment = _strong_value(panel_bg, "Alineamiento")
 
+        # Campaña (si está disponible en el HTML)
+        campaign = None
+        campaign_tag = soup.find("a", href=re.compile(r"/campaigns/"))
+        if campaign_tag:
+            campaign = campaign_tag.get_text(strip=True)
+
         return {
             "name": name,
             "species": race,
@@ -413,6 +427,7 @@ def parse_basic_info(soup: BeautifulSoup) -> dict:
             "total_level": total_level or (classes[0]["level"] if classes else None),
             "background": background,
             "alignment": alignment,
+            "campaign": campaign,
             "experience_points": None,
             "inspiration": False,
             "portrait_url": portrait_url,
@@ -430,8 +445,8 @@ def parse_appearance(soup: BeautifulSoup) -> dict:
     try:
         panel_bg = soup.find(id="panel-background")
         fields: dict[str, object] = {
-            "age": None, "height": None, "weight": None,
-            "eyes": None, "skin": None, "hair": None, "gender": None,
+            "age": "", "height": "", "weight": "",
+            "eyes": "", "skin": "", "hair": "", "gender": "",
         }
         if panel_bg:
             for label, key in [
@@ -445,7 +460,7 @@ def parse_appearance(soup: BeautifulSoup) -> dict:
                 ("Pelo",    "hair"),
                 ("Cabello", "hair"),
             ]:
-                if fields[key] is not None:
+                if fields[key]:
                     continue
                 val = _strong_value(panel_bg, label)
                 if not val:
@@ -640,9 +655,10 @@ def parse_skills(soup: BeautifulSoup) -> dict:
                 if total is None:
                     total = _modifier_from_formula(roll)
 
-            result[field] = {
-                "name":      SKILL_NAME_MAP.get(field, field.replace("_", " ").title()),
-                "ability":   SKILL_ABILITY_MAP.get(field, "unknown"),
+            skill_key = NIVEL20_SKILL_KEY_MAP.get(field, field)
+            result[skill_key] = {
+                "name":      SKILL_NAME_MAP.get(skill_key, skill_key.replace("_", " ").title()),
+                "ability":   SKILL_ABILITY_MAP.get(skill_key, "unknown"),
                 "total":     total,
                 "proficient":proficient,
                 "expertise": False,
@@ -719,11 +735,11 @@ def parse_combat(soup: BeautifulSoup, basic_info: dict | None = None) -> dict:
             "armor_class": ac,
             "initiative": initiative,
             "speed": {
-                "walking_feet":   int(speed_feet) if speed_feet else None,
-                "walking_meters": speed_meters,
-                "swim_meters":    None,
-                "fly_meters":     None,
-                "climb_meters":   None,
+                "walking_feet":   int(speed_feet) if speed_feet else 0,
+                "walking_meters": speed_meters or 0,
+                "swim_meters":    0,
+                "fly_meters":     0,
+                "climb_meters":   0,
             },
             "hit_points": {
                 "maximum":   hp_max,
@@ -828,7 +844,39 @@ def parse_proficiencies(soup: BeautifulSoup) -> dict:
     except Exception as e:
         _warn(f"parse_proficiencies: {e}")
 
-    return {"armor": armor, "weapons": weapons, "tools": tools, "raw": raw_lines}
+    # Derivar flags del editor a partir del texto crudo
+    armor_flags = {"light": False, "medium": False, "heavy": False, "shield": False}
+    simple_weapons = False
+    martial_weapons = False
+    other_competencies: list[str] = []
+
+    for line in raw_lines:
+        line_lower = line.lower()
+        if "ligera" in line_lower:
+            armor_flags["light"] = True
+        if "media" in line_lower:
+            armor_flags["medium"] = True
+        if "pesada" in line_lower or "pesado" in line_lower:
+            armor_flags["heavy"] = True
+        if "escudo" in line_lower:
+            armor_flags["shield"] = True
+        if "arma sencilla" in line_lower or "armas sencillas" in line_lower:
+            simple_weapons = True
+        if "arma marcial" in line_lower or "armas marciales" in line_lower:
+            martial_weapons = True
+        if any(kw in line_lower for kw in tool_kw):
+            other_competencies.append(line)
+
+    return {
+        "armor_flags": armor_flags,
+        "simple_weapons": simple_weapons,
+        "martial_weapons": martial_weapons,
+        "armor": armor,
+        "weapons": weapons,
+        "tools": tools,
+        "raw": raw_lines,
+        "other_competencies": other_competencies,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1246,6 +1294,9 @@ def parse_inventory(soup: BeautifulSoup) -> dict:
     other_possessions = None
     current_location  = ""
 
+    # Nombres de grupo conocidos en Nivel20 (case-insensitive)
+    LOCATION_GROUPS = {"equipado", "transportado", "otros"}
+
     try:
         panel = soup.find(id="panel-items")
         if not panel:
@@ -1268,19 +1319,28 @@ def parse_inventory(soup: BeautifulSoup) -> dict:
                 continue
 
             item_name = title_span.get_text(strip=True)
+            item_name_lower = item_name.lower()
 
             # Filtrar headers de GRUPO ("Equipado", "Transportado", "Otros"):
             # Los grupos tienen span.accordion-value (el contador) y NO tienen
             # el span.accordion-title envuelto en un <a> de collapse.
             # Los ítems individuales SÍ tienen su span dentro de un <a data-toggle>.
             header_div = wrapper.find("div", class_="accordion-header")
+            is_group = False
             if header_div:
                 # Si hay un span.accordion-value es un header de sección, no un ítem
                 if header_div.find("span", class_="accordion-value"):
-                    current_location = item_name
-                    continue
+                    is_group = True
                 # Si el title_span NO está dentro de un <a>, también es un grupo
-                if not title_span.find_parent("a"):
+                elif not title_span.find_parent("a"):
+                    is_group = True
+
+            # Validación adicional: solo es grupo si el nombre coincide con uno conocido.
+            # Los ítems individuales también pueden tener span.accordion-value con su cantidad,
+            # por lo que filtramos por nombre (aceptando "Transportado", "Transportado 8", etc.)
+            if is_group:
+                name_without_number = re.sub(r"\s+\d+$", "", item_name_lower).strip()
+                if name_without_number in LOCATION_GROUPS:
                     current_location = item_name
                     continue
 
@@ -1293,7 +1353,7 @@ def parse_inventory(soup: BeautifulSoup) -> dict:
                 continue
 
             # --- Tracker custom por nombre ---
-            if item_name.lower() in CUSTOM_TRACKER_NAMES:
+            if item_name_lower in CUSTOM_TRACKER_NAMES:
                 body = wrapper.find(class_="card-body")
                 if body:
                     custom_trackers.append(_extract_item_data(body, item_name))
@@ -1315,12 +1375,21 @@ def parse_inventory(soup: BeautifulSoup) -> dict:
                 items_data[item_name]["qty_backpack"] = 0
                 items_data[item_name]["qty_bag"] = 0
 
+            # Extraer cantidad del span.accordion-value si existe (ej: "Daga x5")
+            qty = 1
+            val_span = wrapper.find("span", class_="accordion-value")
+            if val_span:
+                try:
+                    qty = int(val_span.get_text(strip=True))
+                except ValueError:
+                    qty = 1
+
             if current_location == "Equipado":
-                items_data[item_name]["qty_equipped"] += 1
+                items_data[item_name]["qty_equipped"] += qty
             elif current_location == "Transportado":
-                items_data[item_name]["qty_backpack"] += 1
+                items_data[item_name]["qty_backpack"] += qty
             else:
-                items_data[item_name]["qty_bag"] += 1
+                items_data[item_name]["qty_bag"] += qty
 
     except Exception as e:
         _warn(f"parse_inventory: {e}")
@@ -1376,14 +1445,38 @@ def parse_background_details(soup: BeautifulSoup) -> dict:
                 if s.strip()
             ]
 
+        # Extraer rasgos de personalidad, ideales, vínculos y defectos del trasfondo
+        # Nivel20 no siempre tiene estos campos estructurados, buscamos en el panel
+        personality_traits = ""
+        ideals = ""
+        bonds = ""
+        flaws = ""
+
+        # Buscar secciones con headers h4/h5 que indiquen estas categorías
+        for header in panel.find_all(["h4", "h5", "h6", "strong"]):
+            text = header.get_text(strip=True).lower().rstrip(":")
+            next_el = header.find_next_sibling()
+            if not next_el:
+                continue
+            content = next_el.get_text(strip=True) if next_el else ""
+
+            if text in ("rasgos de personalidad", "personalidad", "rasgos"):
+                personality_traits = content
+            elif text in ("ideales", "ideal"):
+                ideals = content
+            elif text in ("vínculos", "vinculos", "vínculo", "vinculo"):
+                bonds = content
+            elif text in ("defectos", "defecto", "flaws"):
+                flaws = content
+
         return {
             "name":               background_name,
             "description":        background_desc,
             "skill_proficiencies":skill_profs,
-            "personality_traits": [],
-            "ideals":             [],
-            "bonds":              [],
-            "flaws":              [],
+            "personality_traits": personality_traits,
+            "ideals":             ideals,
+            "bonds":              bonds,
+            "flaws":              flaws,
         }
     except Exception as e:
         _warn(f"parse_background_details: {e}")
@@ -1500,12 +1593,15 @@ def parse_notes(
 ) -> dict:
     try:
         return {
-            "other_possessions": (inventory  or {}).get("other_possessions"),
+            "other_possessions": (inventory  or {}).get("other_possessions") or "",
             "backstory":         (background or {}).get("description") or "",
             "organizations":     "",
             "allies":            "",
             "enemies":           "",
             "additional_notes":  "",
+            "general":           "",
+            "physical_description": "",
+            "other_notes":       "",
         }
     except Exception as e:
         _warn(f"parse_notes: {e}")

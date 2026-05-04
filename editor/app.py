@@ -115,6 +115,7 @@ app = Flask(
 # ── Import scripts (parse_character + generate_pdf) ──────────────────────────
 try:
     from scripts.parse_character import parse_html as _parse_html
+    from scripts.parse_character import _fetch_url as _fetch_html
 
     PARSE_OK = True
 except Exception as _e:
@@ -416,7 +417,8 @@ def import_character():
         return jsonify({'status': 'error', 'message': 'URL inválida (debe empezar por http)'}), 400
 
     try:
-        character = _parse_html(url)
+        html_text = _fetch_html(url)
+        character = _parse_html(html_text)
         requested_filename = data.get('filename') if isinstance(data.get('filename'), str) else None
 
         try:
